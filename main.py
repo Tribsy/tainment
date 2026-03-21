@@ -34,6 +34,7 @@ EXTENSIONS = [
     'leaderboard',
     'subscription',
     'payment',
+    'lemonsqueezy_payment',
     'subscription_tasks',
     'admin_subscription',
     'utils',
@@ -265,7 +266,7 @@ HELP_CATEGORIES = {
             ('help [category]', 'Show this menu'),
             ('ping', 'Check bot latency'),
             ('stats', 'Bot statistics'),
-            ('verifypayment', 'Verify your Stripe payment'),
+            ('verifypayment', 'Verify your LemonSqueezy payment'),
         ],
     },
 }

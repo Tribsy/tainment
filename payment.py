@@ -101,25 +101,25 @@ class SimulatedCheckoutView(discord.ui.View):
 
 
 class Payment(commands.Cog, name="Payment"):
-    """Handles subscription payments (Stripe when configured, simulated otherwise)."""
+    """Handles subscription payments (LemonSqueezy when configured, simulated otherwise)."""
 
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    def _get_stripe(self):
-        return self.bot.cogs.get('StripePayment')
+    def _get_ls(self):
+        return self.bot.cogs.get('LemonSqueezyPayment')
 
     async def initiate_upgrade(self, ctx: commands.Context, tier: str, months: int = 1):
-        stripe_cog = self._get_stripe()
-        if stripe_cog and stripe_cog.is_configured():
-            await stripe_cog.create_checkout(ctx, tier, months)
+        ls_cog = self._get_ls()
+        if ls_cog and ls_cog.is_configured():
+            await ls_cog.create_checkout(ctx, tier, months)
         else:
             await self._simulated_checkout(ctx, tier, months, is_renewal=False)
 
     async def initiate_renew(self, ctx: commands.Context, tier: str, months: int):
-        stripe_cog = self._get_stripe()
-        if stripe_cog and stripe_cog.is_configured():
-            await stripe_cog.create_checkout(ctx, tier, months)
+        ls_cog = self._get_ls()
+        if ls_cog and ls_cog.is_configured():
+            await ls_cog.create_checkout(ctx, tier, months)
         else:
             await self._simulated_checkout(ctx, tier, months, is_renewal=True)
 
@@ -140,7 +140,7 @@ class Payment(commands.Cog, name="Payment"):
             embed.add_field(name="Subtotal", value=f"`${base:.2f}`", inline=True)
             embed.add_field(name=f"Discount ({int(discount*100)}%)", value=f"`-${base-total:.2f}`", inline=True)
         embed.add_field(name="Total", value=f"**${total:.2f}**", inline=False)
-        embed.set_footer(text="SIMULATED — Add STRIPE_SECRET_KEY to .env for real payments")
+        embed.set_footer(text="SIMULATED — Add LEMONSQUEEZY_API_KEY to .env for real payments")
 
         view = SimulatedCheckoutView(ctx, tier, months, txn_id, total, is_renewal)
         await ctx.send(embed=embed, view=view, ephemeral=True)
