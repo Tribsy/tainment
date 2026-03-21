@@ -1,0 +1,36 @@
+# Environment / secrets
+.env
+
+# Database (contains user data)
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+*.log
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+
+# VS Code / Cursor
+.vscode/
+.cursor/
+
+# MCP
+mcp/
+mcp-start.log
+start-discord-mcp.bat
+
+# One-time setup/maintenance scripts (not needed for deployment)
+setup_output.txt
+
+# Build artifacts
+target/
+docs/
+
+# OS
+.DS_Store
+Thumbs.db
