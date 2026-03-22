@@ -27,5 +27,34 @@ sleep 5
 ssh "$PI_USER@$PI_HOST" "sudo systemctl status $SERVICE --no-pager -l"
 
 echo ""
-echo "==> Deploy complete. Tail logs with:"
-echo "    ssh $PI_USER@$PI_HOST 'tail -f $BOT_DIR/tainment_bot.log'"
+echo "==> Setting up Nginx vhost for tainment.trijbsworlds.nl..."
+NGINX_CONF="/etc/nginx/sites-available/tainment.trijbsworlds.nl"
+NGINX_ENABLED="/etc/nginx/sites-enabled/tainment.trijbsworlds.nl"
+ssh "$PI_USER@$PI_HOST" "
+  # Install nginx if not present
+  if ! command -v nginx &>/dev/null; then
+    sudo apt-get install -y nginx
+  fi
+
+  # Copy vhost config
+  sudo cp $BOT_DIR/web/nginx/tainment.trijbsworlds.nl.conf $NGINX_CONF
+
+  # Enable site
+  sudo ln -sf $NGINX_CONF $NGINX_ENABLED
+
+  # Test config
+  sudo nginx -t && sudo systemctl reload nginx && echo 'Nginx reloaded OK'
+
+  # Enable nginx on boot
+  sudo systemctl enable nginx
+"
+
+echo ""
+echo "==> Deploy complete."
+echo ""
+echo "    Bot logs:  ssh $PI_USER@$PI_HOST 'tail -f $BOT_DIR/tainment_bot.log'"
+echo "    Web logs:  ssh $PI_USER@$PI_HOST 'tail -f /var/log/nginx/tainment.trijbsworlds.nl.access.log'"
+echo ""
+echo "    DNS step:  Add a DNS A record (or CNAME) for tainment.trijbsworlds.nl"
+echo "               pointing to your Pi's public IP."
+echo "               (Check public IP: curl ifconfig.me on the Pi)"

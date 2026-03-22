@@ -91,7 +91,59 @@ QUOTES = [
     "An unexamined life is not worth living. — Socrates",
 ]
 
-MEME_SUBREDDITS = ['memes', 'dankmemes', 'ProgrammerHumor', 'me_irl', 'technicallythetruth']
+# ── Meme subreddit collection ─────────────────────────────────────────────────
+# 60+ subreddits organised by vibe. t!meme [category] to filter.
+MEME_CATEGORIES = {
+    'general': [
+        'memes', 'dankmemes', 'me_irl', '2meirl4meirl', 'technicallythetruth',
+        'maybemaybemaybe', 'HolUp', 'facepalm', 'unexpected', 'cursedcomments',
+        'rareinsults', 'clevercomebacks', 'ComedyCemetery', 'shitposting',
+        'Wellthatsucks', 'Whatcouldgowrong', 'funny', 'AdviceAnimals',
+        'mildlyinfuriating', 'tifu', 'NotMyJob', 'quityourbullshit',
+    ],
+    'gaming': [
+        'gamingmemes', 'ProgrammerHumor', 'MinecraftMemes', 'pokemonmemes',
+        'LeagueOfMemes', 'ValorantMemes', 'apexlegends', 'FortNiteBR',
+        'GenshinImpactMemes', 'pcmasterrace', 'skyrim', 'AmongUsMemes',
+        'shittydarksouls', 'Breath_of_the_Wild', 'gaming', 'bindingofisaac',
+        'Competitiveoverwatch', 'Sekiro', 'PS5',
+    ],
+    'wholesome': [
+        'wholesomememes', 'MadeMeSmile', 'HumansBeingBros', 'AnimalsBeingBros',
+        'rarepuppers', 'eyebleach', 'dankchristianmemes', 'aww',
+        'ContagiousLaughter', 'AnimalsBeingDerps', 'Zoomies',
+    ],
+    'anime': [
+        'Animemes', 'anime_irl', 'ShingekiNoKyojin', 'BokuNoHeroAcademia',
+        'dankruto', 'MemePiece', 'goodanimemes', 'weeaboo_irl',
+        'evangelionmemes', 'AnimeIRL', 'Kaguya_sama', 'kimetsu_no_yaiba',
+        'DragonBallSuper', 'BlueLock',
+    ],
+    'pop': [
+        'PrequelMemes', 'SequelMemes', 'marvelmemes', 'theoffice',
+        'brooklynninememes', 'HistoryMemes', 'lotrmemes', 'harrypottermemes',
+        'DunderMifflin', 'SquaredCircle', 'MusicMemes', 'StrangerThings',
+        'betterCallSaul', 'breakingbad', 'gameofthrones',
+    ],
+    'relatable': [
+        'Adulting', 'antiwork', 'teenagers', 'workmemes', 'GenZ',
+        'Showerthoughts', 'unpopularopinion', 'bruh', 'adhdmeme',
+        'college', 'StudentLoans', 'ProgrammerHumor', 'TrueOffMyChest',
+    ],
+}
+
+# Flat list of all subreddits for random picks
+_ALL_SUBREDDITS = [s for subs in MEME_CATEGORIES.values() for s in subs]
+
+# Aliases so users can type 'game', 'weeb', 'cute', etc.
+CATEGORY_ALIASES = {
+    'game': 'gaming', 'games': 'gaming', 'gamer': 'gaming', 'pc': 'gaming', 'video': 'gaming',
+    'cute': 'wholesome', 'sweet': 'wholesome', 'nice': 'wholesome', 'happy': 'wholesome',
+    'weeb': 'anime', 'weeaboo': 'anime', 'manga': 'anime', 'otaku': 'anime',
+    'film': 'pop', 'movie': 'pop', 'movies': 'pop', 'culture': 'pop', 'tv': 'pop', 'show': 'pop',
+    'life': 'relatable', 'work': 'relatable', 'school': 'relatable', 'real': 'relatable', 'irl': 'relatable',
+    'random': 'general', 'dank': 'general', 'funny': 'general', 'lol': 'general',
+}
 
 
 class Fun(commands.Cog, name="Fun"):
@@ -154,30 +206,58 @@ class Fun(commands.Cog, name="Fun"):
         )
         await ctx.send(embed=embed)
 
-    @commands.command(name='meme', description='Get a random meme from Reddit')
+    @commands.command(name='meme', description='Get a random meme — optional category: general, gaming, wholesome, anime, pop, relatable')
     @commands.cooldown(1, 5, commands.BucketType.channel)
-    async def meme(self, ctx: commands.Context):
-        subreddit = random.choice(MEME_SUBREDDITS)
-        url = f"https://meme-api.com/gimme/{subreddit}"
-        try:
-            import aiohttp
-            async with aiohttp.ClientSession() as session:
-                async with session.get(url, timeout=aiohttp.ClientTimeout(total=5)) as resp:
-                    if resp.status != 200:
-                        raise Exception("API error")
-                    data = await resp.json()
-            if data.get('nsfw', False):
-                await ctx.invoke(self.meme)
+    async def meme(self, ctx: commands.Context, category: str = None):
+        # Resolve category / alias
+        pool = _ALL_SUBREDDITS
+        resolved = None
+        if category:
+            key = category.lower()
+            key = CATEGORY_ALIASES.get(key, key)
+            if key in MEME_CATEGORIES:
+                pool = MEME_CATEGORIES[key]
+                resolved = key
+            else:
+                valid = ', '.join(f'`{k}`' for k in MEME_CATEGORIES)
+                await ctx.send(embed=discord.Embed(
+                    description=f"Unknown category **{category}**. Valid: {valid}\nYou can also use shortcuts like `game`, `weeb`, `cute`.",
+                    color=config.COLORS['error'],
+                ))
                 return
-            embed = discord.Embed(title=data['title'], url=data['postLink'], color=config.COLORS['primary'])
-            embed.set_image(url=data['url'])
-            embed.set_footer(text=f"r/{data['subreddit']} | {data.get('ups', 0):,} upvotes")
-            await ctx.send(embed=embed)
-        except Exception:
-            await ctx.send(embed=discord.Embed(
-                description="Couldn't fetch a meme right now. Try again!",
-                color=config.COLORS['error'],
-            ))
+
+        import aiohttp
+        # Try up to 3 times to get a non-NSFW image post
+        for attempt in range(3):
+            subreddit = random.choice(pool)
+            url = f"https://meme-api.com/gimme/{subreddit}"
+            try:
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(url, timeout=aiohttp.ClientTimeout(total=6)) as resp:
+                        if resp.status != 200:
+                            continue
+                        data = await resp.json()
+                if data.get('nsfw', False):
+                    continue
+                # Skip non-image posts (videos, text)
+                img_url = data.get('url', '')
+                if not any(img_url.lower().endswith(ext) for ext in ('.jpg', '.jpeg', '.png', '.gif', '.webp')):
+                    continue
+                label = f"r/{data['subreddit']}"
+                if resolved:
+                    label += f" [{resolved}]"
+                embed = discord.Embed(title=data['title'], url=data['postLink'], color=config.COLORS['primary'])
+                embed.set_image(url=img_url)
+                embed.set_footer(text=f"{label} | {data.get('ups', 0):,} upvotes")
+                await ctx.send(embed=embed)
+                return
+            except Exception:
+                continue
+
+        await ctx.send(embed=discord.Embed(
+            description="Couldn't fetch a meme right now. Try again!",
+            color=config.COLORS['error'],
+        ))
 
     @commands.command(name='quote', description='Get an inspirational quote')
     async def quote(self, ctx: commands.Context):
