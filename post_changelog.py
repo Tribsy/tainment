@@ -143,6 +143,21 @@ class ChangelogClient(discord.Client):
                     '\U0001f464 **Profile card upgraded** \u2014 Now shows gems, tokens, fishing level, and equipped cosmetics (banner color, avatar frame, Prestige badge).',
                 ],
             ),
+            (
+                'v2.4.0 \u2014 March 2026',
+                0x00e5ff,
+                [
+                    '\U0001f3b5 **Music discovery system** \u2014 `t!recommend`, `t!hotsongs`, `t!genresearch` (Vibe+), `t!moodsearch` (Vibe+), `t!artistinfo` (Premium+), `t!toptracks` (Premium+), `t!newreleases` (Pro).',
+                    '\U0001f3b6 **Music trivia games** \u2014 `t!musictrivia` (button voting, all tiers), `t!lyricsguess` (Vibe+), `t!namethetune` channel race (Vibe+). Win coins, gems, and tokens.',
+                    '\U0001f464 **Music profiles** \u2014 `t!musicprofile`, `t!setgenre`, `t!setartist`. Track your favourite genre, artists, listening streak, and lifetime music earnings.',
+                    '\U0001f4e4 **Track sharing + hot chart** \u2014 `t!sharetrack <song> - <artist>` earns daily coins and feeds the server\u2019s `t!hotsongs` weekly chart.',
+                    '\U0001f3b5 **Music Wrapped** \u2014 `t!musicwrapped` gives you a monthly summary of your top genre, shared tracks, activity count, and earnings (Vibe+).',
+                    '\U0001f4dc **Playlists** \u2014 `t!playlist create/add/view/list/delete` \u2014 save and manage personal song playlists. Vibe+ gets 3 slots, Premium 5, Pro unlimited.',
+                    '\U0001f916 **AutoMod system** \u2014 `t!automod enable` to activate. Spam filter, link filter (with domain allowlist), caps %, mass mention limit, and banned word list.',
+                    '\u2699\ufe0f **AutoMod actions** \u2014 Choose `warn` (default), `timeout` (5 min), or `kick` per violation. All actions logged to your configured `t!automod log #channel`.',
+                    '\U0001f6d2 **12 new shop items** \u2014 Music Hint, Trivia Skip, Hot Boost, Bingo Doubler (coins); Music Fanatic Badge, Streak Amp, Genre Pass, Wrapped Token (gems); DJ Crown, Playlist Slot, Queue Priority, Trivia Surge (tokens).',
+                ],
+            ),
         ]
 
         if NEW_ONLY:
