@@ -269,34 +269,49 @@ class MaintenanceClient(discord.Client):
             faqs = [
                 ('How do I get started?',
                  'Use `t!daily` to claim your first coins, then `t!work` for more. '
-                 'Type `t!help` or `/help` for the full command list, or pick a category from the dropdown.'),
+                 'Type `t!help` for the full command list with categories.\n\n'
+                 'Quick start: `t!daily` → `t!fish` → `t!shop` → `t!upgrade <tier>`'),
 
                 ('What are the three currencies?',
-                 '\U0001fa99 **Coins** \u2014 Earned from daily rewards, work, gambling. Spent in the coin shop.\n'
-                 '\U0001f48e **Gems** \u2014 Earned by winning games and selling rare fish. Spent in the gem shop.\n'
-                 '\U0001f3ab **Tokens** \u2014 Earned from duels, snap, scramble, daily streaks. Spent in the token shop.'),
+                 '\U0001fa99 **Coins** \u2014 Earned from daily rewards, work, fishing, gambling. Spent in `t!shop coins`.\n'
+                 '\U0001f48e **Gems** \u2014 Earned by winning games and selling rare fish. Spent in `t!shop gems`.\n'
+                 '\U0001f3ab **Tokens** \u2014 Earned from duels, snap, scramble, daily streaks. Spent in `t!shop tokens`.'),
 
                 ('How does fishing work?',
-                 'Use `t!fish` every 15 seconds to catch fish. Fish collect in your bag \u2014 use `t!sell all` to cash them in.\n'
-                 'Buy fishing rods from `t!shop coins` (Silver 1500\U0001fa99 / Gold 5000\U0001fa99) or `t!shop gems` (Diamond 20\U0001f48e) '
-                 'to catch rarer fish. Check `t!fishstats` and `t!fishtop` to compete on the leaderboard.'),
+                 'Use `t!fish` to cast your line. Cooldown depends on your rod (15s basic → 3s Void rod).\n'
+                 'Fish collect in your bag — use `t!sell all` to cash them in for coins, gems, and tokens.\n\n'
+                 '**Rods:** `t!rods` to see all 11. Buy with `t!buy rod_silver` etc.\n'
+                 '**Equip a specific rod:** `t!equip <rod_key>` — e.g. `t!equip rod_gold`\n'
+                 '**Check stats:** `t!fishstats` | **Leaderboard:** `t!fishtop`'),
 
                 ('What are the subscription tiers?',
                  '**Basic** (Free) \u2014 Economy, fishing, basic games, 150 daily coins.\n'
-                 '**Vibe** ($1.99/mo) \u2014 All joke & story categories, trivia, 200 daily coins, 1.2x XP.\n'
+                 '**Vibe** ($1.99/mo) \u2014 All joke & story categories, music discovery, trivia, 200 daily coins, 1.2x XP.\n'
                  '**Premium** ($4.99/mo) \u2014 Hangman, Wordle, all mini-games, 350 daily coins, 1.5x XP.\n'
-                 '**Pro** ($7.99/mo) \u2014 Blackjack, exclusive content, priority support, 3x XP, 500 daily coins.\n'
-                 'Upgrade with `t!upgrade <tier>`.'),
+                 '**Pro** ($7.99/mo) \u2014 Blackjack, exclusive content, priority support, 3x XP, 500 daily coins.\n\n'
+                 'Upgrade with `t!upgrade <tier>` | View perks with `t!tiers`'),
 
                 ('How do I level up and earn roles?',
-                 'Earn XP by chatting (60-second cooldown per message). Tier multipliers stack.\n'
+                 'Earn XP by chatting (60-second cooldown per message). Tier XP multipliers stack.\n'
                  'Milestone roles are auto-assigned:\n'
                  '\U0001f331 Newcomer (Lvl 5) \u2192 \U0001f3a7 Groover (10) \u2192 \U0001f4bf Fanatic (20) \u2192 \U0001f3b8 Headliner (30) \u2192 \u26a1 Icon (50)\n'
+                 '\U0001f31f Superstar (75) \u2192 \U0001f3c6 Legend (100) \u2192 \U0001f30c Cosmic (150)\n\n'
                  'Check your level with `t!level`.'),
 
                 ('How do I pick my genre lane?',
-                 'Head to **#\U0001f3a4\u2503pick-your-lane** and react with the emoji for your preferred genre(s). '
-                 'Unreact to remove. Roles are purely cosmetic interest tags.'),
+                 'Head to **#\U0001f3a4\u2503pick-your-lane** and react with the emoji for your genre(s). You can pick multiple!\n\n'
+                 '\U0001f3a4 Pop  \u2022  \U0001f3b6 Hip-Hop  \u2022  \U0001f3b8 Rock  \u2022  \U0001f50a Electronic\n'
+                 '\U0001f3b7 R\u0026B & Soul  \u2022  \U0001f3b9 Jazz  \u2022  \U0001f908 Country  \u2022  \U0001f483 Latin\n'
+                 '\U0001f333 Indie  \u2022  \U0001f305 Lo-Fi\n\n'
+                 'Unreact to remove a role. Roles are purely cosmetic interest tags.'),
+
+                ('How does music discovery work?',
+                 '`t!recommend` \u2014 3 random song picks (all tiers)\n'
+                 '`t!genresearch <genre>` \u2014 5 picks for a specific genre — 16 genres available (Vibe+)\n'
+                 '`t!moodsearch <mood>` \u2014 songs for hype / chill / sad / focus / party / workout (Vibe+)\n'
+                 '`t!sharetrack <song> - <artist>` \u2014 share a track every 6 hours for coins\n'
+                 '`t!hotsongs` \u2014 top 5 most shared tracks this week\n'
+                 '`t!musictrivia` \u2014 4-option music quiz, earns coins & gems'),
 
                 ('How do I report a bug or request a feature?',
                  f'Use the forms in the support channels:\n'

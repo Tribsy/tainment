@@ -627,6 +627,55 @@ class ServerSettings(commands.Cog, name="ServerSettings"):
             color=config.COLORS['success'],
         ))
 
+    @commands.command(name='botsetup', description='View bot configuration status for this server')
+    @commands.guild_only()
+    @commands.has_permissions(manage_guild=True)
+    async def botsetup(self, ctx: commands.Context):
+        import database as db
+        settings = await get_server_settings(ctx.guild.id)
+        guild = ctx.guild
+
+        def ch(channel_id):
+            if not channel_id:
+                return None
+            return guild.get_channel(channel_id)
+
+        def status(channel_id, label, cmd):
+            c = ch(channel_id)
+            if c:
+                return f"✅ **{label}** → {c.mention}"
+            return f"❌ **{label}** — not set → `{cmd}`"
+
+        # Check reaction role panel
+        stored = await db.get_bot_message(guild.id, 'genre_roles')
+        genre_panel = "✅ **Genre lane panel** → active" if stored else "❌ **Genre lane panel** — not set up → `t!setupgenreroles`"
+
+        # Check server tier
+        tier = settings['server_tier'] if settings else 'Free'
+        tier_line = f"🏷️ **Server tier:** `{tier}` — upgrade with `t!serversubscribe`" if tier == 'Free' else f"✅ **Server tier:** `{tier}`"
+
+        lines = [
+            "**Channel Setup**",
+            status(settings['birthday_channel'] if settings else None, "Birthday announcements", "t!setbirthdaychannel #channel"),
+            status(settings['levelup_channel'] if settings else None, "Level-up announcements", "t!setlevelupchannel #channel"),
+            status(settings['log_channel'] if settings else None, "Mod log", "t!setmodlog #channel"),
+            status(settings['leaderboard_channel'] if settings else None, "Live leaderboard", "t!setleaderboard #channel"),
+            "",
+            "**Features**",
+            genre_panel,
+            "",
+            "**Subscription**",
+            tier_line,
+        ]
+
+        embed = discord.Embed(
+            title="⚙️ Bot Setup Status",
+            description="\n".join(lines),
+            color=config.COLORS['primary'],
+        )
+        embed.set_footer(text="Run each command above to complete setup | t!help for all commands")
+        await ctx.send(embed=embed)
+
 
 # ── Level role auto-creation ──────────────────────────────────────────────────
 

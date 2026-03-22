@@ -158,6 +158,24 @@ class ChangelogClient(discord.Client):
                     '\U0001f6d2 **12 new shop items** \u2014 Music Hint, Trivia Skip, Hot Boost, Bingo Doubler (coins); Music Fanatic Badge, Streak Amp, Genre Pass, Wrapped Token (gems); DJ Crown, Playlist Slot, Queue Priority, Trivia Surge (tokens).',
                 ],
             ),
+            (
+                'v2.5.0 \u2014 March 2026',
+                0xe040fb,
+                [
+                    '\U0001f3a3 **Rod equip system** \u2014 `t!equip <rod_key>` to manually choose which rod to fish with. `t!unequip` to go back to auto-best. `t!rods` now shows each rod\'s key.',
+                    '\U0001f3b5 **16 genres in `t!genresearch`** \u2014 Added indie, soul, reggae, classical, metal, folk, K-Pop, and lo-fi \u2014 each with 12 curated picks.',
+                    '\U0001f3a4 **10 genre lanes in pick-your-lane** \u2014 Added R\u0026B & Soul, Jazz, Country, Latin, Indie, and Lo-Fi reaction role lanes. Run `t!setupgenreroles` to refresh.',
+                    '\U0001f4ca **Dedicated leaderboard channel** \u2014 `t!setleaderboard #channel` pins a live auto-updating leaderboard. `t!clearleaderboard` to remove.',
+                    '\u2699\ufe0f **`t!botsetup` command** \u2014 Admins can run `t!botsetup` to see a full checklist of what channels are configured and what still needs setting up.',
+                    '\U0001f6d2 **Shop item fixes** \u2014 Gamble Shield is now 24-hour time-based (not permanent). Trivia Skip, Bingo Doubler, and Lucky Gamble now correctly labelled as 1-time use.',
+                    '\U0001f512 **Free moderation tools** \u2014 `t!purge` (up to 10 msgs), `t!slowmode`, `t!lock`, `t!unlock`, and `t!nick` are now available on all servers without a server plan.',
+                    '\U0001f4b8 **Server plan prices reduced** \u2014 Basic $14.99 \u2192 $7.99/mo. Pro $23.99 \u2192 $14.99/mo.',
+                    '\u23f1\ufe0f **`t!sharetrack` cooldown** \u2014 Reduced from 24 hours to 6 hours.',
+                    '\U0001f3a8 **`t!color` updated** \u2014 Calling with no arguments now shows a random generated color. Pass a hex code to preview a specific one.',
+                    '\U0001f916 **AutoMod double-message bug fixed** \u2014 AutoMod config commands no longer send both a "Server Plan Required" message and execute the command.',
+                    '\U0001f3c6 **XP milestone roles fixed** \u2014 Roles are now auto-created and assigned on bot startup for all existing guilds, not just newly joined ones.',
+                ],
+            ),
         ]
 
         if NEW_ONLY:

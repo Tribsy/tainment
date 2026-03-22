@@ -8,6 +8,10 @@ logger = logging.getLogger('tainment.db')
 async def init_db():
     async with aiosqlite.connect(config.DB_PATH) as db:
         await db.execute("PRAGMA foreign_keys = ON")
+        await db.execute("PRAGMA journal_mode = WAL")       # concurrent reads + faster writes
+        await db.execute("PRAGMA synchronous = NORMAL")     # safe but faster than FULL
+        await db.execute("PRAGMA cache_size = -8000")       # 8 MB page cache
+        await db.execute("PRAGMA temp_store = MEMORY")      # temp tables in RAM
 
         # Users
         await db.execute("""
