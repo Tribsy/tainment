@@ -16,9 +16,24 @@ TIER_COLORS = {
 
 TIER_BADGES = {
     'Basic': '',
-    'Vibe': ' [VIBE]',
-    'Premium': ' [PREMIUM]',
-    'Pro': ' [PRO]',
+    'Vibe': ' \U0001f525 Vibe',
+    'Premium': ' \u2b50 Premium',
+    'Pro': ' \u26a1 Pro',
+}
+
+# Banner item -> embed color
+BANNER_COLORS = {
+    'profile_banner_blue':   0x1a6fa3,
+    'profile_banner_red':    0xc0392b,
+    'profile_banner_gold':   0xf1c40f,
+    'profile_banner_purple': 0x9b59b6,
+    'profile_banner_void':   0x1a1a2e,
+}
+
+# Frame item -> label shown on profile
+FRAME_LABELS = {
+    'profile_frame_gold':   '\u2b50 Gold Frame',
+    'profile_frame_cosmic': '\U0001f30c Cosmic Frame',
 }
 
 
@@ -75,15 +90,31 @@ class Profile(commands.Cog, name="Profile"):
         total_score = game_row['total'] if game_row and game_row['total'] else 0
         has_vip = 'vip_badge' in active_items
 
-        color = TIER_COLORS.get(tier, config.COLORS['primary'])
+        # Profile customization from inventory
+        banner_color = TIER_COLORS.get(tier, config.COLORS['primary'])
+        for banner_key, banner_clr in BANNER_COLORS.items():
+            if banner_key in active_items:
+                banner_color = banner_clr
+                break
+
+        frame_label = ''
+        for frame_key, flabel in FRAME_LABELS.items():
+            if frame_key in active_items:
+                frame_label = f' {flabel}'
+                break
+
+        has_prestige = 'prestige_badge' in active_items
         badge = TIER_BADGES.get(tier, '')
-        vip_badge = ' [VIP]' if has_vip else ''
+        vip_badge = ' \U0001f451 VIP' if has_vip else ''
+        prestige_badge = ' \u2728 Prestige' if has_prestige else ''
 
         embed = discord.Embed(
-            title=f"{target.display_name}{badge}{vip_badge}",
-            color=color,
+            title=f"{target.display_name}{badge}{vip_badge}{prestige_badge}",
+            color=banner_color,
         )
         embed.set_thumbnail(url=target.display_avatar.url)
+        if frame_label:
+            embed.description = f"*{frame_label}*"
 
         # Level progress bar
         if ctx.guild and level_data:
@@ -98,22 +129,42 @@ class Profile(commands.Cog, name="Profile"):
 
         embed.add_field(name="Level", value=level_str, inline=False)
 
-        embed.add_field(name="Coins", value=f"`{coins:,}`", inline=True)
-        embed.add_field(name="Total Earned", value=f"`{total_earned:,}`", inline=True)
+        # Economy
+        gems = eco['gems'] if eco else 0
+        tokens = eco['tokens'] if eco else 0
+        embed.add_field(name="\U0001fa99 Coins", value=f"`{coins:,}`", inline=True)
+        embed.add_field(name="\U0001f48e Gems", value=f"`{gems:,}`", inline=True)
+        embed.add_field(name="\U0001f3ab Tokens", value=f"`{tokens:,}`", inline=True)
         embed.add_field(name="Daily Streak", value=f"`{streak}` days", inline=True)
-
         embed.add_field(name="Tier", value=f"**{tier}**", inline=True)
+        embed.add_field(name="Total Earned", value=f"`{total_earned:,}` \U0001fa99", inline=True)
+
         embed.add_field(name="Games Played", value=f"`{games_played}`", inline=True)
         embed.add_field(name="Total Score", value=f"`{total_score:,}`", inline=True)
 
+        # Fishing stats
+        async with aiosqlite.connect(config.DB_PATH) as db_conn:
+            async with db_conn.execute(
+                "SELECT fishing_level, total_caught, total_value FROM fishing_stats WHERE user_id=?",
+                (target.id,)
+            ) as cur:
+                fish_row = await cur.fetchone()
+        if fish_row and fish_row[1] > 0:
+            embed.add_field(
+                name="\U0001f3a3 Fishing",
+                value=f"Level `{fish_row[0]}` | `{fish_row[1]:,}` caught | `{fish_row[2]:,}` \U0001fa99 earned",
+                inline=False,
+            )
+
         if active_items:
+            from shop import SHOP
             item_names = []
             for key in active_items:
-                item_data = config.SHOP_ITEMS.get(key)
+                item_data = SHOP.get(key) or config.SHOP_ITEMS.get(key)
                 if item_data:
                     item_names.append(item_data['name'])
             if item_names:
-                embed.add_field(name="Active Items", value=', '.join(item_names), inline=False)
+                embed.add_field(name="Active Items", value=', '.join(item_names[:8]), inline=False)
 
         # Member since
         if hasattr(target, 'joined_at') and target.joined_at:

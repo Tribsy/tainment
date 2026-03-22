@@ -147,11 +147,16 @@ SHOP_ITEMS = {
 
 # -- Level milestone roles (PopFusion music theme) --
 LEVEL_ROLES = {
-    5:  ('\U0001f331 Newcomer',   0x95a5a6),   # gray
-    10: ('\U0001f3a7 Groover',    0x2ecc71),   # green
-    20: ('\U0001f4bf Fanatic',    0x3498db),   # blue
-    30: ('\U0001f3b8 Headliner',  0xe74c3c),   # red
-    50: ('\u26a1 Icon',           0xf39c12),   # gold
+    5:   ('\U0001f331 Newcomer',    0x95a5a6),   # gray
+    10:  ('\U0001f3a7 Groover',     0x2ecc71),   # green
+    20:  ('\U0001f4bf Fanatic',     0x3498db),   # blue
+    30:  ('\U0001f3b8 Headliner',   0xe74c3c),   # red
+    50:  ('\u26a1 Icon',            0xf39c12),   # gold
+    75:  ('\U0001f3c6 Superstar',   0xe040fb),   # magenta
+    100: ('\U0001f451 Legend',      0x9b59b6),   # purple
+    150: ('\U0001f30c Cosmic',      0x00e5ff),   # cyan
+    200: ('\U0001f31f Immortal',    0xffd700),   # bright gold
+    300: ('\u2b1b Void Walker',     0x1a0a2e),   # void
 }
 
 # -- Genre lane roles (self-assignable interest tags) --

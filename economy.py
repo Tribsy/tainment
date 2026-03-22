@@ -263,6 +263,139 @@ class Economy(commands.Cog, name="Economy"):
         embed.set_footer(text="Tainment+ Economy")
         await ctx.send(embed=embed)
 
+    # ── Admin Commands ─────────────────────────────────────────────────────────
+
+    @commands.hybrid_command(name='setbalance', aliases=['setbal'], description='[Admin] Set a user\'s currency balance')
+    @commands.has_permissions(manage_guild=True)
+    async def setbalance(self, ctx: commands.Context, target: discord.Member, amount: int, currency: str = 'coins'):
+        currency = currency.lower()
+        if currency not in ('coins', 'gems', 'tokens'):
+            await ctx.send(embed=eco_embed("Invalid currency", "Use `coins`, `gems`, or `tokens`.", config.COLORS['error']), ephemeral=True)
+            return
+        if amount < 0:
+            await ctx.send(embed=eco_embed("Invalid", "Amount cannot be negative.", config.COLORS['error']), ephemeral=True)
+            return
+
+        await db.ensure_user(target.id, target.name)
+        import aiosqlite
+        async with aiosqlite.connect(config.DB_PATH) as conn:
+            await conn.execute(
+                f"UPDATE economy SET {currency} = ? WHERE user_id = ?",
+                (amount, target.id)
+            )
+            await conn.commit()
+
+        symbol = {'coins': '🪙', 'gems': '💎', 'tokens': '🎫'}[currency]
+        await ctx.send(embed=eco_embed(
+            "Balance Set",
+            f"Set {target.mention}'s {currency} to **{amount:,}** {symbol}.",
+            config.COLORS['success'],
+        ))
+
+    @commands.hybrid_command(name='addbalance', aliases=['addbal', 'addcoins'], description='[Admin] Add currency to a user')
+    @commands.has_permissions(manage_guild=True)
+    async def addbalance(self, ctx: commands.Context, target: discord.Member, amount: int, currency: str = 'coins'):
+        currency = currency.lower()
+        if currency not in ('coins', 'gems', 'tokens'):
+            await ctx.send(embed=eco_embed("Invalid currency", "Use `coins`, `gems`, or `tokens`.", config.COLORS['error']), ephemeral=True)
+            return
+        if amount == 0:
+            await ctx.send(embed=eco_embed("Invalid", "Amount cannot be 0.", config.COLORS['error']), ephemeral=True)
+            return
+
+        await db.ensure_user(target.id, target.name)
+        if amount > 0:
+            await db.earn_currency(target.id, currency, amount)
+        else:
+            await db.spend_currency(target.id, currency, abs(amount))
+
+        symbol = {'coins': '🪙', 'gems': '💎', 'tokens': '🎫'}[currency]
+        action = "Added" if amount > 0 else "Removed"
+        await ctx.send(embed=eco_embed(
+            f"Balance {action}",
+            f"{action} **{abs(amount):,}** {symbol} {'to' if amount > 0 else 'from'} {target.mention}.",
+            config.COLORS['success'],
+        ))
+
+    @commands.hybrid_command(name='removebalance', aliases=['removebal', 'deduct'], description='[Admin] Remove currency from a user')
+    @commands.has_permissions(manage_guild=True)
+    async def removebalance(self, ctx: commands.Context, target: discord.Member, amount: int, currency: str = 'coins'):
+        currency = currency.lower()
+        if currency not in ('coins', 'gems', 'tokens'):
+            await ctx.send(embed=eco_embed("Invalid currency", "Use `coins`, `gems`, or `tokens`.", config.COLORS['error']), ephemeral=True)
+            return
+        if amount <= 0:
+            await ctx.send(embed=eco_embed("Invalid", "Amount must be positive.", config.COLORS['error']), ephemeral=True)
+            return
+
+        await db.ensure_user(target.id, target.name)
+        await db.spend_currency(target.id, currency, amount)
+
+        symbol = {'coins': '🪙', 'gems': '💎', 'tokens': '🎫'}[currency]
+        await ctx.send(embed=eco_embed(
+            "Balance Removed",
+            f"Removed **{amount:,}** {symbol} from {target.mention}.",
+            config.COLORS['warning'],
+        ))
+
+    @commands.hybrid_command(name='reseteconomy', aliases=['reseteco'], description='[Admin] Reset a user\'s economy data')
+    @commands.has_permissions(administrator=True)
+    async def reseteconomy(self, ctx: commands.Context, target: discord.Member):
+        await db.ensure_user(target.id, target.name)
+
+        class ConfirmView(discord.ui.View):
+            def __init__(self):
+                super().__init__(timeout=30)
+                self.confirmed = False
+
+            @discord.ui.button(label='Confirm Reset', style=discord.ButtonStyle.danger)
+            async def confirm_btn(self, interaction: discord.Interaction, button: discord.ui.Button):
+                if interaction.user.id != ctx.author.id:
+                    await interaction.response.send_message("Not your button.", ephemeral=True)
+                    return
+                self.confirmed = True
+                for child in self.children:
+                    child.disabled = True
+                self.stop()
+                await interaction.response.edit_message(view=self)
+
+            @discord.ui.button(label='Cancel', style=discord.ButtonStyle.secondary)
+            async def cancel_btn(self, interaction: discord.Interaction, button: discord.ui.Button):
+                if interaction.user.id != ctx.author.id:
+                    await interaction.response.send_message("Not your button.", ephemeral=True)
+                    return
+                for child in self.children:
+                    child.disabled = True
+                self.stop()
+                await interaction.response.edit_message(view=self)
+
+        view = ConfirmView()
+        msg = await ctx.send(
+            embed=eco_embed(
+                "Confirm Reset",
+                f"Reset **{target.mention}**'s economy? This will set coins/gems/tokens to 0 and clear streak.",
+                config.COLORS['warning'],
+            ),
+            view=view,
+        )
+        await view.wait()
+
+        if view.confirmed:
+            import aiosqlite
+            async with aiosqlite.connect(config.DB_PATH) as conn:
+                await conn.execute(
+                    "UPDATE economy SET coins=0, gems=0, tokens=0, total_earned=0, daily_streak=0, last_daily=NULL, last_work=NULL, last_rob=NULL WHERE user_id=?",
+                    (target.id,)
+                )
+                await conn.commit()
+            await msg.edit(embed=eco_embed(
+                "Economy Reset",
+                f"{target.mention}'s economy has been reset.",
+                config.COLORS['success'],
+            ), view=view)
+        else:
+            await msg.edit(embed=eco_embed("Cancelled", "No changes made.", config.COLORS['warning']), view=view)
+
     # -- Richest --
 
     @commands.hybrid_command(name='richest', description='Server coin leaderboard')

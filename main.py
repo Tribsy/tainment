@@ -43,6 +43,8 @@ EXTENSIONS = [
     'reaction_roles',
     'fun_games',
     'moderation',
+    'server_settings',
+    'birthday',
 ]
 
 
@@ -90,6 +92,11 @@ class TainmentBot(commands.Bot):
                 logger.warning(f"Could not assign Member role to {member}: {e}")
 
     async def on_guild_join(self, guild: discord.Guild):
+        # Ensure server settings row and level roles exist
+        from server_settings import ensure_server, _create_level_roles
+        await ensure_server(guild.id)
+        await _create_level_roles(guild)
+
         for channel in guild.text_channels:
             if channel.permissions_for(guild.me).send_messages:
                 embed = discord.Embed(
@@ -180,9 +187,24 @@ HELP_CATEGORIES = {
             ('richest', 'Server wealth leaderboard'),
             ('shop [coins|gems|tokens]', 'Browse the 3-section shop'),
             ('buy <item>', 'Purchase a shop item'),
-            ('balance', 'Check coins / gems / tokens'),
             ('inventory', 'View active items'),
             ('transfer @user <amount> [currency]', 'Send currency to someone'),
+            ('setbalance @user <amount> [currency]', '[Admin] Set user balance'),
+            ('addbalance @user <amount> [currency]', '[Admin] Add/remove balance'),
+            ('removebalance @user <amount> [currency]', '[Admin] Remove balance'),
+            ('reseteconomy @user', '[Admin] Reset user economy'),
+        ],
+    },
+    'fishing': {
+        'title': 'Fishing',
+        'commands': [
+            ('fish', 'Cast your line and catch a fish'),
+            ('fishbag [@user]', 'View your fish bag by tier'),
+            ('sell [fish|all]', 'Sell fish for coins/gems/tokens'),
+            ('fishstats [@user]', 'Your fishing level and stats'),
+            ('fishtop', 'Fishing leaderboard'),
+            ('rods', 'View all 11 rods and their tier requirements'),
+            ('buy rod_silver', 'Buy a rod from the shop'),
         ],
     },
     'levels': {
@@ -258,6 +280,30 @@ HELP_CATEGORIES = {
             ('serverinfo', 'Server statistics'),
             ('userinfo [@user]', 'User information'),
             ('avatar [@user]', "View a user's avatar"),
+        ],
+    },
+    'utility': {
+        'title': 'Utility',
+        'commands': [
+            ('prefix [new]', 'View or set the server prefix'),
+            ('afk [status]', 'Set your AFK status'),
+            ('addemote <name> <url>', 'Add an emoji to the server'),
+            ('randomcolor', 'Generate a random color with preview'),
+            ('membercount', 'Server member count breakdown'),
+            ('togglecmd <cmd> [#channel]', 'Enable/disable a command (admin)'),
+            ('cmdlist', 'Show command toggle settings'),
+            ('servertier', 'View server subscription tier'),
+            ('setbirthdaychannel #channel', 'Set birthday announcement channel'),
+            ('setlevelupchannel #channel', 'Set level-up announcement channel'),
+        ],
+    },
+    'birthday': {
+        'title': 'Birthday',
+        'commands': [
+            ('birthday set MM/DD', 'Set your birthday'),
+            ('birthday view [@user]', "View someone's birthday"),
+            ('birthday list', 'All birthdays in this server'),
+            ('birthday del', 'Remove your birthday'),
         ],
     },
     'info': {
