@@ -236,7 +236,7 @@ class ServerSettings(commands.Cog, name="ServerSettings"):
 
     # ── Prefix ────────────────────────────────────────────────────────────────
 
-    @commands.hybrid_command(name='prefix', description='View or set the server command prefix')
+    @commands.command(name='prefix', description='View or set the server command prefix')
     @commands.guild_only()
     async def prefix_cmd(self, ctx: commands.Context, new_prefix: str = None):
         if new_prefix is None:
@@ -273,7 +273,7 @@ class ServerSettings(commands.Cog, name="ServerSettings"):
 
     # ── Toggle command ─────────────────────────────────────────────────────────
 
-    @commands.hybrid_command(name='togglecmd', description='Enable or disable a command in this server/channel')
+    @commands.command(name='togglecmd', description='Enable or disable a command in this server/channel')
     @commands.guild_only()
     @commands.has_permissions(manage_guild=True)
     async def togglecmd(
@@ -309,7 +309,7 @@ class ServerSettings(commands.Cog, name="ServerSettings"):
         )
         await ctx.send(embed=embed)
 
-    @commands.hybrid_command(name='cmdlist', description='Show which commands are toggled in this server')
+    @commands.command(name='cmdlist', description='Show which commands are toggled in this server')
     @commands.guild_only()
     async def cmdlist(self, ctx: commands.Context):
         async with aiosqlite.connect(config.DB_PATH) as db:
@@ -342,7 +342,7 @@ class ServerSettings(commands.Cog, name="ServerSettings"):
 
     # ── AFK ───────────────────────────────────────────────────────────────────
 
-    @commands.hybrid_command(name='afk', description='Set your AFK status')
+    @commands.command(name='afk', description='Set your AFK status')
     @commands.guild_only()
     async def afk(self, ctx: commands.Context, *, status: str = None):
         status = status or "AFK"
@@ -357,7 +357,7 @@ class ServerSettings(commands.Cog, name="ServerSettings"):
 
     # ── Add emote ─────────────────────────────────────────────────────────────
 
-    @commands.hybrid_command(name='addemote', description='Add a custom emoji to the server')
+    @commands.command(name='addemote', description='Add a custom emoji to the server')
     @commands.guild_only()
     @commands.has_permissions(manage_emojis=True)
     @commands.bot_has_permissions(manage_emojis=True)
@@ -424,7 +424,7 @@ class ServerSettings(commands.Cog, name="ServerSettings"):
 
     # ── Random Color ──────────────────────────────────────────────────────────
 
-    @commands.hybrid_command(name='randomcolor', description='Generate a random color with preview')
+    @commands.command(name='randomcolor', description='Generate a random color with preview')
     async def randomcolor(self, ctx: commands.Context):
         r = random.randint(0, 255)
         g = random.randint(0, 255)
@@ -444,7 +444,7 @@ class ServerSettings(commands.Cog, name="ServerSettings"):
 
     # ── Member Count ──────────────────────────────────────────────────────────
 
-    @commands.hybrid_command(name='membercount', description='Get the server member count')
+    @commands.command(name='membercount', description='Get the server member count')
     @commands.guild_only()
     async def membercount(self, ctx: commands.Context):
         guild = ctx.guild
@@ -466,7 +466,7 @@ class ServerSettings(commands.Cog, name="ServerSettings"):
 
     # ── Server subscription info ───────────────────────────────────────────────
 
-    @commands.hybrid_command(name='servertier', description='View the server subscription tier and features')
+    @commands.command(name='servertier', description='View the server subscription tier and features')
     @commands.guild_only()
     async def servertier(self, ctx: commands.Context):
         tier = await get_server_tier(ctx.guild.id)
@@ -521,7 +521,7 @@ class ServerSettings(commands.Cog, name="ServerSettings"):
 
     # ── serversubscribe ───────────────────────────────────────────────────────
 
-    @commands.hybrid_command(name='serversubscribe', aliases=['serversub', 'serverupgrade'], description='View or upgrade the server subscription plan')
+    @commands.command(name='serversubscribe', aliases=['serversub', 'serverupgrade'], description='View or upgrade the server subscription plan')
     @commands.guild_only()
     async def serversubscribe(self, ctx: commands.Context):
         tier = await get_server_tier(ctx.guild.id)
@@ -581,7 +581,7 @@ class ServerSettings(commands.Cog, name="ServerSettings"):
 
     # ── Admin: set server channel settings ────────────────────────────────────
 
-    @commands.hybrid_command(name='setbirthdaychannel', description='Set the channel for birthday announcements')
+    @commands.command(name='setbirthdaychannel', description='Set the channel for birthday announcements')
     @commands.guild_only()
     @commands.has_permissions(manage_guild=True)
     async def set_birthday_channel(self, ctx: commands.Context, channel: discord.TextChannel):
@@ -592,7 +592,7 @@ class ServerSettings(commands.Cog, name="ServerSettings"):
         )
         await ctx.send(embed=embed)
 
-    @commands.hybrid_command(name='setlevelupchannel', description='Set the channel for level-up announcements')
+    @commands.command(name='setlevelupchannel', description='Set the channel for level-up announcements')
     @commands.guild_only()
     @commands.has_permissions(manage_guild=True)
     async def set_levelup_channel(self, ctx: commands.Context, channel: discord.TextChannel):

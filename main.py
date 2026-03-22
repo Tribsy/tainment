@@ -29,7 +29,7 @@ logging.basicConfig(
     format='%(asctime)s | %(levelname)-8s | %(name)s: %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S',
     handlers=[
-        logging.FileHandler('tainment_bot.log', encoding='utf-8'),
+        logging.FileHandler(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tainment_bot.log'), encoding='utf-8'),
         logging.StreamHandler(sys.stdout),
     ],
 )

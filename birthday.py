@@ -237,7 +237,7 @@ class Birthday(commands.Cog, name="Birthday"):
 
     # ── Commands ──────────────────────────────────────────────────────────────
 
-    @commands.hybrid_group(name='birthday', aliases=['bday'], description='Birthday commands', invoke_without_command=True)
+    @commands.group(name='birthday', aliases=['bday'], description='Birthday commands', invoke_without_command=True)
     async def birthday_group(self, ctx: commands.Context):
         embed = discord.Embed(
             title="Birthday Commands",

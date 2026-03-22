@@ -121,8 +121,11 @@ HANGMAN_STAGES = [
 
 
 def tier_check(tier: str, allowed_tiers: list[str]) -> bool:
-    order = ['Basic', 'Premium', 'Pro']
-    return order.index(tier) >= min(order.index(t) for t in allowed_tiers)
+    order = ['Basic', 'Vibe', 'Premium', 'Pro']
+    try:
+        return order.index(tier) >= min(order.index(t) for t in allowed_tiers)
+    except ValueError:
+        return False
 
 
 # -- RPS View --
@@ -220,7 +223,7 @@ class Entertainment(commands.Cog, name="Entertainment"):
 
     # -- Joke --
 
-    @commands.hybrid_command(name='joke', description='Get a joke')
+    @commands.command(name='joke', description='Get a joke')
     @commands.cooldown(1, config.COOLDOWNS['joke'], commands.BucketType.user)
     async def joke(self, ctx: commands.Context, category: str = None):
         await db.ensure_user(ctx.author.id, ctx.author.name)
@@ -256,7 +259,7 @@ class Entertainment(commands.Cog, name="Entertainment"):
 
     # -- Story --
 
-    @commands.hybrid_command(name='story', description='Get a short story')
+    @commands.command(name='story', description='Get a short story')
     @commands.cooldown(1, config.COOLDOWNS['story'], commands.BucketType.user)
     async def story(self, ctx: commands.Context, genre: str = None):
         await db.ensure_user(ctx.author.id, ctx.author.name)
@@ -292,7 +295,7 @@ class Entertainment(commands.Cog, name="Entertainment"):
 
     # -- Rock Paper Scissors --
 
-    @commands.hybrid_command(name='rps', description='Play Rock Paper Scissors')
+    @commands.command(name='rps', description='Play Rock Paper Scissors')
     async def rps(self, ctx: commands.Context):
         await db.ensure_user(ctx.author.id, ctx.author.name)
         embed = discord.Embed(
@@ -305,7 +308,7 @@ class Entertainment(commands.Cog, name="Entertainment"):
 
     # -- Trivia --
 
-    @commands.hybrid_command(name='trivia', description='Play trivia (easy/medium/hard)')
+    @commands.command(name='trivia', description='Play trivia (easy/medium/hard)')
     @commands.cooldown(1, config.COOLDOWNS['trivia'], commands.BucketType.user)
     async def trivia(self, ctx: commands.Context, difficulty: str = 'medium'):
         await db.ensure_user(ctx.author.id, ctx.author.name)
@@ -353,7 +356,7 @@ class Entertainment(commands.Cog, name="Entertainment"):
 
     # -- Number Guess --
 
-    @commands.hybrid_command(name='guess', description='Guess a number between 1 and 100')
+    @commands.command(name='guess', description='Guess a number between 1 and 100')
     @commands.cooldown(1, config.COOLDOWNS['game'], commands.BucketType.user)
     async def guess(self, ctx: commands.Context):
         await db.ensure_user(ctx.author.id, ctx.author.name)
@@ -416,7 +419,7 @@ class Entertainment(commands.Cog, name="Entertainment"):
 
     # -- Hangman --
 
-    @commands.hybrid_command(name='hangman', description='Play Hangman (easy/medium/hard)')
+    @commands.command(name='hangman', description='Play Hangman (easy/medium/hard)')
     @commands.cooldown(1, config.COOLDOWNS['game'], commands.BucketType.user)
     async def hangman(self, ctx: commands.Context, difficulty: str = 'medium'):
         await db.ensure_user(ctx.author.id, ctx.author.name)
@@ -520,7 +523,7 @@ class Entertainment(commands.Cog, name="Entertainment"):
         'shark', 'whale', 'eagle', 'tiger',
     ]
 
-    @commands.hybrid_command(name='wordle', description='Play a Wordle-style word game')
+    @commands.command(name='wordle', description='Play a Wordle-style word game')
     @commands.cooldown(1, config.COOLDOWNS['game'], commands.BucketType.user)
     async def wordle(self, ctx: commands.Context):
         await db.ensure_user(ctx.author.id, ctx.author.name)
@@ -613,7 +616,7 @@ class Entertainment(commands.Cog, name="Entertainment"):
 
     # -- Blackjack (Pro only) --
 
-    @commands.hybrid_command(name='blackjack', aliases=['bj'], description='Play Blackjack (Pro tier)')
+    @commands.command(name='blackjack', aliases=['bj'], description='Play Blackjack (Pro tier)')
     @commands.cooldown(1, config.COOLDOWNS['game'], commands.BucketType.user)
     async def blackjack(self, ctx: commands.Context, bet: int = 100):
         await db.ensure_user(ctx.author.id, ctx.author.name)

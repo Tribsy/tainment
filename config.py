@@ -8,7 +8,7 @@ BOT_TOKEN = os.getenv('BOT_TOKEN', '')
 COMMAND_PREFIX = os.getenv('COMMAND_PREFIX', 't!')
 
 # -- Database --
-DB_PATH = os.getenv('DB_PATH', 'tainment.db')
+DB_PATH = os.getenv('DB_PATH', os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tainment.db'))
 
 # -- Subscription Tiers --
 SUBSCRIPTION_TIERS = {
@@ -202,8 +202,8 @@ COLORS = {
 }
 
 # -- Docs --
-TOS_PATH = os.path.expanduser('~/tos.md')
-PRIVACY_PATH = os.path.expanduser('~/privacy.md')
+TOS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tos.md')
+PRIVACY_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'privacy.md')
 
 # -- Meta --
 BOT_VERSION = '2.4.0'

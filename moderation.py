@@ -11,6 +11,7 @@ from datetime import datetime, timezone, timedelta
 import aiosqlite
 import re
 import config
+from server_settings import get_server_tier
 
 
 MOD_COLORS = {
@@ -126,9 +127,26 @@ class Moderation(commands.Cog, name="Moderation"):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
+    async def cog_check(self, ctx: commands.Context) -> bool:
+        """All moderation commands require a server Basic or Pro subscription."""
+        if not ctx.guild:
+            return False
+        tier = await get_server_tier(ctx.guild.id)
+        if tier == 'Free':
+            await ctx.send(embed=discord.Embed(
+                title="Server Plan Required",
+                description=(
+                    "Moderation commands require a **Basic** or **Pro** server subscription.\n\n"
+                    "Use `t!serversubscribe` to view plans and upgrade."
+                ),
+                color=config.COLORS['warning'],
+            ))
+            return False
+        return True
+
     # ── Warn ──────────────────────────────────────────────────────────────────
 
-    @commands.hybrid_command(name='warn', description='Warn a member')
+    @commands.command(name='warn', description='Warn a member')
     @commands.has_permissions(manage_messages=True)
     @commands.guild_only()
     async def warn(self, ctx: commands.Context, member: discord.Member, *, reason: str = None):
@@ -155,7 +173,7 @@ class Moderation(commands.Cog, name="Moderation"):
 
     # ── Warnings ──────────────────────────────────────────────────────────────
 
-    @commands.hybrid_command(name='warnings', aliases=['warns'], description='View a member\'s warnings')
+    @commands.command(name='warnings', aliases=['warns'], description='View a member\'s warnings')
     @commands.has_permissions(manage_messages=True)
     @commands.guild_only()
     async def warnings(self, ctx: commands.Context, member: discord.Member):
@@ -192,7 +210,7 @@ class Moderation(commands.Cog, name="Moderation"):
 
     # ── Clear Warning ─────────────────────────────────────────────────────────
 
-    @commands.hybrid_command(name='clearwarn', aliases=['delwarn'], description='Clear a warning by case ID')
+    @commands.command(name='clearwarn', aliases=['delwarn'], description='Clear a warning by case ID')
     @commands.has_permissions(manage_messages=True)
     @commands.guild_only()
     async def clearwarn(self, ctx: commands.Context, case_id: int):
@@ -218,7 +236,7 @@ class Moderation(commands.Cog, name="Moderation"):
 
     # ── Kick ──────────────────────────────────────────────────────────────────
 
-    @commands.hybrid_command(name='kick', description='Kick a member from the server')
+    @commands.command(name='kick', description='Kick a member from the server')
     @commands.has_permissions(kick_members=True)
     @commands.bot_has_permissions(kick_members=True)
     @commands.guild_only()
@@ -247,7 +265,7 @@ class Moderation(commands.Cog, name="Moderation"):
 
     # ── Ban ───────────────────────────────────────────────────────────────────
 
-    @commands.hybrid_command(name='ban', description='Ban a member from the server')
+    @commands.command(name='ban', description='Ban a member from the server')
     @commands.has_permissions(ban_members=True)
     @commands.bot_has_permissions(ban_members=True)
     @commands.guild_only()
@@ -276,7 +294,7 @@ class Moderation(commands.Cog, name="Moderation"):
 
     # ── Unban ─────────────────────────────────────────────────────────────────
 
-    @commands.hybrid_command(name='unban', description='Unban a user by ID')
+    @commands.command(name='unban', description='Unban a user by ID')
     @commands.has_permissions(ban_members=True)
     @commands.bot_has_permissions(ban_members=True)
     @commands.guild_only()
@@ -298,7 +316,7 @@ class Moderation(commands.Cog, name="Moderation"):
 
     # ── Timeout ───────────────────────────────────────────────────────────────
 
-    @commands.hybrid_command(name='timeout', aliases=['mute'], description='Timeout a member (e.g. 10m, 2h, 1d)')
+    @commands.command(name='timeout', aliases=['mute'], description='Timeout a member (e.g. 10m, 2h, 1d)')
     @commands.has_permissions(moderate_members=True)
     @commands.bot_has_permissions(moderate_members=True)
     @commands.guild_only()
@@ -338,7 +356,7 @@ class Moderation(commands.Cog, name="Moderation"):
 
     # ── Untimeout ─────────────────────────────────────────────────────────────
 
-    @commands.hybrid_command(name='untimeout', aliases=['unmute'], description='Remove a member\'s timeout')
+    @commands.command(name='untimeout', aliases=['unmute'], description='Remove a member\'s timeout')
     @commands.has_permissions(moderate_members=True)
     @commands.bot_has_permissions(moderate_members=True)
     @commands.guild_only()
@@ -359,7 +377,7 @@ class Moderation(commands.Cog, name="Moderation"):
 
     # ── Purge ─────────────────────────────────────────────────────────────────
 
-    @commands.hybrid_command(name='purge', aliases=['clear', 'prune'], description='Bulk delete messages (1-100)')
+    @commands.command(name='purge', aliases=['clear', 'prune'], description='Bulk delete messages (1-100)')
     @commands.has_permissions(manage_messages=True)
     @commands.bot_has_permissions(manage_messages=True)
     @commands.guild_only()
@@ -409,7 +427,7 @@ class Moderation(commands.Cog, name="Moderation"):
 
     # ── Slowmode ──────────────────────────────────────────────────────────────
 
-    @commands.hybrid_command(name='slowmode', aliases=['slow'], description='Set channel slowmode in seconds (0 to disable)')
+    @commands.command(name='slowmode', aliases=['slow'], description='Set channel slowmode in seconds (0 to disable)')
     @commands.has_permissions(manage_channels=True)
     @commands.bot_has_permissions(manage_channels=True)
     @commands.guild_only()
@@ -431,7 +449,7 @@ class Moderation(commands.Cog, name="Moderation"):
 
     # ── Lock ──────────────────────────────────────────────────────────────────
 
-    @commands.hybrid_command(name='lock', description='Lock a channel — prevents @everyone from sending')
+    @commands.command(name='lock', description='Lock a channel — prevents @everyone from sending')
     @commands.has_permissions(manage_channels=True)
     @commands.bot_has_permissions(manage_channels=True)
     @commands.guild_only()
@@ -451,7 +469,7 @@ class Moderation(commands.Cog, name="Moderation"):
 
     # ── Unlock ────────────────────────────────────────────────────────────────
 
-    @commands.hybrid_command(name='unlock', description='Unlock a channel')
+    @commands.command(name='unlock', description='Unlock a channel')
     @commands.has_permissions(manage_channels=True)
     @commands.bot_has_permissions(manage_channels=True)
     @commands.guild_only()
@@ -471,7 +489,7 @@ class Moderation(commands.Cog, name="Moderation"):
 
     # ── Add Role ──────────────────────────────────────────────────────────────
 
-    @commands.hybrid_command(name='addrole', aliases=['giverole'], description='Give a role to a member')
+    @commands.command(name='addrole', aliases=['giverole'], description='Give a role to a member')
     @commands.has_permissions(manage_roles=True)
     @commands.bot_has_permissions(manage_roles=True)
     @commands.guild_only()
@@ -494,7 +512,7 @@ class Moderation(commands.Cog, name="Moderation"):
 
     # ── Remove Role ───────────────────────────────────────────────────────────
 
-    @commands.hybrid_command(name='removerole', aliases=['takerole'], description='Remove a role from a member')
+    @commands.command(name='removerole', aliases=['takerole'], description='Remove a role from a member')
     @commands.has_permissions(manage_roles=True)
     @commands.bot_has_permissions(manage_roles=True)
     @commands.guild_only()
@@ -517,7 +535,7 @@ class Moderation(commands.Cog, name="Moderation"):
 
     # ── Nick ──────────────────────────────────────────────────────────────────
 
-    @commands.hybrid_command(name='nick', aliases=['nickname'], description='Change a member\'s nickname')
+    @commands.command(name='nick', aliases=['nickname'], description='Change a member\'s nickname')
     @commands.has_permissions(manage_nicknames=True)
     @commands.bot_has_permissions(manage_nicknames=True)
     @commands.guild_only()
@@ -536,7 +554,7 @@ class Moderation(commands.Cog, name="Moderation"):
 
     # ── Mod Log ───────────────────────────────────────────────────────────────
 
-    @commands.hybrid_command(name='modlog', aliases=['cases'], description='View recent mod cases for a user')
+    @commands.command(name='modlog', aliases=['cases'], description='View recent mod cases for a user')
     @commands.has_permissions(manage_messages=True)
     @commands.guild_only()
     async def modlog(self, ctx: commands.Context, member: discord.Member = None, limit: int = 5):
@@ -590,7 +608,7 @@ class Moderation(commands.Cog, name="Moderation"):
 
     # ── Set Mod Log Channel ───────────────────────────────────────────────────
 
-    @commands.hybrid_command(name='setmodlog', description='Set the channel for mod action logs')
+    @commands.command(name='setmodlog', description='Set the channel for mod action logs')
     @commands.has_permissions(administrator=True)
     @commands.guild_only()
     async def setmodlog(self, ctx: commands.Context, channel: discord.TextChannel):
@@ -608,7 +626,7 @@ class Moderation(commands.Cog, name="Moderation"):
 
     # ── Moderation Info ───────────────────────────────────────────────────────
 
-    @commands.hybrid_command(name='modinfo', description='View moderation statistics for the server')
+    @commands.command(name='modinfo', description='View moderation statistics for the server')
     @commands.has_permissions(manage_messages=True)
     @commands.guild_only()
     async def modinfo(self, ctx: commands.Context):

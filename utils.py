@@ -42,11 +42,11 @@ class Utils(commands.Cog, name="Utils"):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    @commands.hybrid_command(name='tos', description='View the Terms of Service')
+    @commands.command(name='tos', description='View the Terms of Service')
     async def tos(self, ctx: commands.Context):
         await self._send_doc(ctx, config.TOS_PATH, "Terms of Service")
 
-    @commands.hybrid_command(name='privacy', description='View the Privacy Policy')
+    @commands.command(name='privacy', description='View the Privacy Policy')
     async def privacy(self, ctx: commands.Context):
         await self._send_doc(ctx, config.PRIVACY_PATH, "Privacy Policy")
 
@@ -79,7 +79,7 @@ class Utils(commands.Cog, name="Utils"):
                 color=config.COLORS['error'],
             ))
 
-    @commands.hybrid_command(name='invite', description='Get the bot invite link')
+    @commands.command(name='invite', description='Get the bot invite link')
     async def invite(self, ctx: commands.Context):
         if config.INVITE_URL:
             embed = discord.Embed(
@@ -94,7 +94,7 @@ class Utils(commands.Cog, name="Utils"):
             )
         await ctx.send(embed=embed)
 
-    @commands.hybrid_command(name='support', description='Get the support server link')
+    @commands.command(name='support', description='Get the support server link')
     async def support(self, ctx: commands.Context):
         if config.SUPPORT_SERVER:
             embed = discord.Embed(

@@ -9,7 +9,7 @@ import database as db
 
 logger = logging.getLogger('tainment.admin')
 
-TIER_ORDER = {'Basic': 0, 'Premium': 1, 'Pro': 2}
+TIER_ORDER = {'Basic': 0, 'Vibe': 1, 'Premium': 2, 'Pro': 3}
 
 
 class AdminSubscription(commands.Cog, name="Admin"):

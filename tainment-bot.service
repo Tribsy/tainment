@@ -1,0 +1,17 @@
+[Unit]
+Description=Tainment+ Discord Bot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=tribs
+WorkingDirectory=/home/tribs/tainment-bot
+ExecStart=/usr/bin/python3 main.py
+Restart=on-failure
+RestartSec=10s
+StandardOutput=append:/home/tribs/tainment-bot/tainment_bot.log
+StandardError=append:/home/tribs/tainment-bot/tainment_bot.log
+
+[Install]
+WantedBy=multi-user.target

@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands, tasks
 from datetime import datetime, timezone
 import logging
+import aiosqlite
 import config
 import database as db
 
@@ -15,10 +16,12 @@ class SubscriptionTasks(commands.Cog, name="SubscriptionTasks"):
         self.bot = bot
         self.check_expiring.start()
         self.process_expired.start()
+        self.check_server_subscriptions.start()
 
     def cog_unload(self):
         self.check_expiring.cancel()
         self.process_expired.cancel()
+        self.check_server_subscriptions.cancel()
 
     @tasks.loop(hours=24)
     async def check_expiring(self):
@@ -66,14 +69,40 @@ class SubscriptionTasks(commands.Cog, name="SubscriptionTasks"):
                         color=config.COLORS['error'],
                     )
                     await user.send(embed=embed)
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.warning(f"Could not DM user {sub['user_id']} about expiry: {e}")
                 logger.info(f"Downgraded user {sub['user_id']} from {old_tier} to Basic")
             except Exception as e:
-                logger.error(f"Error processing expired subscription for {sub['user_id']}: {e}")
+                logger.error(f"Error processing expired subscription for {sub['user_id']}: {e}", exc_info=True)
+
+    @tasks.loop(hours=12)
+    async def check_server_subscriptions(self):
+        """Downgrade server subscriptions that have expired."""
+        now = datetime.now(timezone.utc).isoformat()
+        async with aiosqlite.connect(config.DB_PATH) as db_conn:
+            db_conn.row_factory = aiosqlite.Row
+            async with db_conn.execute(
+                "SELECT guild_id, tier FROM server_subscriptions WHERE tier != 'Free' AND end_date IS NOT NULL AND end_date < ?",
+                (now,)
+            ) as cur:
+                rows = await cur.fetchall()
+            for row in rows:
+                guild_id, old_tier = row['guild_id'], row['tier']
+                try:
+                    await db_conn.execute(
+                        "UPDATE server_subscriptions SET tier = 'Free' WHERE guild_id = ?", (guild_id,)
+                    )
+                    await db_conn.execute(
+                        "UPDATE server_settings SET server_tier = 'Free' WHERE guild_id = ?", (guild_id,)
+                    )
+                    await db_conn.commit()
+                    logger.info(f"Downgraded server {guild_id} from {old_tier} to Free (expired)")
+                except Exception as e:
+                    logger.error(f"Error downgrading server {guild_id}: {e}", exc_info=True)
 
     @check_expiring.before_loop
     @process_expired.before_loop
+    @check_server_subscriptions.before_loop
     async def before_loops(self):
         await self.bot.wait_until_ready()
 

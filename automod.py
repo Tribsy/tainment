@@ -24,6 +24,7 @@ import re
 from datetime import datetime, timezone, timedelta
 from collections import defaultdict
 import config
+from server_settings import get_server_tier
 
 
 # Per-guild spam tracking: {guild_id: {user_id: [timestamps]}}
@@ -255,6 +256,17 @@ class AutoMod(commands.Cog, name="AutoMod"):
     @commands.has_permissions(manage_guild=True)
     @commands.guild_only()
     async def automod(self, ctx: commands.Context):
+        tier = await get_server_tier(ctx.guild.id)
+        if tier == 'Free':
+            await ctx.send(embed=discord.Embed(
+                title="Server Plan Required",
+                description=(
+                    "AutoMod configuration requires a **Basic** or **Pro** server subscription.\n\n"
+                    "Use `t!serversubscribe` to view plans and upgrade."
+                ),
+                color=config.COLORS['warning'],
+            ))
+            return
         if ctx.invoked_subcommand is None:
             await ctx.invoke(self.automod_status)
 
