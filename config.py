@@ -143,6 +143,19 @@ SHOP_ITEMS = {
     'rod_silver':    {'name': 'Silver Rod',     'description': '+30% uncommon / +50% rare fish',  'duration': None},
     'rod_gold':      {'name': 'Golden Rod',     'description': '+60% uncommon / +120% rare fish', 'duration': None},
     'rod_diamond':   {'name': 'Diamond Rod',    'description': '+200% legendary + shorter cd',    'duration': None},
+    # Music items
+    'music_hint':    {'name': 'Lyrics Hint',    'description': 'Reveals artist initial in lyric games',    'duration': None},
+    'trivia_skip':   {'name': 'Trivia Skip',    'description': 'Skip a music trivia question once',        'duration': None},
+    'hot_boost':     {'name': 'Hot Boost',      'description': 'Track shares count double for 1 hour',     'duration': 3600},
+    'bingo_doubler': {'name': 'Bingo Doubler',  'description': '2 free pre-marked bingo squares',          'duration': None},
+    'music_badge':   {'name': 'Music Fanatic',  'description': 'Permanent Music Fanatic badge on profile', 'duration': None},
+    'streak_amp':    {'name': 'Streak Amp',     'description': 'Music streak counts double for 24h',       'duration': 86400},
+    'genre_unlock':  {'name': 'Genre Pass',     'description': 'Unlock genre/mood discovery permanently',  'duration': None},
+    'wrapped_token': {'name': 'Wrapped Token',  'description': 'Generate an early Music Wrapped',          'duration': None},
+    'dj_crown':      {'name': 'DJ Crown',       'description': 'Permanent DJ Crown badge + 10% music bonus','duration': None},
+    'playlist_slot': {'name': 'Playlist Slot',  'description': '+1 permanent playlist slot',               'duration': None},
+    'queue_priority':{'name': 'Queue Priority', 'description': 'Your requests go to position 2 for 2h',    'duration': 7200},
+    'trivia_surge':  {'name': 'Trivia Surge',   'description': '2x trivia coin+gem rewards for 30 min',   'duration': 1800},
 }
 
 # -- Level milestone roles (PopFusion music theme) --
@@ -193,6 +206,22 @@ TOS_PATH = os.path.expanduser('~/tos.md')
 PRIVACY_PATH = os.path.expanduser('~/privacy.md')
 
 # -- Meta --
-BOT_VERSION = '2.2.0'
+BOT_VERSION = '2.4.0'
+
+# -- Music System --
+MUSIC_REWARDS = {
+    'trivia_win':        {'coins': 80,  'gems': 0,  'tokens': 0},
+    'trivia_win_vibe':   {'coins': 80,  'gems': 5,  'tokens': 0},
+    'trivia_win_pro':    {'coins': 80,  'gems': 5,  'tokens': 2},
+    'namethetune_first': {'coins': 150, 'gems': 10, 'tokens': 0},
+    'sharetrack_daily':  {'coins': 25,  'gems': 0,  'tokens': 0},
+    'streak_7day':       {'coins': 300, 'gems': 10, 'tokens': 0},
+    'streak_7day_pro':   {'coins': 300, 'gems': 10, 'tokens': 5},
+}
+
+MUSIC_TIER_LIMITS = {
+    'max_artists': {'Basic': 5, 'Vibe': 10, 'Premium': 15, 'Pro': 999},
+    'max_playlists': {'Basic': 0, 'Vibe': 3, 'Premium': 5, 'Pro': 999},
+}
 SUPPORT_SERVER = os.getenv('SUPPORT_SERVER', '')
 INVITE_URL = os.getenv('INVITE_URL', '')

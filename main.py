@@ -45,6 +45,10 @@ EXTENSIONS = [
     'moderation',
     'server_settings',
     'birthday',
+    'music_discovery',
+    'music_trivia',
+    'music_profiles',
+    'automod',
 ]
 
 
@@ -304,6 +308,42 @@ HELP_CATEGORIES = {
             ('birthday view [@user]', "View someone's birthday"),
             ('birthday list', 'All birthdays in this server'),
             ('birthday del', 'Remove your birthday'),
+        ],
+    },
+    'music': {
+        'title': 'Music',
+        'commands': [
+            ('recommend [genre]', 'Get song recommendations (all tiers)'),
+            ('hotsongs', 'This server\'s hottest tracks this week'),
+            ('sharetrack <song> - <artist>', 'Share a track + daily coin reward'),
+            ('genresearch <genre>', 'Genre-filtered picks (Vibe+)'),
+            ('moodsearch <mood>', 'Mood-based picks: hype/chill/sad/focus/party/workout (Vibe+)'),
+            ('musictrivia [genre]', 'Music trivia with button choices (all tiers)'),
+            ('lyricsguess', 'Guess the song from partial lyrics (Vibe+)'),
+            ('namethetune', 'Channel race — name the song first! (Vibe+)'),
+            ('musicprofile [@user]', 'Your music taste card'),
+            ('setgenre <genre>', 'Set your favourite genre'),
+            ('setartist <artist>', 'Add a favourite artist'),
+            ('musicwrapped', 'Monthly music summary (Vibe+)'),
+            ('playlist create/add/view/list/delete', 'Manage playlists (Vibe+)'),
+            ('artistinfo <artist>', 'Artist profile card (Premium+)'),
+            ('toptracks', 'Global most-shared songs (Premium+)'),
+            ('newreleases', 'Curated new releases (Pro)'),
+        ],
+    },
+    'automod': {
+        'title': 'AutoMod',
+        'commands': [
+            ('automod status', 'View current AutoMod settings'),
+            ('automod enable/disable', 'Toggle AutoMod on/off'),
+            ('automod log #channel', 'Set AutoMod log channel'),
+            ('automod action <warn|timeout|kick>', 'Set violation action'),
+            ('automod spam <count> <seconds>', 'Set spam threshold'),
+            ('automod links <on|off>', 'Toggle link filter'),
+            ('automod allowlink <domain>', 'Whitelist a domain'),
+            ('automod caps <0-100>', 'Set caps % threshold (0 = off)'),
+            ('automod mentions <count>', 'Max mentions per message (0 = off)'),
+            ('automod word add/remove/list/clear', 'Manage banned word list'),
         ],
     },
     'info': {
