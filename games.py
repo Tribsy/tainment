@@ -678,5 +678,70 @@ class Games(commands.Cog, name="Games"):
             ))
 
 
+    # -- Roulette (Premium+) --
+
+    @commands.command(name='roulette', aliases=['rl'], description='Bet on red or black (Premium+)')
+    @commands.cooldown(1, 20, commands.BucketType.user)
+    async def roulette(self, ctx: commands.Context, bet: int, color: str = 'red'):
+        await db.ensure_user(ctx.author.id, ctx.author.name)
+        tier = await db.get_tier(ctx.author.id)
+        tier_order = ['Basic', 'Vibe', 'Premium', 'Pro']
+        if tier_order.index(tier) < tier_order.index('Premium'):
+            await ctx.send(embed=discord.Embed(
+                title="Premium Required",
+                description="Roulette requires a **Premium** or **Pro** subscription.\nUse `t!subscribe` to upgrade.",
+                color=config.COLORS['warning'],
+            ))
+            return
+
+        color = color.lower()
+        if color not in ('red', 'black', 'r', 'b'):
+            await ctx.send(embed=discord.Embed(
+                description="Choose `red` or `black`. Example: `t!roulette 100 red`",
+                color=config.COLORS['error'],
+            ))
+            return
+
+        bal = await db.get_currency(ctx.author.id, 'coins')
+        if bet <= 0 or bet > bal:
+            await ctx.send(embed=discord.Embed(
+                description=f"Invalid bet. Balance: `{bal:,}` \U0001fa99",
+                color=config.COLORS['error'],
+            ))
+            return
+
+        chosen = 'red' if color in ('red', 'r') else 'black'
+        # 18 red, 18 black, 2 green (0 and 00) — green = house wins
+        roll = random.randint(0, 37)
+        if roll == 0 or roll == 37:
+            result_color = 'green'
+        elif roll % 2 == 1:
+            result_color = 'red'
+        else:
+            result_color = 'black'
+
+        color_emoji = {'red': '\U0001f534', 'black': '\u26ab', 'green': '\U0001f7e2'}[result_color]
+
+        if result_color == chosen:
+            payout = int(bet * 1.9)
+            profit = payout - bet
+            await db.earn_currency(ctx.author.id, 'coins', profit)
+            embed = discord.Embed(
+                title=f"Roulette — {color_emoji} {result_color.capitalize()}!",
+                description=f"You bet `{bet:,}` on **{chosen}** and won **+{payout:,}** \U0001fa99\nNew balance: `{bal + profit:,}`",
+                color=config.COLORS['success'],
+            )
+        else:
+            await db.spend_currency(ctx.author.id, 'coins', bet)
+            embed = discord.Embed(
+                title=f"Roulette — {color_emoji} {result_color.capitalize()}!",
+                description=f"You bet `{bet:,}` on **{chosen}** and lost **{bet:,}** \U0001fa99\nNew balance: `{bal - bet:,}`",
+                color=config.COLORS['error'],
+            )
+
+        embed.set_footer(text="Roulette | 1.9x payout | Premium")
+        await ctx.send(embed=embed)
+
+
 async def setup(bot: commands.Bot):
     await bot.add_cog(Games(bot))

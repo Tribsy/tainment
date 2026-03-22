@@ -1,9 +1,12 @@
 import discord
 from discord.ext import commands, tasks
 import re
+import logging
 from datetime import datetime, timezone, timedelta
 import config
 import database as db
+
+logger = logging.getLogger('tainment.reminders')
 
 
 def parse_duration(text: str) -> int | None:
@@ -42,7 +45,8 @@ class Reminders(commands.Cog, name="Reminders"):
                 try:
                     user = await self.bot.fetch_user(reminder['user_id'])
                     channel = user.dm_channel or await user.create_dm()
-                except Exception:
+                except Exception as e:
+                    logger.warning(f"[Reminders] Could not open DM for user {reminder['user_id']}: {e}")
                     continue
 
             embed = discord.Embed(
@@ -53,8 +57,8 @@ class Reminders(commands.Cog, name="Reminders"):
             embed.set_footer(text=f"Reminder ID: {reminder['id']}")
             try:
                 await channel.send(f"<@{reminder['user_id']}>", embed=embed)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(f"[Reminders] Could not deliver reminder {reminder['id']} to {reminder['user_id']}: {e}")
 
     @check_reminders.before_loop
     async def before_check(self):

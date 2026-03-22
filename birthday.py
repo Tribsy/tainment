@@ -226,8 +226,8 @@ class Birthday(commands.Cog, name="Birthday"):
                             f"{member.mention} received a birthday gift: **500 coins** + **5 gems**! :birthday:",
                             delete_after=60,
                         )
-                    except Exception:
-                        pass
+                    except Exception as e:
+                        logger.error(f"[BirthdayCheck] Failed to grant reward for {user_id}: {e}", exc_info=True)
                 except discord.HTTPException as e:
                     logger.warning(f"Could not post birthday for {user_id} in {guild_id}: {e}")
 

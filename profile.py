@@ -43,7 +43,7 @@ class Profile(commands.Cog, name="Profile"):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    @commands.hybrid_command(name='profile', aliases=['me', 'card'], description='View your profile card')
+    @commands.command(name='profile', aliases=['me', 'card'], description='View your profile card')
     async def profile(self, ctx: commands.Context, user: discord.Member = None):
         target = user or ctx.author
         await db.ensure_user(target.id, target.name)
@@ -108,13 +108,24 @@ class Profile(commands.Cog, name="Profile"):
         vip_badge = ' \U0001f451 VIP' if has_vip else ''
         prestige_badge = ' \u2728 Prestige' if has_prestige else ''
 
+        # Fetch bio
+        async with aiosqlite.connect(config.DB_PATH) as _db:
+            async with _db.execute("SELECT bio FROM users WHERE user_id = ?", (target.id,)) as _cur:
+                _bio_row = await _cur.fetchone()
+        bio_text = _bio_row[0] if _bio_row and _bio_row[0] else None
+
         embed = discord.Embed(
             title=f"{target.display_name}{badge}{vip_badge}{prestige_badge}",
             color=banner_color,
         )
         embed.set_thumbnail(url=target.display_avatar.url)
+        desc_parts = []
         if frame_label:
-            embed.description = f"*{frame_label}*"
+            desc_parts.append(f"*{frame_label}*")
+        if bio_text:
+            desc_parts.append(bio_text)
+        if desc_parts:
+            embed.description = "\n".join(desc_parts)
 
         # Level progress bar
         if ctx.guild and level_data:
@@ -174,7 +185,7 @@ class Profile(commands.Cog, name="Profile"):
         embed.set_footer(text=f"Tainment+ v{config.BOT_VERSION}")
         await ctx.send(embed=embed)
 
-    @commands.hybrid_command(name='serverinfo', description='View server information')
+    @commands.command(name='serverinfo', description='View server information')
     @commands.guild_only()
     async def serverinfo(self, ctx: commands.Context):
         guild = ctx.guild
@@ -198,7 +209,7 @@ class Profile(commands.Cog, name="Profile"):
         embed.set_footer(text=f"ID: {guild.id}")
         await ctx.send(embed=embed)
 
-    @commands.hybrid_command(name='userinfo', description='View info about a user')
+    @commands.command(name='userinfo', description='View info about a user')
     async def userinfo(self, ctx: commands.Context, user: discord.Member = None):
         target = user or ctx.author
         embed = discord.Embed(
@@ -230,7 +241,7 @@ class Profile(commands.Cog, name="Profile"):
         embed.set_footer(text=f"ID: {target.id}")
         await ctx.send(embed=embed)
 
-    @commands.hybrid_command(name='avatar', aliases=['av', 'pfp'], description="View a user's avatar")
+    @commands.command(name='avatar', aliases=['av', 'pfp'], description="View a user's avatar")
     async def avatar(self, ctx: commands.Context, user: discord.Member = None):
         target = user or ctx.author
         embed = discord.Embed(
@@ -238,6 +249,126 @@ class Profile(commands.Cog, name="Profile"):
             color=config.COLORS['primary'],
         )
         embed.set_image(url=target.display_avatar.url)
+        await ctx.send(embed=embed)
+
+
+    @commands.command(name='bio', description='Set a custom bio on your profile (Vibe+)')
+    async def bio(self, ctx: commands.Context, *, text: str = None):
+        await db.ensure_user(ctx.author.id, ctx.author.name)
+        tier = await db.get_tier(ctx.author.id)
+        tier_order = ['Basic', 'Vibe', 'Premium', 'Pro']
+        if tier_order.index(tier) < tier_order.index('Vibe'):
+            await ctx.send(embed=discord.Embed(
+                title="Vibe Required",
+                description="Setting a bio requires a **Vibe** or higher subscription.\nUse `t!subscribe` to upgrade.",
+                color=config.COLORS['warning'],
+            ))
+            return
+
+        if not text:
+            async with aiosqlite.connect(config.DB_PATH) as db_conn:
+                async with db_conn.execute("SELECT bio FROM users WHERE user_id = ?", (ctx.author.id,)) as cur:
+                    row = await cur.fetchone()
+            current = row[0] if row and row[0] else "*No bio set.*"
+            await ctx.send(embed=discord.Embed(
+                title="Your Bio",
+                description=current,
+                color=config.COLORS['primary'],
+            ))
+            return
+
+        if len(text) > 150:
+            await ctx.send(embed=discord.Embed(
+                description="Bio must be 150 characters or fewer.",
+                color=config.COLORS['error'],
+            ))
+            return
+
+        async with aiosqlite.connect(config.DB_PATH) as db_conn:
+            await db_conn.execute("UPDATE users SET bio = ? WHERE user_id = ?", (text, ctx.author.id))
+            await db_conn.commit()
+
+        await ctx.send(embed=discord.Embed(
+            title="Bio Updated",
+            description=text,
+            color=config.COLORS['success'],
+        ))
+
+    @commands.command(name='mystats', description='View your detailed personal stats (Premium+)')
+    async def mystats(self, ctx: commands.Context):
+        await db.ensure_user(ctx.author.id, ctx.author.name)
+        tier = await db.get_tier(ctx.author.id)
+        tier_order = ['Basic', 'Vibe', 'Premium', 'Pro']
+        if tier_order.index(tier) < tier_order.index('Premium'):
+            await ctx.send(embed=discord.Embed(
+                title="Premium Required",
+                description="Detailed stats require a **Premium** or **Pro** subscription.\nUse `t!subscribe` to upgrade.",
+                color=config.COLORS['warning'],
+            ))
+            return
+
+        async with aiosqlite.connect(config.DB_PATH) as db_conn:
+            db_conn.row_factory = aiosqlite.Row
+            # Economy
+            async with db_conn.execute("SELECT * FROM economy WHERE user_id = ?", (ctx.author.id,)) as cur:
+                eco = await cur.fetchone()
+            # Game stats
+            async with db_conn.execute(
+                "SELECT game, COUNT(*) as plays, SUM(score) as total_score, MAX(score) as best FROM game_scores WHERE user_id = ? GROUP BY game",
+                (ctx.author.id,)
+            ) as cur:
+                game_rows = await cur.fetchall()
+            # Fishing
+            async with db_conn.execute(
+                "SELECT total_caught, total_value, fishing_level, biggest_catch_type, biggest_catch_coins FROM fishing_stats WHERE user_id = ?",
+                (ctx.author.id,)
+            ) as cur:
+                fish = await cur.fetchone()
+            # Reminders count
+            async with db_conn.execute(
+                "SELECT COUNT(*) FROM reminders WHERE user_id = ?", (ctx.author.id,)
+            ) as cur:
+                reminder_count = (await cur.fetchone())[0]
+
+        embed = discord.Embed(
+            title=f"{ctx.author.display_name}'s Stats",
+            color=config.COLORS['purple'],
+        )
+        embed.set_thumbnail(url=ctx.author.display_avatar.url)
+
+        if eco:
+            embed.add_field(
+                name="\U0001fa99 Economy",
+                value=(
+                    f"Coins: `{eco['coins']:,}`\n"
+                    f"Gems: `{eco['gems'] or 0:,}`\n"
+                    f"Tokens: `{eco['tokens'] or 0:,}`\n"
+                    f"Total Earned: `{eco['total_earned']:,}`\n"
+                    f"Streak: `{eco['daily_streak']}` days"
+                ),
+                inline=True,
+            )
+
+        if game_rows:
+            game_lines = []
+            for row in game_rows:
+                game_lines.append(f"`{row['game']}` — {row['plays']}x played | best: `{row['best']:,}`")
+            embed.add_field(name="\U0001f3ae Games", value="\n".join(game_lines), inline=False)
+
+        if fish and fish['total_caught'] > 0:
+            embed.add_field(
+                name="\U0001f3a3 Fishing",
+                value=(
+                    f"Level: `{fish['fishing_level']}`\n"
+                    f"Caught: `{fish['total_caught']:,}`\n"
+                    f"Value Earned: `{fish['total_value']:,}` \U0001fa99\n"
+                    + (f"Best Catch: `{fish['biggest_catch_type']}` (`{fish['biggest_catch_coins']:,}` \U0001fa99)" if fish['biggest_catch_type'] else "")
+                ),
+                inline=True,
+            )
+
+        embed.add_field(name="Reminders Set", value=f"`{reminder_count}`", inline=True)
+        embed.set_footer(text=f"Tainment+ v{config.BOT_VERSION} | Premium Stats")
         await ctx.send(embed=embed)
 
 

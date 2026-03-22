@@ -20,7 +20,7 @@ class Economy(commands.Cog, name="Economy"):
 
     # -- Daily --
 
-    @commands.hybrid_command(name='daily', description='Claim your daily coin reward')
+    @commands.command(name='daily', description='Claim your daily coin reward')
     async def daily(self, ctx: commands.Context):
         await db.ensure_user(ctx.author.id, ctx.author.name)
         eco = await db.get_economy(ctx.author.id)
@@ -100,7 +100,7 @@ class Economy(commands.Cog, name="Economy"):
 
     # -- Work --
 
-    @commands.hybrid_command(name='work', description='Work to earn coins (1h cooldown)')
+    @commands.command(name='work', description='Work to earn coins (1h cooldown)')
     @commands.cooldown(1, config.COOLDOWNS['work'], commands.BucketType.user)
     async def work(self, ctx: commands.Context):
         await db.ensure_user(ctx.author.id, ctx.author.name)
@@ -123,7 +123,7 @@ class Economy(commands.Cog, name="Economy"):
 
     # -- Rob --
 
-    @commands.hybrid_command(name='rob', description='Attempt to rob another user')
+    @commands.command(name='rob', description='Attempt to rob another user')
     @commands.cooldown(1, config.COOLDOWNS['rob'], commands.BucketType.user)
     async def rob(self, ctx: commands.Context, target: discord.Member):
         if target.id == ctx.author.id or target.bot:
@@ -173,7 +173,7 @@ class Economy(commands.Cog, name="Economy"):
 
     # -- Gamble --
 
-    @commands.hybrid_command(name='gamble', description='Gamble your coins')
+    @commands.command(name='gamble', description='Gamble your coins')
     @commands.cooldown(1, config.COOLDOWNS['gamble'], commands.BucketType.user)
     async def gamble(self, ctx: commands.Context, amount: int):
         await db.ensure_user(ctx.author.id, ctx.author.name)
@@ -217,7 +217,7 @@ class Economy(commands.Cog, name="Economy"):
 
     # -- Slots --
 
-    @commands.hybrid_command(name='slots', description='Play the slot machine')
+    @commands.command(name='slots', description='Play the slot machine')
     @commands.cooldown(1, config.COOLDOWNS['slots'], commands.BucketType.user)
     async def slots(self, ctx: commands.Context, bet: int):
         await db.ensure_user(ctx.author.id, ctx.author.name)
@@ -265,7 +265,7 @@ class Economy(commands.Cog, name="Economy"):
 
     # ── Admin Commands ─────────────────────────────────────────────────────────
 
-    @commands.hybrid_command(name='setbalance', aliases=['setbal'], description='[Admin] Set a user\'s currency balance')
+    @commands.command(name='setbalance', aliases=['setbal'], description='[Admin] Set a user\'s currency balance')
     @commands.has_permissions(manage_guild=True)
     async def setbalance(self, ctx: commands.Context, target: discord.Member, amount: int, currency: str = 'coins'):
         currency = currency.lower()
@@ -292,7 +292,7 @@ class Economy(commands.Cog, name="Economy"):
             config.COLORS['success'],
         ))
 
-    @commands.hybrid_command(name='addbalance', aliases=['addbal', 'addcoins'], description='[Admin] Add currency to a user')
+    @commands.command(name='addbalance', aliases=['addbal', 'addcoins'], description='[Admin] Add currency to a user')
     @commands.has_permissions(manage_guild=True)
     async def addbalance(self, ctx: commands.Context, target: discord.Member, amount: int, currency: str = 'coins'):
         currency = currency.lower()
@@ -317,7 +317,7 @@ class Economy(commands.Cog, name="Economy"):
             config.COLORS['success'],
         ))
 
-    @commands.hybrid_command(name='removebalance', aliases=['removebal', 'deduct'], description='[Admin] Remove currency from a user')
+    @commands.command(name='removebalance', aliases=['removebal', 'deduct'], description='[Admin] Remove currency from a user')
     @commands.has_permissions(manage_guild=True)
     async def removebalance(self, ctx: commands.Context, target: discord.Member, amount: int, currency: str = 'coins'):
         currency = currency.lower()
@@ -338,7 +338,7 @@ class Economy(commands.Cog, name="Economy"):
             config.COLORS['warning'],
         ))
 
-    @commands.hybrid_command(name='reseteconomy', aliases=['reseteco'], description='[Admin] Reset a user\'s economy data')
+    @commands.command(name='reseteconomy', aliases=['reseteco'], description='[Admin] Reset a user\'s economy data')
     @commands.has_permissions(administrator=True)
     async def reseteconomy(self, ctx: commands.Context, target: discord.Member):
         await db.ensure_user(target.id, target.name)
@@ -398,7 +398,7 @@ class Economy(commands.Cog, name="Economy"):
 
     # -- Richest --
 
-    @commands.hybrid_command(name='richest', description='Server coin leaderboard')
+    @commands.command(name='richest', description='Server coin leaderboard')
     async def richest(self, ctx: commands.Context):
         import aiosqlite
         async with aiosqlite.connect(config.DB_PATH) as conn:
@@ -429,6 +429,68 @@ class Economy(commands.Cog, name="Economy"):
         )
         embed.set_footer(text="Tainment+ Economy")
         await ctx.send(embed=embed)
+
+
+    # -- Coinflip --
+
+    @commands.command(name='coinflip', aliases=['cf'], description='Bet coins on heads or tails (50/50)')
+    @commands.cooldown(1, 15, commands.BucketType.user)
+    async def coinflip(self, ctx: commands.Context, bet: int, side: str = 'heads'):
+        side = side.lower()
+        if side not in ('heads', 'tails', 'h', 't'):
+            await ctx.send(embed=eco_embed("Invalid side", "Choose `heads` or `tails`.", config.COLORS['error']))
+            return
+
+        await db.ensure_user(ctx.author.id, ctx.author.name)
+        bal = await db.get_currency(ctx.author.id, 'coins')
+
+        if bet <= 0 or bet > bal:
+            await ctx.send(embed=eco_embed("Invalid bet", f"Balance: `{bal:,}` \U0001fa99", config.COLORS['error']))
+            return
+
+        chosen = 'heads' if side in ('heads', 'h') else 'tails'
+        result = random.choice(['heads', 'tails'])
+        won = chosen == result
+
+        if won:
+            await db.earn_currency(ctx.author.id, 'coins', bet)
+            embed = eco_embed(
+                f"It's {result}! You win!",
+                f"You bet **{bet:,}** on `{chosen}` and won **+{bet:,}** \U0001fa99\nNew balance: `{bal + bet:,}`",
+                config.COLORS['success'],
+            )
+        else:
+            await db.spend_currency(ctx.author.id, 'coins', bet)
+            embed = eco_embed(
+                f"It's {result}! You lose.",
+                f"You bet **{bet:,}** on `{chosen}` and lost **{bet:,}** \U0001fa99\nNew balance: `{bal - bet:,}`",
+                config.COLORS['error'],
+            )
+        embed.set_footer(text="Coinflip | 50/50 odds")
+        await ctx.send(embed=embed)
+
+    # -- Streak --
+
+    @commands.command(name='streak', description='View your daily streak and next milestone')
+    async def streak(self, ctx: commands.Context):
+        await db.ensure_user(ctx.author.id, ctx.author.name)
+        eco = await db.get_economy(ctx.author.id)
+        streak = eco['daily_streak'] if eco else 0
+
+        milestones = [7, 14, 30, 60, 90, 180, 365]
+        next_ms = next((m for m in milestones if m > streak), None)
+
+        lines = [f"Current streak: **{streak} day{'s' if streak != 1 else ''}** \U0001f525"]
+        if next_ms:
+            remaining = next_ms - streak
+            bonus = {7: '+5 gems', 14: '+10 gems', 30: '+20 gems', 60: '+25 gems', 90: '+30 gems', 180: '+40 gems', 365: '+50 gems'}.get(next_ms, 'bonus')
+            lines.append(f"\nNext milestone: **{next_ms} days** ({remaining} more) — {bonus}")
+        else:
+            lines.append("\nYou've hit every streak milestone! Keep it up!")
+
+        lines.append(f"\nClaim with `t!daily` every 24 hours to keep your streak alive.")
+
+        await ctx.send(embed=eco_embed("Daily Streak", "\n".join(lines), config.COLORS['gold']))
 
 
 async def setup(bot: commands.Bot):

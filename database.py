@@ -237,11 +237,16 @@ async def init_db():
 
         # Migrate: add gems/tokens columns if they don't exist yet
         for col in ('gems INTEGER DEFAULT 0', 'tokens INTEGER DEFAULT 0'):
-            col_name = col.split()[0]
             try:
                 await db.execute(f"ALTER TABLE economy ADD COLUMN {col}")
             except Exception:
                 pass  # column already exists
+
+        # Migrate: add bio column to users if it doesn't exist yet
+        try:
+            await db.execute("ALTER TABLE users ADD COLUMN bio TEXT")
+        except Exception:
+            pass  # column already exists
 
         await db.commit()
         logger.info("Database initialized successfully.")

@@ -2,9 +2,12 @@ import discord
 from discord.ext import commands, tasks
 import random
 import re
+import logging
 from datetime import datetime, timezone, timedelta
 import config
 import database as db
+
+logger = logging.getLogger('tainment.giveaway')
 
 
 def parse_duration(text: str) -> int | None:
@@ -115,7 +118,8 @@ class Giveaways(commands.Cog, name="Giveaways"):
 
         try:
             message = await channel.fetch_message(gaw['message_id'])
-        except Exception:
+        except Exception as e:
+            logger.error(f"[GiveawayCheck] Could not fetch message {gaw['message_id']} for giveaway {giveaway_id}: {e}")
             return
 
         if not entries:
