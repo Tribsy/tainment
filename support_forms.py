@@ -299,7 +299,7 @@ class SupportForms(commands.Cog, name='Support Forms'):
         bot.add_view(FeatureRequestView())
         bot.add_view(FeatureVoteView())
 
-    @commands.hybrid_command(name='setupbugreport', description='Post the bug report panel (Admin)')
+    @commands.command(name='setupbugreport', description='Post the bug report panel (Admin)')
     @commands.has_permissions(manage_channels=True)
     async def setup_bugreport(self, ctx: commands.Context):
         embed = discord.Embed(
@@ -320,7 +320,7 @@ class SupportForms(commands.Cog, name='Support Forms'):
         embed.set_footer(text='PopFusion Support  \u2014  Reports are private to staff')
         await ctx.send(embed=embed, view=BugReportView())
 
-    @commands.hybrid_command(name='setupbilling', description='Post the billing support panel (Admin)')
+    @commands.command(name='setupbilling', description='Post the billing support panel (Admin)')
     @commands.has_permissions(manage_channels=True)
     async def setup_billing(self, ctx: commands.Context):
         embed = discord.Embed(
@@ -341,7 +341,7 @@ class SupportForms(commands.Cog, name='Support Forms'):
         embed.set_footer(text='PopFusion Support  \u2014  Requests are private to admins')
         await ctx.send(embed=embed, view=BillingView())
 
-    @commands.hybrid_command(name='setupfeaturereq', description='Post the feature request panel (Admin)')
+    @commands.command(name='setupfeaturereq', description='Post the feature request panel (Admin)')
     @commands.has_permissions(manage_channels=True)
     async def setup_feature_req(self, ctx: commands.Context):
         embed = discord.Embed(

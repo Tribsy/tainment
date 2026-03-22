@@ -24,7 +24,7 @@ class Subscription(commands.Cog, name="Subscription"):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    @commands.hybrid_command(name='subscribe', description='View subscription tiers and pricing')
+    @commands.command(name='subscribe', description='View subscription tiers and pricing')
     async def subscribe(self, ctx: commands.Context):
         await db.ensure_user(ctx.author.id, ctx.author.name)
 
@@ -51,7 +51,7 @@ class Subscription(commands.Cog, name="Subscription"):
         embed.set_footer(text="Tainment+ | Use t!benefits for full comparison")
         await ctx.send(embed=embed)
 
-    @commands.hybrid_command(name='tier', description='Check your current subscription tier')
+    @commands.command(name='tier', description='Check your current subscription tier')
     async def tier(self, ctx: commands.Context, user: discord.Member = None):
         target = user or ctx.author
         await db.ensure_user(target.id, target.name)
@@ -79,7 +79,7 @@ class Subscription(commands.Cog, name="Subscription"):
         embed.set_footer(text="Use t!subscribe to see upgrade options")
         await ctx.send(embed=embed)
 
-    @commands.hybrid_command(name='benefits', description='Compare all subscription tiers')
+    @commands.command(name='benefits', description='Compare all subscription tiers')
     async def benefits(self, ctx: commands.Context):
         embed = discord.Embed(
             title="Tier Benefits Comparison",
@@ -96,7 +96,7 @@ class Subscription(commands.Cog, name="Subscription"):
         embed.set_footer(text="Upgrade with t!upgrade <tier>")
         await ctx.send(embed=embed)
 
-    @commands.hybrid_command(name='upgrade', description='Upgrade your subscription tier')
+    @commands.command(name='upgrade', description='Upgrade your subscription tier')
     async def upgrade(self, ctx: commands.Context, tier: str):
         tier = tier.capitalize()
         if tier not in TIER_ORDER:
@@ -127,7 +127,7 @@ class Subscription(commands.Cog, name="Subscription"):
                 color=config.COLORS['error'],
             ))
 
-    @commands.hybrid_command(name='renew', description='Renew your subscription')
+    @commands.command(name='renew', description='Renew your subscription')
     async def renew(self, ctx: commands.Context, months: int = 1):
         if months not in (1, 3, 6, 12):
             await ctx.send(embed=discord.Embed(
@@ -155,7 +155,7 @@ class Subscription(commands.Cog, name="Subscription"):
                 color=config.COLORS['error'],
             ))
 
-    @commands.hybrid_command(name='payment_history', aliases=['payhistory'], description='View your payment history')
+    @commands.command(name='payment_history', aliases=['payhistory'], description='View your payment history')
     async def payment_history(self, ctx: commands.Context):
         await db.ensure_user(ctx.author.id, ctx.author.name)
         records = await db.get_payment_history(ctx.author.id)

@@ -483,16 +483,17 @@ class ServerSettings(commands.Cog, name="ServerSettings"):
                 'Economy, fun, games',
                 'No moderation tools',
             ]),
-            'Basic': ('$4.99/mo', 0x3498db, [
+            'Basic': ('$14.99/mo', 0x3498db, [
                 'All Free features',
                 'Moderation commands (warn, kick, ban, mute)',
                 'Auto-moderation',
                 'Welcome messages',
                 'Custom log channel',
+                '30% off user subscriptions for members',
             ]),
-            'Pro': ('$9.99/mo', 0xe040fb, [
+            'Pro': ('$23.99/mo', 0xe040fb, [
                 'All Basic features',
-                '40% off user subscriptions for members',
+                '30% off user subscriptions for members',
                 'Server XP multiplier',
                 'Advanced moderation + audit log',
                 'Priority support',
@@ -516,6 +517,66 @@ class ServerSettings(commands.Cog, name="ServerSettings"):
 
         if tier == 'Free':
             embed.set_footer(text="Upgrade with t!serversubscribe to unlock moderation and more!")
+        await ctx.send(embed=embed)
+
+    # ── serversubscribe ───────────────────────────────────────────────────────
+
+    @commands.hybrid_command(name='serversubscribe', aliases=['serversub', 'serverupgrade'], description='View or upgrade the server subscription plan')
+    @commands.guild_only()
+    async def serversubscribe(self, ctx: commands.Context):
+        tier = await get_server_tier(ctx.guild.id)
+        embed = discord.Embed(
+            title="Server Subscription Plans",
+            description=(
+                "Upgrade your server to unlock moderation tools, XP multipliers, and member discounts.\n"
+                f"**Current tier:** {tier}"
+            ),
+            color=config.COLORS['primary'],
+        )
+        embed.add_field(
+            name="Free — No cost",
+            value=(
+                "• Basic bot features\n"
+                "• Economy, fun, games\n"
+                "• Music system\n"
+                "• No server moderation tools"
+            ),
+            inline=False,
+        )
+        embed.add_field(
+            name="Basic — $14.99/mo",
+            value=(
+                "• All Free features\n"
+                "• Full moderation suite (warn, kick, ban, timeout)\n"
+                "• AutoMod integration\n"
+                "• Custom log channel\n"
+                "• Welcome messages\n"
+                "• 30% off user subscriptions for all members"
+            ),
+            inline=False,
+        )
+        embed.add_field(
+            name="Pro — $23.99/mo",
+            value=(
+                "• All Basic features\n"
+                "• 30% off user subscriptions for all members\n"
+                "• Server-wide XP multiplier\n"
+                "• Advanced audit log\n"
+                "• Custom level roles\n"
+                "• Server analytics dashboard\n"
+                "• Priority support"
+            ),
+            inline=False,
+        )
+        embed.add_field(
+            name="How to upgrade",
+            value=(
+                f"Join our [support server](https://discord.gg/SgkYDqkZmt) and open a ticket, "
+                f"or DM an admin to upgrade your server plan."
+            ),
+            inline=False,
+        )
+        embed.set_footer(text="Server plans are per-server, separate from user subscriptions.")
         await ctx.send(embed=embed)
 
     # ── Admin: set server channel settings ────────────────────────────────────

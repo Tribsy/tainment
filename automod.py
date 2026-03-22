@@ -251,7 +251,7 @@ class AutoMod(commands.Cog, name="AutoMod"):
 
     # ── automod group ─────────────────────────────────────────────────────────
 
-    @commands.hybrid_group(name='automod', aliases=['am'], description='AutoMod configuration (Manage Server)')
+    @commands.group(name='automod', aliases=['am'], description='AutoMod configuration (Manage Server)')
     @commands.has_permissions(manage_guild=True)
     @commands.guild_only()
     async def automod(self, ctx: commands.Context):

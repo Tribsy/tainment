@@ -5,8 +5,23 @@ import os
 import sys
 from dotenv import load_dotenv
 
+import aiosqlite
 import config
 from database import init_db
+
+
+async def _get_prefix(bot, message):
+    prefix = config.COMMAND_PREFIX
+    if message.guild:
+        async with aiosqlite.connect(config.DB_PATH) as db:
+            async with db.execute(
+                "SELECT prefix FROM server_settings WHERE guild_id = ?",
+                (message.guild.id,),
+            ) as cur:
+                row = await cur.fetchone()
+                if row:
+                    prefix = row[0]
+    return commands.when_mentioned_or(prefix)(bot, message)
 
 # -- Logging --
 logging.basicConfig(
@@ -59,7 +74,7 @@ class TainmentBot(commands.Bot):
         intents.members = True
 
         super().__init__(
-            command_prefix=commands.when_mentioned_or(config.COMMAND_PREFIX),
+            command_prefix=_get_prefix,
             intents=intents,
             help_command=None,
             case_insensitive=True,
@@ -233,6 +248,18 @@ HELP_CATEGORIES = {
             ('reverse <text>', 'Reverse text'),
         ],
     },
+    'fun_games': {
+        'title': 'Fun Games',
+        'commands': [
+            ('typerace', 'Type a sentence fast — coins based on speed'),
+            ('riddle', 'First correct answer wins 80 coins + 1 gem'),
+            ('wouldyourather', 'Vote with buttons — all voters earn 1 token  (Vibe+)'),
+            ('emojidecode', 'Decode an emoji phrase — coins and tokens  (Vibe+)'),
+            ('fastmath', 'Channel race math question — speed bonus coins'),
+            ('hotpotato', 'Pass the button — holder when it explodes loses coins'),
+            ('wordchain', 'Chain words — 20 coins per word, gems for top scorer'),
+        ],
+    },
     'giveaway': {
         'title': 'Giveaways',
         'commands': [
@@ -258,11 +285,13 @@ HELP_CATEGORIES = {
     'subscription': {
         'title': 'Subscription',
         'commands': [
-            ('subscribe', 'View subscription tiers and pricing'),
-            ('tier', 'Check your current tier'),
-            ('upgrade <tier>', 'Upgrade your subscription'),
+            ('subscribe', 'View user subscription tiers and pricing'),
+            ('tier [@user]', 'Check your current subscription tier'),
+            ('upgrade <tier>', 'Upgrade your user subscription'),
             ('renew [months]', 'Renew your subscription'),
-            ('benefits', 'Compare tier benefits'),
+            ('benefits', 'Compare all tier benefits side by side'),
+            ('servertier', 'View this server\'s subscription tier'),
+            ('serversubscribe', 'View server plans — Basic $14.99 / Pro $23.99 — 30% off user subs for members'),
         ],
     },
     'games': {
@@ -291,14 +320,13 @@ HELP_CATEGORIES = {
         'commands': [
             ('prefix [new]', 'View or set the server prefix'),
             ('afk [status]', 'Set your AFK status'),
-            ('addemote <name> <url>', 'Add an emoji to the server'),
+            ('addemote <name> <url>', 'Add an emoji to the server (admin)'),
             ('randomcolor', 'Generate a random color with preview'),
             ('membercount', 'Server member count breakdown'),
-            ('togglecmd <cmd> [#channel]', 'Enable/disable a command (admin)'),
-            ('cmdlist', 'Show command toggle settings'),
-            ('servertier', 'View server subscription tier'),
-            ('setbirthdaychannel #channel', 'Set birthday announcement channel'),
-            ('setlevelupchannel #channel', 'Set level-up announcement channel'),
+            ('togglecmd <cmd> [#channel]', 'Enable/disable a command in this server (admin)'),
+            ('cmdlist', 'Show command toggle overrides'),
+            ('setbirthdaychannel #channel', 'Set birthday announcement channel (admin)'),
+            ('setlevelupchannel #channel', 'Set level-up announcement channel (admin)'),
         ],
     },
     'birthday': {
@@ -344,6 +372,37 @@ HELP_CATEGORIES = {
             ('automod caps <0-100>', 'Set caps % threshold (0 = off)'),
             ('automod mentions <count>', 'Max mentions per message (0 = off)'),
             ('automod word add/remove/list/clear', 'Manage banned word list'),
+        ],
+    },
+    'moderation': {
+        'title': 'Moderation',
+        'commands': [
+            ('warn @user <reason>', 'Issue a warning (logged to mod log)'),
+            ('warnings @user', "View a user's warning history"),
+            ('clearwarn @user <id>', 'Remove a warning by ID'),
+            ('kick @user [reason]', 'Kick a member'),
+            ('ban @user [reason]', 'Ban a member'),
+            ('unban <user_id>', 'Unban by user ID'),
+            ('timeout @user <duration>', 'Temporarily mute a user'),
+            ('purge <amount>', 'Bulk delete messages'),
+            ('slowmode <seconds>', 'Set channel slowmode'),
+            ('lock / unlock', 'Lock or unlock a channel'),
+            ('modlog', 'View recent moderation cases'),
+            ('setmodlog #channel', 'Set the mod log channel (admin)'),
+            ('nick @user <name>', 'Change a member\'s nickname'),
+            ('addrole / removerole @user <role>', 'Manage member roles'),
+        ],
+    },
+    'profile': {
+        'title': 'Profile',
+        'commands': [
+            ('profile [@user]', 'Full profile card — tier, level, gems, active items'),
+            ('level [@user]', 'Check XP, level, and progress bar'),
+            ('rank', 'Server XP leaderboard'),
+            ('leaderboard', 'Auto-updating top richest, XP, and fishers'),
+            ('serverinfo', 'Server statistics'),
+            ('userinfo [@user]', 'User information'),
+            ('avatar [@user]', "View a user's avatar"),
         ],
     },
     'info': {
@@ -443,8 +502,31 @@ async def stats(ctx: commands.Context):
     await ctx.send(embed=embed)
 
 
+_LOCK_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.bot.lock')
+
+
+def _acquire_lock():
+    """Exit immediately if another instance is already running."""
+    import atexit
+    if os.path.exists(_LOCK_FILE):
+        try:
+            with open(_LOCK_FILE) as f:
+                pid = int(f.read().strip())
+            # Check if that PID is actually alive
+            import signal
+            os.kill(pid, 0)  # raises OSError if not running
+            logger.critical(f"Bot already running (PID {pid}). Exiting.")
+            sys.exit(1)
+        except (OSError, ValueError):
+            pass  # Stale lock — previous run crashed; proceed
+    with open(_LOCK_FILE, 'w') as f:
+        f.write(str(os.getpid()))
+    atexit.register(lambda: os.path.exists(_LOCK_FILE) and os.remove(_LOCK_FILE))
+
+
 if __name__ == '__main__':
     load_dotenv()
+    _acquire_lock()
     token = os.getenv('BOT_TOKEN')
     if not token:
         logger.critical("BOT_TOKEN not set. Add it to your .env file.")

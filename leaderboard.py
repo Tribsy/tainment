@@ -124,7 +124,7 @@ class Leaderboard(commands.Cog, name="Leaderboard"):
 
     # ── Manual leaderboard command ─────────────────────────────────────────────
 
-    @commands.hybrid_command(name='leaderboard', aliases=['lb'], description='View game score leaderboards')
+    @commands.command(name='leaderboard', aliases=['lb'], description='View game score leaderboards')
     async def leaderboard(self, ctx: commands.Context, game: str = None):
         if not game:
             embed = discord.Embed(

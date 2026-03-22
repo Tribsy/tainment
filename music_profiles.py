@@ -94,7 +94,7 @@ class MusicProfiles(commands.Cog, name="Music Profiles"):
 
     # ── musicprofile ──────────────────────────────────────────────────────────
 
-    @commands.hybrid_command(name='musicprofile', aliases=['mprofile', 'mp'], description='View your music taste card')
+    @commands.command(name='musicprofile', aliases=['mprofile', 'mp'], description='View your music taste card')
     async def musicprofile(self, ctx: commands.Context, user: discord.Member = None):
         target = user or ctx.author
         await db.ensure_user(target.id, target.name)
@@ -158,7 +158,7 @@ class MusicProfiles(commands.Cog, name="Music Profiles"):
 
     # ── setgenre ──────────────────────────────────────────────────────────────
 
-    @commands.hybrid_command(name='setgenre', description='Set your favourite music genre')
+    @commands.command(name='setgenre', description='Set your favourite music genre')
     async def setgenre(self, ctx: commands.Context, genre: str):
         await db.ensure_user(ctx.author.id, ctx.author.name)
         await _ensure_music_profile(ctx.author.id)
@@ -185,7 +185,7 @@ class MusicProfiles(commands.Cog, name="Music Profiles"):
 
     # ── setartist ─────────────────────────────────────────────────────────────
 
-    @commands.hybrid_command(name='setartist', description='Add an artist to your favourites')
+    @commands.command(name='setartist', description='Add an artist to your favourites')
     async def setartist(self, ctx: commands.Context, *, artist: str):
         await db.ensure_user(ctx.author.id, ctx.author.name)
         await _ensure_music_profile(ctx.author.id)
@@ -234,7 +234,7 @@ class MusicProfiles(commands.Cog, name="Music Profiles"):
 
     # ── sharetrack ────────────────────────────────────────────────────────────
 
-    @commands.hybrid_command(name='sharetrack', aliases=['share', 'st'], description='Share a song with the server (daily reward)')
+    @commands.command(name='sharetrack', aliases=['share', 'st'], description='Share a song with the server (daily reward)')
     @commands.guild_only()
     @commands.cooldown(1, 86400, commands.BucketType.user)
     async def sharetrack(self, ctx: commands.Context, *, track: str):
@@ -293,7 +293,7 @@ class MusicProfiles(commands.Cog, name="Music Profiles"):
 
     # ── musicwrapped ──────────────────────────────────────────────────────────
 
-    @commands.hybrid_command(name='musicwrapped', aliases=['wrapped', 'mwrapped'], description='Your monthly music summary (Vibe+)')
+    @commands.command(name='musicwrapped', aliases=['wrapped', 'mwrapped'], description='Your monthly music summary (Vibe+)')
     @commands.cooldown(1, 2592000, commands.BucketType.user)
     async def musicwrapped(self, ctx: commands.Context):
         await db.ensure_user(ctx.author.id, ctx.author.name)
@@ -354,7 +354,7 @@ class MusicProfiles(commands.Cog, name="Music Profiles"):
 
     # ── playlist group ────────────────────────────────────────────────────────
 
-    @commands.hybrid_group(name='playlist', aliases=['pl'], description='Manage your music playlists (Vibe+)')
+    @commands.group(name='playlist', aliases=['pl'], description='Manage your music playlists (Vibe+)')
     async def playlist(self, ctx: commands.Context):
         if ctx.invoked_subcommand is None:
             await ctx.send(embed=discord.Embed(

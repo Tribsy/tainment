@@ -35,7 +35,7 @@ class MusicTrivia(commands.Cog, name="Music Trivia"):
 
     # ── musictrivia ───────────────────────────────────────────────────────────
 
-    @commands.hybrid_command(name='musictrivia', aliases=['mtrivia', 'mq'], description='Answer a music trivia question to win coins!')
+    @commands.command(name='musictrivia', aliases=['mtrivia', 'mq'], description='Answer a music trivia question to win coins!')
     @commands.cooldown(1, 30, commands.BucketType.user)
     async def musictrivia(self, ctx: commands.Context, genre: str = None):
         await db.ensure_user(ctx.author.id, ctx.author.name)
@@ -134,7 +134,7 @@ class MusicTrivia(commands.Cog, name="Music Trivia"):
 
     # ── lyricsguess ───────────────────────────────────────────────────────────
 
-    @commands.hybrid_command(name='lyricsguess', aliases=['lyricguess', 'lg'], description='Guess the song from partial lyrics! (Vibe+)')
+    @commands.command(name='lyricsguess', aliases=['lyricguess', 'lg'], description='Guess the song from partial lyrics! (Vibe+)')
     @commands.cooldown(1, 20, commands.BucketType.channel)
     async def lyricsguess(self, ctx: commands.Context):
         await db.ensure_user(ctx.author.id, ctx.author.name)
@@ -205,7 +205,7 @@ class MusicTrivia(commands.Cog, name="Music Trivia"):
 
     # ── namethetune ───────────────────────────────────────────────────────────
 
-    @commands.hybrid_command(name='namethetune', aliases=['ntt', 'namethatsong'], description='Name the song from lyrics — first wins! (Vibe+)')
+    @commands.command(name='namethetune', aliases=['ntt', 'namethatsong'], description='Name the song from lyrics — first wins! (Vibe+)')
     @commands.cooldown(1, 25, commands.BucketType.channel)
     async def namethetune(self, ctx: commands.Context):
         await db.ensure_user(ctx.author.id, ctx.author.name)

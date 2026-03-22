@@ -60,7 +60,7 @@ class Reminders(commands.Cog, name="Reminders"):
     async def before_check(self):
         await self.bot.wait_until_ready()
 
-    @commands.hybrid_command(name='remind', aliases=['reminder'], description='Set a reminder')
+    @commands.command(name='remind', aliases=['reminder'], description='Set a reminder')
     async def remind(self, ctx: commands.Context, time: str, *, message: str):
         """
         Set a reminder. Time format: 1h30m, 2d, 45s, etc.
@@ -100,7 +100,7 @@ class Reminders(commands.Cog, name="Reminders"):
         embed.set_footer(text=f"Reminder ID: {reminder_id}")
         await ctx.send(embed=embed)
 
-    @commands.hybrid_command(name='reminders', description='List your active reminders')
+    @commands.command(name='reminders', description='List your active reminders')
     async def reminders_list(self, ctx: commands.Context):
         rows = await db.get_user_reminders(ctx.author.id)
         if not rows:
@@ -122,7 +122,7 @@ class Reminders(commands.Cog, name="Reminders"):
         embed.set_footer(text="Use t!delreminder <id> to delete")
         await ctx.send(embed=embed)
 
-    @commands.hybrid_command(name='delreminder', description='Delete a reminder by ID')
+    @commands.command(name='delreminder', description='Delete a reminder by ID')
     async def delreminder(self, ctx: commands.Context, reminder_id: int):
         success = await db.delete_reminder(reminder_id, ctx.author.id)
         if success:

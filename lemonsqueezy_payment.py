@@ -37,6 +37,7 @@ logger = logging.getLogger('tainment.lemonsqueezy')
 
 LS_API_BASE = 'https://api.lemonsqueezy.com/v1'
 DISCOUNTS = {1: 0, 3: 0.10, 6: 0.15, 12: 0.20}
+SERVER_MEMBER_DISCOUNT = 0.30  # 30% off for members of Basic/Pro server subscribers
 
 
 def _get_env(key: str) -> str:
@@ -243,8 +244,18 @@ class LemonSqueezyPayment(commands.Cog, name='LemonSqueezyPayment'):
             return False
 
         amount       = calculate_price(tier, months)
-        amount_cents = int(amount * 100)
         discount_pct = DISCOUNTS.get(months, 0)
+
+        # Apply server member discount if the command was run in a subscribed server
+        server_discount = False
+        if ctx.guild:
+            from server_settings import get_server_tier
+            server_tier = await get_server_tier(ctx.guild.id)
+            if server_tier in ('Basic', 'Pro'):
+                amount = round(amount * (1 - SERVER_MEMBER_DISCOUNT), 2)
+                server_discount = True
+
+        amount_cents = int(amount * 100)
 
         payload = {
             'data': {
@@ -302,7 +313,8 @@ class LemonSqueezyPayment(commands.Cog, name='LemonSqueezyPayment'):
                     f'Click below to complete your payment securely via LemonSqueezy.\n\n'
                     f'**{tier}** — {months} month{"s" if months != 1 else ""}\n'
                     f'Total: **${amount:.2f}** USD'
-                    + (f' *(Save {int(discount_pct*100)}%!)*' if discount_pct else '') +
+                    + (f' *(Save {int(discount_pct*100)}%!)*' if discount_pct else '')
+                    + (' *(+30% server member discount applied!)*' if server_discount else '') +
                     f'\n\nYour subscription activates **automatically** within 2 minutes of payment.\n'
                     f'Link expires in **1 hour**.'
                 ),
@@ -339,7 +351,7 @@ class LemonSqueezyPayment(commands.Cog, name='LemonSqueezyPayment'):
 
     # ── Commands ──────────────────────────────────────────────────────────────
 
-    @commands.hybrid_command(
+    @commands.command(
         name='verifypayment',
         aliases=['verifypay', 'checkpay'],
         description='Manually check if your payment was processed',

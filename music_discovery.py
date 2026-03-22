@@ -48,7 +48,7 @@ class MusicDiscovery(commands.Cog, name="Music Discovery"):
 
     # ── recommend ─────────────────────────────────────────────────────────────
 
-    @commands.hybrid_command(name='recommend', description='Get song recommendations (optionally by genre)')
+    @commands.command(name='recommend', description='Get song recommendations (optionally by genre)')
     async def recommend(self, ctx: commands.Context, genre: str = None):
         await db.ensure_user(ctx.author.id, ctx.author.name)
 
@@ -70,7 +70,7 @@ class MusicDiscovery(commands.Cog, name="Music Discovery"):
 
     # ── hotsongs ──────────────────────────────────────────────────────────────
 
-    @commands.hybrid_command(name='hotsongs', aliases=['hot', 'trending'], description="This server's hottest tracks this week")
+    @commands.command(name='hotsongs', aliases=['hot', 'trending'], description="This server's hottest tracks this week")
     @commands.guild_only()
     async def hotsongs(self, ctx: commands.Context):
         async with aiosqlite.connect(config.DB_PATH) as conn:
@@ -106,7 +106,7 @@ class MusicDiscovery(commands.Cog, name="Music Discovery"):
 
     # ── genresearch ───────────────────────────────────────────────────────────
 
-    @commands.hybrid_command(name='genresearch', aliases=['genre'], description='Get curated recommendations for a specific genre (Vibe+)')
+    @commands.command(name='genresearch', aliases=['genre'], description='Get curated recommendations for a specific genre (Vibe+)')
     async def genresearch(self, ctx: commands.Context, genre: str):
         await db.ensure_user(ctx.author.id, ctx.author.name)
         tier = await db.get_tier(ctx.author.id)
@@ -135,7 +135,7 @@ class MusicDiscovery(commands.Cog, name="Music Discovery"):
 
     # ── moodsearch ────────────────────────────────────────────────────────────
 
-    @commands.hybrid_command(name='moodsearch', aliases=['mood'], description='Get song recommendations by mood (Vibe+)')
+    @commands.command(name='moodsearch', aliases=['mood'], description='Get song recommendations by mood (Vibe+)')
     async def moodsearch(self, ctx: commands.Context, mood: str):
         await db.ensure_user(ctx.author.id, ctx.author.name)
         tier = await db.get_tier(ctx.author.id)
@@ -168,7 +168,7 @@ class MusicDiscovery(commands.Cog, name="Music Discovery"):
 
     # ── artistinfo ────────────────────────────────────────────────────────────
 
-    @commands.hybrid_command(name='artistinfo', aliases=['artist'], description='View an artist profile card (Premium+)')
+    @commands.command(name='artistinfo', aliases=['artist'], description='View an artist profile card (Premium+)')
     async def artistinfo(self, ctx: commands.Context, *, artist: str):
         await db.ensure_user(ctx.author.id, ctx.author.name)
         tier = await db.get_tier(ctx.author.id)
@@ -203,7 +203,7 @@ class MusicDiscovery(commands.Cog, name="Music Discovery"):
 
     # ── toptracks ─────────────────────────────────────────────────────────────
 
-    @commands.hybrid_command(name='toptracks', description='Most shared songs across all servers (Premium+)')
+    @commands.command(name='toptracks', description='Most shared songs across all servers (Premium+)')
     async def toptracks(self, ctx: commands.Context):
         await db.ensure_user(ctx.author.id, ctx.author.name)
         tier = await db.get_tier(ctx.author.id)
@@ -245,7 +245,7 @@ class MusicDiscovery(commands.Cog, name="Music Discovery"):
 
     # ── newreleases ───────────────────────────────────────────────────────────
 
-    @commands.hybrid_command(name='newreleases', aliases=['new', 'fresh'], description='Curated new releases this week (Pro)')
+    @commands.command(name='newreleases', aliases=['new', 'fresh'], description='Curated new releases this week (Pro)')
     async def newreleases(self, ctx: commands.Context):
         await db.ensure_user(ctx.author.id, ctx.author.name)
         tier = await db.get_tier(ctx.author.id)

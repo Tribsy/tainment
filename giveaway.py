@@ -144,7 +144,7 @@ class Giveaways(commands.Cog, name="Giveaways"):
             embed=embed,
         )
 
-    @commands.hybrid_command(name='gcreate', description='Create a giveaway')
+    @commands.command(name='gcreate', description='Create a giveaway')
     @commands.has_permissions(manage_guild=True)
     async def gcreate(self, ctx: commands.Context):
         """Interactive giveaway creation via DM-style prompts."""
@@ -197,7 +197,7 @@ class Giveaways(commands.Cog, name="Giveaways"):
         await msg.edit(view=real_view)
         self.bot.add_view(real_view)
 
-    @commands.hybrid_command(name='gend', description='End a giveaway early by message ID')
+    @commands.command(name='gend', description='End a giveaway early by message ID')
     @commands.has_permissions(manage_guild=True)
     async def gend(self, ctx: commands.Context, message_id: str):
         try:
@@ -217,7 +217,7 @@ class Giveaways(commands.Cog, name="Giveaways"):
         await self._conclude_giveaway(gaw['id'])
         await ctx.send(embed=discord.Embed(description="Giveaway ended early.", color=config.COLORS['success']), ephemeral=True)
 
-    @commands.hybrid_command(name='greroll', description='Reroll winners for an ended giveaway')
+    @commands.command(name='greroll', description='Reroll winners for an ended giveaway')
     @commands.has_permissions(manage_guild=True)
     async def greroll(self, ctx: commands.Context, message_id: str):
         try:

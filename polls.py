@@ -12,7 +12,7 @@ class Polls(commands.Cog, name="Polls"):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-    @commands.hybrid_command(name='poll', description='Create a poll (separate options with |)')
+    @commands.command(name='poll', description='Create a poll (separate options with |)')
     @commands.has_permissions(send_messages=True)
     async def poll(self, ctx: commands.Context, *, content: str):
         """

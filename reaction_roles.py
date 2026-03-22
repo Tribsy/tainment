@@ -86,7 +86,7 @@ class ReactionRoles(commands.Cog, name='Reaction Roles'):
 
     # ── Setup command ─────────────────────────────────────────────────────────
 
-    @commands.hybrid_command(
+    @commands.command(
         name='setupgenreroles',
         description='Create the genre lane channel and post the reaction-role panel (Admin)',
     )
