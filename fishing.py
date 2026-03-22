@@ -28,7 +28,7 @@ def _build_weighted_pool(rod_tier: int, bait_active: bool, subscription_tier: st
         if tier_info['min_rod'] > rod_tier:
             continue  # rod too weak for this tier
         fish_list = FISH.get(tier_key, [])
-        base_w = tier_info['base_weight']
+        base_w = tier_info.get('base_weight', tier_info.get('weight', 1.0))
 
         # Subscription bonuses
         if subscription_tier == 'Premium':
