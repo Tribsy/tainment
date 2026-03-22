@@ -79,7 +79,7 @@ SHOP: dict[str, dict] = {
     },
     'lucky_gamble': {
         'name': 'Lucky Gamble',
-        'description': 'Your next gamble has a 65% win chance',
+        'description': 'Your next gamble has a 65% win chance (1-time use)',
         'currency': 'gems',
         'price': 25,
         'duration': None,
@@ -187,10 +187,10 @@ SHOP: dict[str, dict] = {
     },
     'gamble_shield': {
         'name': 'Gamble Shield',
-        'description': 'Lose only half your bet on your next failed gamble',
+        'description': 'Lose only half your bet on failed gambles for 24 hours',
         'currency': 'coins',
         'price': 350,
-        'duration': None,
+        'duration': 86400,
         'emoji': '\U0001f6e1\ufe0f',
     },
 
@@ -397,7 +397,7 @@ SHOP: dict[str, dict] = {
     },
     'trivia_skip': {
         'name': 'Trivia Skip',
-        'description': 'Skip a music trivia question without penalty',
+        'description': 'Skip a music trivia question without penalty (1-time use)',
         'currency': 'coins',
         'price': 200,
         'duration': None,
@@ -413,7 +413,7 @@ SHOP: dict[str, dict] = {
     },
     'bingo_doubler': {
         'name': 'Bingo Doubler',
-        'description': '2 free pre-marked squares in Music Bingo',
+        'description': '2 free pre-marked squares in Music Bingo (1-time use)',
         'currency': 'coins',
         'price': 800,
         'duration': None,

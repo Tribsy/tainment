@@ -138,6 +138,23 @@ class AutoMod(commands.Cog, name="AutoMod"):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
+    async def cog_check(self, ctx: commands.Context) -> bool:
+        """All AutoMod config commands require a Basic or Pro server subscription."""
+        if not ctx.guild:
+            return False
+        tier = await get_server_tier(ctx.guild.id)
+        if tier == 'Free':
+            await ctx.send(embed=discord.Embed(
+                title="Server Plan Required",
+                description=(
+                    "AutoMod configuration requires a **Basic** or **Pro** server subscription.\n\n"
+                    "Use `t!serversubscribe` to view plans and upgrade."
+                ),
+                color=config.COLORS['warning'],
+            ))
+            return False
+        return True
+
     # ── on_message listener ───────────────────────────────────────────────────
 
     @commands.Cog.listener()
@@ -256,17 +273,6 @@ class AutoMod(commands.Cog, name="AutoMod"):
     @commands.has_permissions(manage_guild=True)
     @commands.guild_only()
     async def automod(self, ctx: commands.Context):
-        tier = await get_server_tier(ctx.guild.id)
-        if tier == 'Free':
-            await ctx.send(embed=discord.Embed(
-                title="Server Plan Required",
-                description=(
-                    "AutoMod configuration requires a **Basic** or **Pro** server subscription.\n\n"
-                    "Use `t!serversubscribe` to view plans and upgrade."
-                ),
-                color=config.COLORS['warning'],
-            ))
-            return
         if ctx.invoked_subcommand is None:
             await ctx.invoke(self.automod_status)
 

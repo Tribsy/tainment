@@ -1,9 +1,12 @@
 import discord
 from discord.ext import commands
 import random
+import logging
 from datetime import datetime, timezone
 import config
 import database as db
+
+logger = logging.getLogger('tainment.levels')
 
 
 async def _assign_level_role(member: discord.Member, new_level: int) -> str | None:
@@ -34,7 +37,8 @@ async def _assign_level_role(member: discord.Member, new_level: int) -> str | No
                 color=discord.Color(target_color),
                 reason='Tainment+ level milestone role',
             )
-        except discord.HTTPException:
+        except discord.HTTPException as e:
+            logger.warning(f"[Levels] Could not create role '{target_name}' in {member.guild}: {e}")
             return None
 
     try:
@@ -43,8 +47,8 @@ async def _assign_level_role(member: discord.Member, new_level: int) -> str | No
         if role not in member.roles:
             await member.add_roles(role, reason=f'Reached level {new_level}')
             return f"\U0001f3c6 Unlocked role **{target_name}**!"
-    except discord.HTTPException:
-        pass
+    except discord.HTTPException as e:
+        logger.warning(f"[Levels] Could not assign role '{target_name}' to {member}: {e}")
     return None
 
 

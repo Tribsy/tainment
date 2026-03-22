@@ -127,16 +127,22 @@ class Moderation(commands.Cog, name="Moderation"):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
+    # Commands available on the free server tier
+    FREE_COMMANDS = {'purge', 'clear', 'prune', 'slowmode', 'slow', 'lock', 'unlock', 'nick', 'nickname'}
+
     async def cog_check(self, ctx: commands.Context) -> bool:
-        """All moderation commands require a server Basic or Pro subscription."""
+        """Basic moderation is free. Advanced commands require Basic or Pro server plan."""
         if not ctx.guild:
             return False
+        if ctx.command and ctx.command.name in self.FREE_COMMANDS:
+            return True
         tier = await get_server_tier(ctx.guild.id)
         if tier == 'Free':
             await ctx.send(embed=discord.Embed(
                 title="Server Plan Required",
                 description=(
-                    "Moderation commands require a **Basic** or **Pro** server subscription.\n\n"
+                    "This command requires a **Basic** or **Pro** server subscription.\n\n"
+                    "Free tools available: `t!purge`, `t!slowmode`, `t!lock`, `t!unlock`, `t!nick`\n\n"
                     "Use `t!serversubscribe` to view plans and upgrade."
                 ),
                 color=config.COLORS['warning'],
@@ -382,9 +388,11 @@ class Moderation(commands.Cog, name="Moderation"):
     @commands.bot_has_permissions(manage_messages=True)
     @commands.guild_only()
     async def purge(self, ctx: commands.Context, amount: int, member: discord.Member = None):
-        if amount < 1 or amount > 100:
+        server_tier = await get_server_tier(ctx.guild.id)
+        max_purge = 100 if server_tier != 'Free' else 10
+        if amount < 1 or amount > max_purge:
             await ctx.send(embed=discord.Embed(
-                description="Amount must be between 1 and 100.",
+                description=f"Amount must be between 1 and {max_purge}" + (" (Free tier limit — upgrade with `t!serversubscribe` for up to 100)." if server_tier == 'Free' else "."),
                 color=config.COLORS['error'],
             ))
             return

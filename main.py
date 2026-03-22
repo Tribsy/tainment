@@ -100,6 +100,13 @@ class TainmentBot(commands.Bot):
                 name=f"t!help | {len(self.guilds)} servers",
             ),
         )
+        # Ensure level milestone roles exist in every guild
+        from server_settings import _create_level_roles
+        for guild in self.guilds:
+            try:
+                await _create_level_roles(guild)
+            except Exception as e:
+                logger.warning(f"Could not create level roles in {guild}: {e}")
 
     async def on_member_join(self, member: discord.Member):
         role = discord.utils.get(member.guild.roles, name='\U0001f3b5 Listener')

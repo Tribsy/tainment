@@ -479,26 +479,24 @@ class ServerSettings(commands.Cog, name="ServerSettings"):
 
         tiers_info = {
             'Free': ('No subscription', 0x95a5a6, [
-                'Basic bot features',
-                'Economy, fun, games',
-                'No moderation tools',
+                'Economy, fun, games, fishing, music',
+                'Basic mod tools: purge (10), slowmode, lock/unlock, nick',
+                'No warn/kick/ban/timeout — upgrade for full moderation',
             ]),
-            'Basic': ('$14.99/mo', 0x3498db, [
+            'Basic': ('$7.99/mo', 0x3498db, [
                 'All Free features',
-                'Moderation commands (warn, kick, ban, mute)',
-                'Auto-moderation',
-                'Welcome messages',
-                'Custom log channel',
-                '15% off user subscriptions for members',
+                'Full moderation (warn, kick, ban, timeout, audit log)',
+                'AutoMod configuration',
+                'Welcome messages & custom log channel',
+                '15% off user subscriptions for all members',
             ]),
-            'Pro': ('$23.99/mo', 0xe040fb, [
+            'Pro': ('$14.99/mo', 0xe040fb, [
                 'All Basic features',
-                '30% off user subscriptions for members',
-                'Server XP multiplier',
-                'Advanced moderation + audit log',
-                'Priority support',
+                '30% off user subscriptions for all members',
+                'Server-wide XP multiplier',
+                'Advanced audit log + server analytics',
                 'Custom level roles',
-                'Server analytics',
+                'Priority support',
             ]),
         }
 
@@ -536,34 +534,31 @@ class ServerSettings(commands.Cog, name="ServerSettings"):
         embed.add_field(
             name="Free — No cost",
             value=(
-                "• Basic bot features\n"
-                "• Economy, fun, games\n"
-                "• Music system\n"
-                "• No server moderation tools"
+                "• Economy, fun, games, fishing, music\n"
+                "• Basic mod: purge (10 msgs), slowmode, lock/unlock, nick\n"
+                "• No warn / kick / ban / timeout"
             ),
             inline=False,
         )
         embed.add_field(
-            name="Basic — $14.99/mo",
+            name="Basic — $7.99/mo",
             value=(
                 "• All Free features\n"
-                "• Full moderation suite (warn, kick, ban, timeout)\n"
-                "• AutoMod integration\n"
-                "• Custom log channel\n"
-                "• Welcome messages\n"
+                "• Full moderation (warn, kick, ban, timeout, up to 100 purge)\n"
+                "• AutoMod configuration\n"
+                "• Custom log channel & welcome messages\n"
                 "• 15% off user subscriptions for all members"
             ),
             inline=False,
         )
         embed.add_field(
-            name="Pro — $23.99/mo",
+            name="Pro — $14.99/mo",
             value=(
                 "• All Basic features\n"
                 "• 30% off user subscriptions for all members\n"
                 "• Server-wide XP multiplier\n"
-                "• Advanced audit log\n"
+                "• Advanced audit log & server analytics\n"
                 "• Custom level roles\n"
-                "• Server analytics dashboard\n"
                 "• Priority support"
             ),
             inline=False,
