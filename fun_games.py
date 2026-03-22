@@ -121,22 +121,28 @@ class FunGames(commands.Cog, name="Fun Games"):
     @commands.cooldown(1, 20, commands.BucketType.channel)
     async def typerace(self, ctx: commands.Context):
         sentence = random.choice(TYPERACE_SENTENCES)
+        # Insert zero-width spaces between characters so copy-paste includes them,
+        # making the pasted text fail the exact-match check.
+        ZWS = '\u200b'
+        display_sentence = ZWS.join(sentence)
         embed = discord.Embed(
             title="\u2328\ufe0f Type Race!",
             description=(
                 "Type the sentence below **exactly** as shown.\n"
                 "First to finish wins! You have **25 seconds**.\n\n"
-                f"```{sentence}```"
+                f"```{display_sentence}```"
             ),
             color=config.COLORS['primary'],
         )
-        embed.set_footer(text="Copy and paste won't work — you must type it!")
+        embed.set_footer(text="You must type it — copy and paste won't work!")
         await ctx.send(embed=embed)
 
         start = time.monotonic()
 
         def check(m):
-            return m.channel == ctx.channel and not m.author.bot and m.content.lower() == sentence
+            # Strip zero-width spaces from submitted text before comparing
+            clean = m.content.replace(ZWS, '').lower()
+            return m.channel == ctx.channel and not m.author.bot and clean == sentence
 
         try:
             winner_msg = await self.bot.wait_for('message', check=check, timeout=25)

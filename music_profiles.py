@@ -236,7 +236,7 @@ class MusicProfiles(commands.Cog, name="Music Profiles"):
 
     @commands.command(name='sharetrack', aliases=['share', 'st'], description='Share a song with the server (daily reward)')
     @commands.guild_only()
-    @commands.cooldown(1, 86400, commands.BucketType.user)
+    @commands.cooldown(1, 21600, commands.BucketType.user)
     async def sharetrack(self, ctx: commands.Context, *, track: str):
         """Usage: t!sharetrack Song Title - Artist Name"""
         await db.ensure_user(ctx.author.id, ctx.author.name)

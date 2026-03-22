@@ -259,21 +259,28 @@ class Fun(commands.Cog, name="Fun"):
         embed.set_footer(text="+1 coin for opening your fortune!")
         await ctx.send(embed=embed)
 
-    @commands.command(name='color', description='Preview a hex color')
-    async def color(self, ctx: commands.Context, hex_code: str):
-        hex_code = hex_code.lstrip('#')
-        if len(hex_code) != 6 or not all(c in '0123456789abcdefABCDEF' for c in hex_code):
-            await ctx.send(embed=discord.Embed(
-                description="Provide a valid 6-digit hex color. Example: `t!color FF5733`",
-                color=config.COLORS['error'],
-            ))
-            return
-        color_int = int(hex_code, 16)
+    @commands.command(name='color', description='Show a random color, or preview a specific hex')
+    async def color(self, ctx: commands.Context, hex_code: str = None):
+        if hex_code:
+            hex_code = hex_code.lstrip('#')
+            if len(hex_code) != 6 or not all(c in '0123456789abcdefABCDEF' for c in hex_code):
+                await ctx.send(embed=discord.Embed(
+                    description="Provide a valid 6-digit hex color. Example: `t!color FF5733`",
+                    color=config.COLORS['error'],
+                ))
+                return
+            color_int = int(hex_code, 16)
+        else:
+            color_int = random.randint(0, 0xFFFFFF)
+            hex_code = f"{color_int:06X}"
+
+        r, g, b = (color_int >> 16) & 255, (color_int >> 8) & 255, color_int & 255
         embed = discord.Embed(
             title=f"#{hex_code.upper()}",
-            description=f"**Hex:** `#{hex_code.upper()}`\n**Decimal:** `{color_int}`\n**RGB:** `{(color_int >> 16) & 255}, {(color_int >> 8) & 255}, {color_int & 255}`",
+            description=f"**Hex:** `#{hex_code.upper()}`\n**RGB:** `{r}, {g}, {b}`",
             color=color_int,
         )
+        embed.set_footer(text="t!color for a random color | t!color <hex> to preview a specific one")
         await ctx.send(embed=embed)
 
 
