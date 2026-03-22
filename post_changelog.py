@@ -1,8 +1,12 @@
 """
-Creates #📋┃changelog under the 📢 Info category and posts the full changelog.
-Also refreshes the announcement in #📢┃announcements.
+Changelog manager for Tainment+.
 
-Run: python post_changelog.py
+Modes:
+  python post_changelog.py          → full repost (oldest first, newest last)
+  python post_changelog.py --new    → append only the LATEST version as a new message
+
+Full repost clears the bot's old messages and reposts all versions in order.
+--new mode just sends the first entry in VERSIONS as a new message at the bottom.
 """
 
 import asyncio, os, sys
@@ -13,6 +17,7 @@ from dotenv import load_dotenv
 load_dotenv()
 TOKEN    = os.getenv('BOT_TOKEN')
 GUILD_ID = 1390512546858926163
+NEW_ONLY = '--new' in sys.argv
 
 
 async def clear_bot(channel, me):
@@ -61,46 +66,35 @@ class ChangelogClient(discord.Client):
             print(f'[EXISTS]  #{changelog_ch.name}')
 
         # ── Post changelog ────────────────────────────────────────────────────
-        await clear_bot(changelog_ch, self.user)
-
-        header = discord.Embed(
-            title='\U0001f4cb Tainment+ Changelog',
-            description='A full history of updates to the PopFusion bot.',
-            color=0xe040fb,
-        )
-        header.set_footer(text='PopFusion \u2014 discover music. build community.')
-        await changelog_ch.send(embed=header)
-        await asyncio.sleep(0.4)
-
+        # Oldest first → newest last. --new mode appends only the latest without clearing.
         versions = [
             (
-                'v2.3.0 \u2014 March 2026',
-                0xe040fb,
+                'v2.0.0 \u2014 March 2026',
+                0x7c4dff,
                 [
-                    '\U0001f3a3 **2300+ fish across 10 tiers** \u2014 Trash / Common / Uncommon / Rare / Epic / Legendary / Mythic / Ancient / Celestial / Void. Each tier requires a specific rod to unlock.',
-                    '\U0001f3a3 **11 fishing rods** \u2014 Silver \u2192 Gold \u2192 Diamond \u2192 Pearl \u2192 Crystal \u2192 Titanium \u2192 Quantum \u2192 Obsidian \u2192 Cosmic \u2192 Void. Higher rods reduce cooldown and unlock rarer tiers.',
-                    '\U0001fab1 **Premium Bait reworked** \u2014 Now grants +40% rare fish chance for **1 hour** (was 10 casts). Purchasable for 800 \U0001fa99.',
-                    '\U0001f381 **New command: `t!rods`** \u2014 View all 11 rods, their tier requirements, prices, and what fish tiers they unlock.',
-                    '\U0001f382 **Birthday system** \u2014 `t!birthday set MM/DD` to register your birthday per server. Daily announcements in your chosen channel + **500 \U0001fa99 + 5 \U0001f48e** birthday gift.',
-                    '\u2699\ufe0f **Server Settings cog** \u2014 Per-server prefix (`t!prefix`), command toggles per channel (`t!togglecmd`), AFK system (`t!afk`), `t!addemote`, `t!randomcolor`, `t!membercount`, `t!servertier`.',
-                    '\U0001f6e0\ufe0f **Admin economy commands** \u2014 `t!setbalance`, `t!addbalance`, `t!removebalance`, `t!reseteconomy` (requires Manage Server / Administrator).',
-                    '\U0001f3c6 **10 level milestone roles** \u2014 Added Superstar (75), Legend (100), Cosmic (150), Immortal (200), Void Walker (300). Auto-created when bot joins a server.',
-                    '\U0001f9f9 **Shop expanded** \u2014 45+ items total. New: 8 advanced rods, profile banners (5 colors), avatar frames (2 styles), mystery box, piggy bank, fishing magnet, coin surge, rob boost.',
-                    '\U0001f464 **Profile card upgraded** \u2014 Now shows gems, tokens, fishing level, and equipped cosmetics (banner color, avatar frame, Prestige badge).',
+                    '\U0001f3a3 **Competitive fishing game** \u2014 18 fish types across 6 tiers. Commands: `t!fish`, `t!fishbag`, `t!sell`, `t!fishstats`, `t!fishtop`.',
+                    '\U0001f3a3 **Fishing rods in shop** \u2014 Silver Rod (1500\U0001fa99), Gold Rod (5000\U0001fa99), Diamond Rod (20\U0001f48e). Each improves catch rates.',
+                    '\U0001f3c6 **Auto-updating leaderboard** \u2014 `#\U0001f3c6\u2503leaderboards` refreshes every 5 min with top richest, XP, and fishers.',
+                    '\U0001f331 **XP milestone roles** \u2014 Auto-assigned at Lvl 5/10/20/30/50: Newcomer, Groover, Fanatic, Headliner, Icon.',
+                    '\U0001f464 **Auto Member role on join** \u2014 New members automatically receive \U0001f3b5 Listener.',
+                    '\U0001f41b **Support forms** \u2014 Modal forms for bug reports and billing support (buttons in support channels).',
+                    '\U0001fa99 **Multi-currency economy** \u2014 Coins \U0001fa99, Gems \U0001f48e, Tokens \U0001f3ab across all games and the shop.',
+                    '\U0001f3ae **New games** \u2014 Tic-Tac-Toe, Connect Four, Scramble, Math Quiz, Higher/Lower, Duel, Snap.',
+                    '\U0001f6d2 **Premium shop** \u2014 15+ items across three currency shops.',
+                    '\U0001f4e3 **Giveaways, polls, reminders** \u2014 Full community tools added.',
                 ],
             ),
             (
-                'v2.2.0 \u2014 March 2026',
-                0xe040fb,
+                'v2.0.1 \u2014 March 2026',
+                0x00e5ff,
                 [
-                    '\u2328\ufe0f **7 new fun games** \u2014 `t!typerace`, `t!riddle`, `t!wouldyourather`, `t!emojidecode`, `t!fastmath`, `t!hotpotato`, `t!wordchain` \u2014 all earn coins, gems, or tokens.',
-                    '\U0001f6e1\ufe0f **Full moderation suite** \u2014 `t!warn`, `t!kick`, `t!ban`, `t!unban`, `t!timeout`, `t!purge`, `t!slowmode`, `t!lock`, `t!unlock`, `t!addrole`, `t!removerole`, `t!nick`, `t!modlog`, `t!setmodlog`, `t!modinfo`.',
-                    '\U0001f6d2 **9 new shop items** \u2014 Coin Magnet, Premium Bait, Gamble Shield (coins); XP Surge, Prestige Badge, Gem Booster (gems); Typerace Booster, Fish Vacuum, Streak Restore (tokens).',
-                    '\U0001f4b3 **Shop IDs now visible** \u2014 Every shop item shows its exact `t!buy <id>` so you always know what to type.',
-                    '\U0001f525 **Vibe tier content fixed** \u2014 Vibe subscribers now correctly access all joke/story categories, trivia, and get the Vibe badge on their profile.',
-                    '\u23f0 **Leaderboard timer updated** \u2014 Auto-leaderboard now refreshes every **10 minutes** (was 5).',
-                    '\U0001f4c4 **Subscription tiers expanded** \u2014 Each tier now has clearer, more distinct perks including work bonuses, fishing boosts, and free Lucky Gambles for Premium/Pro.',
-                    '\U0001f4cb **Help & FAQ refreshed** \u2014 `#help` and `#faq` channels updated with all current commands, tiers, and genre lane info.',
+                    '\U0001f3a3 **Fishing cooldown reduced** \u2014 Base 30s \u2192 15s. Silver 30s \u2192 12s. Gold 25s \u2192 10s. Diamond 20s \u2192 7s.',
+                    '\U0001f4b0 **Gambling display fixed** \u2014 Win now clearly shows "Payout: +190 (bet returned + profit)" so it\'s obvious your bet is safe.',
+                    '\U0001f39b\ufe0f **PopFusion role rebrand** \u2014 All roles renamed to match the music festival brand:\n'
+                    '\u2003Owner\u2192\U0001f39b\ufe0f Founder \u2022 Admin\u2192\U0001f39a\ufe0f Producer \u2022 Moderator\u2192\U0001f6e1\ufe0f Stage Manager \u2022 Support\u2192\U0001f399\ufe0f Crew\n'
+                    '\u2003Member\u2192\U0001f3b5 Listener \u2022 Subscriber\u2192\U0001f525 Fuser \u2022 Announcements Ping\u2192\U0001f4e2 Drop Alerts',
+                    '\U0001f4b3 **New Vibe tier at $1.99/mo** \u2014 All joke/story categories, trivia, 200 daily coins, 1.2x XP.',
+                    '\U0001f4b8 **Pro tier reduced** \u2014 $9.99 \u2192 $7.99/mo.',
                 ],
             ),
             (
@@ -120,43 +114,63 @@ class ChangelogClient(discord.Client):
                 ],
             ),
             (
-                'v2.0.1 \u2014 March 2026',
-                0x00e5ff,
+                'v2.2.0 \u2014 March 2026',
+                0xe040fb,
                 [
-                    '\U0001f3a3 **Fishing cooldown reduced** \u2014 Base 30s \u2192 15s. Silver 30s \u2192 12s. Gold 25s \u2192 10s. Diamond 20s \u2192 7s.',
-                    '\U0001f4b0 **Gambling display fixed** \u2014 Win now clearly shows "Payout: +190 (bet returned + profit)" so it\'s obvious your bet is safe.',
-                    '\U0001f39b\ufe0f **PopFusion role rebrand** \u2014 All roles renamed to match the music festival brand:\n'
-                    '\u2003Owner\u2192\U0001f39b\ufe0f Founder \u2022 Admin\u2192\U0001f39a\ufe0f Producer \u2022 Moderator\u2192\U0001f6e1\ufe0f Stage Manager \u2022 Support\u2192\U0001f399\ufe0f Crew\n'
-                    '\u2003Member\u2192\U0001f3b5 Listener \u2022 Subscriber\u2192\U0001f525 Fuser \u2022 Announcements Ping\u2192\U0001f4e2 Drop Alerts',
-                    '\U0001f4b3 **New Vibe tier at $1.99/mo** \u2014 All joke/story categories, trivia, 200 daily coins, 1.2x XP.',
-                    '\U0001f4b8 **Pro tier reduced** \u2014 $9.99 \u2192 $7.99/mo.',
+                    '\u2328\ufe0f **7 new fun games** \u2014 `t!typerace`, `t!riddle`, `t!wouldyourather`, `t!emojidecode`, `t!fastmath`, `t!hotpotato`, `t!wordchain` \u2014 all earn coins, gems, or tokens.',
+                    '\U0001f6e1\ufe0f **Full moderation suite** \u2014 `t!warn`, `t!kick`, `t!ban`, `t!unban`, `t!timeout`, `t!purge`, `t!slowmode`, `t!lock`, `t!unlock`, `t!addrole`, `t!removerole`, `t!nick`, `t!modlog`, `t!setmodlog`, `t!modinfo`.',
+                    '\U0001f6d2 **9 new shop items** \u2014 Coin Magnet, Premium Bait, Gamble Shield (coins); XP Surge, Prestige Badge, Gem Booster (gems); Typerace Booster, Fish Vacuum, Streak Restore (tokens).',
+                    '\U0001f4b3 **Shop IDs now visible** \u2014 Every shop item shows its exact `t!buy <id>` so you always know what to type.',
+                    '\U0001f525 **Vibe tier content fixed** \u2014 Vibe subscribers now correctly access all joke/story categories, trivia, and get the Vibe badge on their profile.',
+                    '\u23f0 **Leaderboard timer updated** \u2014 Auto-leaderboard now refreshes every **10 minutes** (was 5).',
+                    '\U0001f4c4 **Subscription tiers expanded** \u2014 Each tier now has clearer, more distinct perks including work bonuses, fishing boosts, and free Lucky Gambles for Premium/Pro.',
+                    '\U0001f4cb **Help & FAQ refreshed** \u2014 `#help` and `#faq` channels updated with all current commands, tiers, and genre lane info.',
                 ],
             ),
             (
-                'v2.0.0 \u2014 March 2026',
-                0x7c4dff,
+                'v2.3.0 \u2014 March 2026',
+                0xe040fb,
                 [
-                    '\U0001f3a3 **Competitive fishing game** \u2014 18 fish types across 6 tiers. Commands: `t!fish`, `t!fishbag`, `t!sell`, `t!fishstats`, `t!fishtop`.',
-                    '\U0001f3a3 **Fishing rods in shop** \u2014 Silver Rod (1500\U0001fa99), Gold Rod (5000\U0001fa99), Diamond Rod (20\U0001f48e). Each improves catch rates.',
-                    '\U0001f3c6 **Auto-updating leaderboard** \u2014 `#\U0001f3c6\u2503leaderboards` refreshes every 5 min with top richest, XP, and fishers.',
-                    '\U0001f331 **XP milestone roles** \u2014 Auto-assigned at Lvl 5/10/20/30/50: Newcomer, Groover, Fanatic, Headliner, Icon.',
-                    '\U0001f464 **Auto Member role on join** \u2014 New members automatically receive \U0001f3b5 Listener.',
-                    '\U0001f41b **Support forms** \u2014 Modal forms for bug reports and billing support (buttons in support channels).',
-                    '\U0001fa99 **Multi-currency economy** \u2014 Coins \U0001fa99, Gems \U0001f48e, Tokens \U0001f3ab across all games and the shop.',
-                    '\U0001f3ae **New games** \u2014 Tic-Tac-Toe, Connect Four, Scramble, Math Quiz, Higher/Lower, Duel, Snap.',
-                    '\U0001f6d2 **Premium shop** \u2014 15+ items across three currency shops.',
-                    '\U0001f4e3 **Giveaways, polls, reminders** \u2014 Full community tools added.',
+                    '\U0001f3a3 **2300+ fish across 10 tiers** \u2014 Trash / Common / Uncommon / Rare / Epic / Legendary / Mythic / Ancient / Celestial / Void. Each tier requires a specific rod to unlock.',
+                    '\U0001f3a3 **11 fishing rods** \u2014 Silver \u2192 Gold \u2192 Diamond \u2192 Pearl \u2192 Crystal \u2192 Titanium \u2192 Quantum \u2192 Obsidian \u2192 Cosmic \u2192 Void. Higher rods reduce cooldown and unlock rarer tiers.',
+                    '\U0001fab1 **Premium Bait reworked** \u2014 Now grants +40% rare fish chance for **1 hour** (was 10 casts). Purchasable for 800 \U0001fa99.',
+                    '\U0001f381 **New command: `t!rods`** \u2014 View all 11 rods, their tier requirements, prices, and what fish tiers they unlock.',
+                    '\U0001f382 **Birthday system** \u2014 `t!birthday set MM/DD` to register your birthday per server. Daily announcements in your chosen channel + **500 \U0001fa99 + 5 \U0001f48e** birthday gift.',
+                    '\u2699\ufe0f **Server Settings cog** \u2014 Per-server prefix (`t!prefix`), command toggles per channel (`t!togglecmd`), AFK system (`t!afk`), `t!addemote`, `t!randomcolor`, `t!membercount`, `t!servertier`.',
+                    '\U0001f6e0\ufe0f **Admin economy commands** \u2014 `t!setbalance`, `t!addbalance`, `t!removebalance`, `t!reseteconomy` (requires Manage Server / Administrator).',
+                    '\U0001f3c6 **10 level milestone roles** \u2014 Added Superstar (75), Legend (100), Cosmic (150), Immortal (200), Void Walker (300). Auto-created when bot joins a server.',
+                    '\U0001f9f9 **Shop expanded** \u2014 45+ items total. New: 8 advanced rods, profile banners (5 colors), avatar frames (2 styles), mystery box, piggy bank, fishing magnet, coin surge, rob boost.',
+                    '\U0001f464 **Profile card upgraded** \u2014 Now shows gems, tokens, fishing level, and equipped cosmetics (banner color, avatar frame, Prestige badge).',
                 ],
             ),
         ]
 
-        for version, colour, changes in versions:
+        if NEW_ONLY:
+            # Append only the latest version (last in list) as a new message
+            version, colour, changes = versions[-1]
             embed = discord.Embed(title=version, color=colour)
             embed.description = '\n'.join(f'\u2022 {c}' for c in changes)
             await changelog_ch.send(embed=embed)
-            await asyncio.sleep(0.5)
+            print(f'[OK] Appended {version}')
+        else:
+            await clear_bot(changelog_ch, self.user)
 
-        print(f'[OK] Posted changelog ({len(versions)} versions)')
+            header = discord.Embed(
+                title='\U0001f4cb Tainment+ Changelog',
+                description='A full history of updates to the PopFusion bot.',
+                color=0xe040fb,
+            )
+            header.set_footer(text='PopFusion \u2014 discover music. build community.')
+            await changelog_ch.send(embed=header)
+            await asyncio.sleep(0.4)
+
+            for version, colour, changes in versions:
+                embed = discord.Embed(title=version, color=colour)
+                embed.description = '\n'.join(f'\u2022 {c}' for c in changes)
+                await changelog_ch.send(embed=embed)
+                await asyncio.sleep(0.5)
+
+            print(f'[OK] Posted changelog ({len(versions)} versions)')
 
         # ── Refresh #announcements ────────────────────────────────────────────
         ann_ch = discord.utils.find(lambda c: 'announcement' in c.name.lower(), g.text_channels)
