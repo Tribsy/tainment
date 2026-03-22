@@ -74,6 +74,22 @@ class ChangelogClient(discord.Client):
 
         versions = [
             (
+                'v2.3.0 \u2014 March 2026',
+                0xe040fb,
+                [
+                    '\U0001f3a3 **2300+ fish across 10 tiers** \u2014 Trash / Common / Uncommon / Rare / Epic / Legendary / Mythic / Ancient / Celestial / Void. Each tier requires a specific rod to unlock.',
+                    '\U0001f3a3 **11 fishing rods** \u2014 Silver \u2192 Gold \u2192 Diamond \u2192 Pearl \u2192 Crystal \u2192 Titanium \u2192 Quantum \u2192 Obsidian \u2192 Cosmic \u2192 Void. Higher rods reduce cooldown and unlock rarer tiers.',
+                    '\U0001fab1 **Premium Bait reworked** \u2014 Now grants +40% rare fish chance for **1 hour** (was 10 casts). Purchasable for 800 \U0001fa99.',
+                    '\U0001f381 **New command: `t!rods`** \u2014 View all 11 rods, their tier requirements, prices, and what fish tiers they unlock.',
+                    '\U0001f382 **Birthday system** \u2014 `t!birthday set MM/DD` to register your birthday per server. Daily announcements in your chosen channel + **500 \U0001fa99 + 5 \U0001f48e** birthday gift.',
+                    '\u2699\ufe0f **Server Settings cog** \u2014 Per-server prefix (`t!prefix`), command toggles per channel (`t!togglecmd`), AFK system (`t!afk`), `t!addemote`, `t!randomcolor`, `t!membercount`, `t!servertier`.',
+                    '\U0001f6e0\ufe0f **Admin economy commands** \u2014 `t!setbalance`, `t!addbalance`, `t!removebalance`, `t!reseteconomy` (requires Manage Server / Administrator).',
+                    '\U0001f3c6 **10 level milestone roles** \u2014 Added Superstar (75), Legend (100), Cosmic (150), Immortal (200), Void Walker (300). Auto-created when bot joins a server.',
+                    '\U0001f9f9 **Shop expanded** \u2014 45+ items total. New: 8 advanced rods, profile banners (5 colors), avatar frames (2 styles), mystery box, piggy bank, fishing magnet, coin surge, rob boost.',
+                    '\U0001f464 **Profile card upgraded** \u2014 Now shows gems, tokens, fishing level, and equipped cosmetics (banner color, avatar frame, Prestige badge).',
+                ],
+            ),
+            (
                 'v2.2.0 \u2014 March 2026',
                 0xe040fb,
                 [
