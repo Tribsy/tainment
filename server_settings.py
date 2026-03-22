@@ -489,7 +489,7 @@ class ServerSettings(commands.Cog, name="ServerSettings"):
                 'Auto-moderation',
                 'Welcome messages',
                 'Custom log channel',
-                '30% off user subscriptions for members',
+                '15% off user subscriptions for members',
             ]),
             'Pro': ('$23.99/mo', 0xe040fb, [
                 'All Basic features',
@@ -551,7 +551,7 @@ class ServerSettings(commands.Cog, name="ServerSettings"):
                 "• AutoMod integration\n"
                 "• Custom log channel\n"
                 "• Welcome messages\n"
-                "• 30% off user subscriptions for all members"
+                "• 15% off user subscriptions for all members"
             ),
             inline=False,
         )

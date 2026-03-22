@@ -130,13 +130,14 @@ class Payment(commands.Cog, name="Payment"):
         base = config.SUBSCRIPTION_TIERS[tier]['price'] * months
 
         # Apply server member discount if run in a subscribed server
-        server_discount = False
+        server_discount = 0
         if ctx.guild:
             from server_settings import get_server_tier
+            from lemonsqueezy_payment import SERVER_MEMBER_DISCOUNTS
             server_tier = await get_server_tier(ctx.guild.id)
-            if server_tier in ('Basic', 'Pro'):
-                total = round(total * 0.70, 2)
-                server_discount = True
+            server_discount = SERVER_MEMBER_DISCOUNTS.get(server_tier, 0)
+            if server_discount:
+                total = round(total * (1 - server_discount), 2)
 
         embed = discord.Embed(
             title=f"Checkout — {tier} {'Renewal' if is_renewal else 'Upgrade'}",
@@ -149,7 +150,7 @@ class Payment(commands.Cog, name="Payment"):
             embed.add_field(name="Subtotal", value=f"`${base:.2f}`", inline=True)
             embed.add_field(name=f"Multi-month discount ({int(discount*100)}%)", value=f"`-${base-total:.2f}`", inline=True)
         if server_discount:
-            embed.add_field(name="Server member discount (30%)", value=f"`-30%`", inline=True)
+            embed.add_field(name=f"Server member discount ({int(server_discount*100)}%)", value=f"`-{int(server_discount*100)}%`", inline=True)
         embed.add_field(name="Total", value=f"**${total:.2f}**", inline=False)
         embed.set_footer(text="SIMULATED — Add LEMONSQUEEZY_API_KEY to .env for real payments")
 
