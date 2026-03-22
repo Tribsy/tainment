@@ -63,6 +63,7 @@ EXTENSIONS = [
     'music_discovery',
     'music_trivia',
     'music_profiles',
+    'spotify',
     'automod',
 ]
 
@@ -371,6 +372,21 @@ HELP_CATEGORIES = {
             ('artistinfo <artist>', 'Artist profile card (Premium+)'),
             ('toptracks', 'Global most-shared songs (Premium+)'),
             ('newreleases', 'Curated new releases (Pro)'),
+        ],
+    },
+    'spotify': {
+        'title': 'Spotify',
+        'commands': [
+            ('song <query>', 'Search Spotify for a track (Free)'),
+            ('spotifyreleases', 'New album/single releases this week (Free)'),
+            ('spotify connect', 'Link your Spotify account'),
+            ('spotify disconnect', 'Unlink your Spotify account'),
+            ('spotify status', 'Check your Spotify link status'),
+            ('nowplaying', 'What you\'re listening to right now (Vibe+)'),
+            ('recenttracks', 'Your last 10 played tracks (Vibe+)'),
+            ('topartists [week|month|all]', 'Your top 5 artists (Premium+)'),
+            ('mytoptracks [week|month|all]', 'Your top 5 tracks (Premium+)'),
+            ('spotifyprofile', 'Full Spotify music card (Pro)'),
         ],
     },
     'automod': {

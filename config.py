@@ -226,3 +226,19 @@ MUSIC_TIER_LIMITS = {
 }
 SUPPORT_SERVER = os.getenv('SUPPORT_SERVER', '')
 INVITE_URL = os.getenv('INVITE_URL', '')
+
+# -- Spotify --
+SPOTIFY_CLIENT_ID = os.getenv('SPOTIFY_CLIENT_ID', '')
+SPOTIFY_CLIENT_SECRET = os.getenv('SPOTIFY_CLIENT_SECRET', '')
+SPOTIFY_REDIRECT_URI = os.getenv('SPOTIFY_REDIRECT_URI', 'http://localhost:8888/spotify/callback')
+SPOTIFY_OAUTH_PORT = int(os.getenv('SPOTIFY_OAUTH_PORT', '8888'))
+SPOTIFY_SCOPES = 'user-read-currently-playing user-read-recently-played user-top-read'
+
+MUSIC_CACHE_TTL = {
+    'nowplaying':   30,       # seconds — playback is live
+    'recenttracks': 900,      # 15 min
+    'topartists':   3600,     # 1 hr
+    'toptracks':    3600,     # 1 hr
+    'newreleases':  3600,     # 1 hr
+    'search':       86400,    # 24 hr — catalog data is stable
+}
