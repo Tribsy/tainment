@@ -81,9 +81,13 @@ def _pick_fish(rod_tier: int, fishing_level: int, bait_active: bool, sub_tier: s
     return (chosen[0], chosen[1], chosen[2], chosen[3])
 
 
-def _get_rod_tier_from_inventory(inventory_rows) -> int:
-    """Return the highest rod tier the user owns."""
+def _get_rod_tier_from_inventory(inventory_rows, equipped_rod: str | None = None) -> int:
+    """Return the equipped rod tier if set and owned, otherwise the highest owned tier."""
     rod_keys = {row['item_key'] for row in inventory_rows}
+    # If player has manually equipped a rod and still owns it, use that
+    if equipped_rod and equipped_rod in RODS and (equipped_rod in rod_keys or RODS[equipped_rod]['tier'] == 0):
+        return RODS[equipped_rod]['tier']
+    # Otherwise auto-select highest owned
     best = 0
     for rod_key, rod_info in RODS.items():
         if rod_key in rod_keys and rod_info['tier'] > best:
@@ -194,7 +198,8 @@ class Fishing(commands.Cog, name="Fishing"):
 
         stats = await db.get_fishing_stats(ctx.author.id)
         inv = await db.get_inventory(ctx.author.id)
-        rod_tier = _get_rod_tier_from_inventory(inv)
+        equipped_rod = stats['equipped_rod'] if stats and 'equipped_rod' in stats.keys() else None
+        rod_tier = _get_rod_tier_from_inventory(inv, equipped_rod)
         cooldown = _cooldown_for_rod(rod_tier)
 
         # Check cooldown
@@ -446,7 +451,8 @@ class Fishing(commands.Cog, name="Fishing"):
 
         stats = await db.get_fishing_stats(target.id)
         inv = await db.get_inventory(target.id)
-        rod_tier = _get_rod_tier_from_inventory(inv)
+        equipped_rod = stats['equipped_rod'] if stats and 'equipped_rod' in stats.keys() else None
+        rod_tier = _get_rod_tier_from_inventory(inv, equipped_rod)
         rod_name = _get_rod_name_from_tier(rod_tier)
 
         fishing_level = _fishing_level_from_xp(stats['fishing_xp'])
@@ -480,19 +486,24 @@ class Fishing(commands.Cog, name="Fishing"):
 
     @commands.hybrid_command(name='rods', description='View all fishing rods and their requirements')
     async def rods(self, ctx: commands.Context):
+        await db.ensure_user(ctx.author.id, ctx.author.name)
+        await db.ensure_fishing_row(ctx.author.id)
+        stats = await db.get_fishing_stats(ctx.author.id)
         inv = await db.get_inventory(ctx.author.id)
         owned_keys = {row['item_key'] for row in inv}
-        current_rod_tier = _get_rod_tier_from_inventory(inv)
+        equipped_rod = stats['equipped_rod'] if stats and 'equipped_rod' in stats.keys() else None
+        current_rod_tier = _get_rod_tier_from_inventory(inv, equipped_rod)
 
         embed = discord.Embed(
             title="🎣 Fishing Rods",
-            description="Higher tier rods reduce cooldown and unlock rarer fish tiers.",
+            description="Higher tier rods reduce cooldown and unlock rarer fish tiers.\nUse `t!equip <rod_key>` to switch rods.",
             color=config.COLORS['primary'],
         )
         for rod_key, rod_info in RODS.items():
             tier = rod_info['tier']
             owned = rod_key in owned_keys or tier == 0
-            status = "✅ Equipped" if tier == current_rod_tier else ("✅ Owned" if owned else "🔒 Locked")
+            is_equipped = tier == current_rod_tier and owned
+            status = "🎣 Equipped" if is_equipped else ("✅ Owned" if owned else "🔒 Buy")
 
             price_str = ""
             if rod_info['price_coins']:
@@ -516,12 +527,56 @@ class Fishing(commands.Cog, name="Fishing"):
                 value=(
                     f"*{rod_info['description']}*\n"
                     f"Cooldown: `{rod_info['cooldown']}s` | Price: `{price_str}`\n"
-                    f"Unlocks: `{unlock_str}`"
+                    f"Unlocks: `{unlock_str}` | Key: `{rod_key}`"
                 ),
                 inline=False,
             )
-        embed.set_footer(text="Buy rods with t!buy <rod_key> | e.g. t!buy rod_pearl")
+        embed.set_footer(text="t!equip <rod_key> to switch | t!unequip to auto-select best | t!buy <rod_key> to purchase")
         await ctx.send(embed=embed)
+
+    @commands.command(name='equip', description='Equip a fishing rod you own')
+    async def equip(self, ctx: commands.Context, rod_key: str):
+        await db.ensure_user(ctx.author.id, ctx.author.name)
+        await db.ensure_fishing_row(ctx.author.id)
+
+        rod_key = rod_key.lower()
+        if rod_key not in RODS:
+            valid = ', '.join(f'`{k}`' for k in RODS.keys())
+            await ctx.send(embed=discord.Embed(
+                description=f"Unknown rod key. Valid rods: {valid}",
+                color=config.COLORS['error'],
+            ))
+            return
+
+        rod_info = RODS[rod_key]
+        # Tier 0 rod (starter) is always available
+        if rod_info['tier'] > 0:
+            inv = await db.get_inventory(ctx.author.id)
+            owned_keys = {row['item_key'] for row in inv}
+            if rod_key not in owned_keys:
+                await ctx.send(embed=discord.Embed(
+                    description=f"You don't own **{rod_info['name']}**. Buy it with `t!buy {rod_key}`.",
+                    color=config.COLORS['error'],
+                ))
+                return
+
+        await db.update_fishing_stats(ctx.author.id, equipped_rod=rod_key)
+        embed = discord.Embed(
+            title="🎣 Rod Equipped",
+            description=f"You equipped **{rod_info['name']}** (Tier {rod_info['tier']}).\nCooldown: `{rod_info['cooldown']}s`",
+            color=config.COLORS['success'],
+        )
+        await ctx.send(embed=embed)
+
+    @commands.command(name='unequip', description='Unequip rod — auto-selects your best owned rod')
+    async def unequip(self, ctx: commands.Context):
+        await db.ensure_user(ctx.author.id, ctx.author.name)
+        await db.ensure_fishing_row(ctx.author.id)
+        await db.update_fishing_stats(ctx.author.id, equipped_rod=None)
+        await ctx.send(embed=discord.Embed(
+            description="Rod unequipped. Your best owned rod will be used automatically.",
+            color=config.COLORS['success'],
+        ))
 
     @commands.hybrid_command(name='fishtop', aliases=['fishlb'], description='Fishing leaderboard')
     async def fishtop(self, ctx: commands.Context):

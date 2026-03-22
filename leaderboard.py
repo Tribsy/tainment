@@ -3,6 +3,7 @@ from discord.ext import commands, tasks
 from datetime import datetime, timezone
 import config
 import database as db
+from server_settings import get_server_settings
 
 GAME_LABELS = {
     'guess': 'Number Guessing',
@@ -84,12 +85,17 @@ class Leaderboard(commands.Cog, name="Leaderboard"):
     async def live_leaderboard_task(self):
         """Post or edit the live leaderboard message in each guild's leaderboard channel."""
         for guild in self.bot.guilds:
-            # Find the leaderboard channel (look for name containing 'leaderboard')
+            # Use configured channel first, fall back to name match
             lb_channel = None
-            for ch in guild.text_channels:
-                if 'leaderboard' in ch.name.lower():
-                    lb_channel = ch
-                    break
+            settings = await get_server_settings(guild.id)
+            if settings and settings['leaderboard_channel']:
+                lb_channel = guild.get_channel(settings['leaderboard_channel'])
+            if not lb_channel:
+                # Legacy fallback: find a channel with 'leaderboard' in name
+                for ch in guild.text_channels:
+                    if 'leaderboard' in ch.name.lower():
+                        lb_channel = ch
+                        break
             if not lb_channel:
                 continue
 

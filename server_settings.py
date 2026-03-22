@@ -29,9 +29,16 @@ async def _init_tables():
                 levelup_channel  INTEGER,
                 welcome_channel  INTEGER,
                 log_channel      INTEGER,
+                leaderboard_channel INTEGER,
                 created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
+        # Migration: add leaderboard_channel column if missing
+        try:
+            await db.execute("ALTER TABLE server_settings ADD COLUMN leaderboard_channel INTEGER")
+            await db.commit()
+        except Exception:
+            pass  # Column already exists
         await db.execute("""
             CREATE TABLE IF NOT EXISTS command_toggles (
                 guild_id     INTEGER,
@@ -597,6 +604,28 @@ class ServerSettings(commands.Cog, name="ServerSettings"):
             color=config.COLORS['success'],
         )
         await ctx.send(embed=embed)
+
+    @commands.command(name='setleaderboard', description='Set the dedicated leaderboard channel')
+    @commands.guild_only()
+    @commands.has_permissions(manage_guild=True)
+    async def set_leaderboard_channel(self, ctx: commands.Context, channel: discord.TextChannel):
+        await update_server_setting(ctx.guild.id, leaderboard_channel=channel.id)
+        embed = discord.Embed(
+            description=f"Live leaderboard will be posted and kept updated in {channel.mention}.",
+            color=config.COLORS['success'],
+        )
+        embed.set_footer(text="The bot will post and auto-update the leaderboard there every 5 minutes.")
+        await ctx.send(embed=embed)
+
+    @commands.command(name='clearleaderboard', description='Remove the dedicated leaderboard channel')
+    @commands.guild_only()
+    @commands.has_permissions(manage_guild=True)
+    async def clear_leaderboard_channel(self, ctx: commands.Context):
+        await update_server_setting(ctx.guild.id, leaderboard_channel=None)
+        await ctx.send(embed=discord.Embed(
+            description="Leaderboard channel cleared. The auto-leaderboard is now disabled.",
+            color=config.COLORS['success'],
+        ))
 
 
 # ── Level role auto-creation ──────────────────────────────────────────────────

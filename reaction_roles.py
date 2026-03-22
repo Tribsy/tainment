@@ -15,6 +15,12 @@ GENRE_MAP = {
     '\U0001f3b6': '\U0001f3b6 Hip-Hop Lane',
     '\U0001f3b8': '\U0001f3b8 Rock Lane',
     '\U0001f50a': '\U0001f50a Electronic Lane',
+    '\U0001f3b7': '\U0001f3b7 R&B & Soul Lane',
+    '\U0001f3b9': '\U0001f3b9 Jazz Lane',
+    '\U0001f908': '\U0001f908 Country Lane',
+    '\U0001f483': '\U0001f483 Latin Lane',
+    '\U0001f333': '\U0001f333 Indie Lane',
+    '\U0001f305': '\U0001f305 Lo-Fi Lane',
 }
 
 
@@ -138,11 +144,17 @@ class ReactionRoles(commands.Cog, name='Reaction Roles'):
         embed = discord.Embed(
             title='\U0001f3b5 Choose Your Genre Lane',
             description=(
-                'React below to get your genre role. Unreact to remove it.\n\n'
+                'React below to get your genre role. Unreact to remove it. You can pick multiple!\n\n'
                 '\U0001f3a4 **Pop Lane** \u2014 Chart-toppers & pop anthems\n'
-                '\U0001f3b6 **Hip-Hop Lane** \u2014 Rap, R\u0026B & beats\n'
-                '\U0001f3b8 **Rock Lane** \u2014 Rock, metal & alternative\n'
-                '\U0001f50a **Electronic Lane** \u2014 EDM, house, techno & everything electronic\n\n'
+                '\U0001f3b6 **Hip-Hop Lane** \u2014 Rap, trap & hip-hop culture\n'
+                '\U0001f3b8 **Rock Lane** \u2014 Rock, punk & alternative\n'
+                '\U0001f50a **Electronic Lane** \u2014 EDM, house, techno & everything electronic\n'
+                '\U0001f3b7 **R\u0026B & Soul Lane** \u2014 Smooth R\u0026B, neo-soul & classic soul\n'
+                '\U0001f3b9 **Jazz Lane** \u2014 Jazz, blues & smooth sounds\n'
+                '\U0001f908 **Country Lane** \u2014 Country, folk & Americana\n'
+                '\U0001f483 **Latin Lane** \u2014 Reggaeton, salsa, Latin pop & more\n'
+                '\U0001f333 **Indie Lane** \u2014 Indie rock, indie pop & underground gems\n'
+                '\U0001f305 **Lo-Fi Lane** \u2014 Lo-fi, chill beats & study music\n\n'
                 '*Genre roles are cosmetic \u2014 they reflect your taste, nothing more.*'
             ),
             color=0xe040fb,

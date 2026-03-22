@@ -210,9 +210,16 @@ async def init_db():
                 fishing_xp INTEGER DEFAULT 0,
                 fishing_level INTEGER DEFAULT 0,
                 last_fished TIMESTAMP,
+                equipped_rod TEXT DEFAULT NULL,
                 FOREIGN KEY (user_id) REFERENCES users(user_id)
             )
         """)
+        # Migration: add equipped_rod column if missing (for existing databases)
+        try:
+            await db.execute("ALTER TABLE fishing_stats ADD COLUMN equipped_rod TEXT DEFAULT NULL")
+            await db.commit()
+        except Exception:
+            pass  # Column already exists
 
         # Fish inventory
         await db.execute("""
