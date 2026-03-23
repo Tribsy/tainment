@@ -4,7 +4,7 @@
 
 PI_USER="tribs"
 PI_HOST="192.168.1.19"
-BOT_DIR="/home/tribs/tainment-bot"
+BOT_DIR="/home/tribs/tainment"
 SERVICE="tainment-bot"
 
 echo "==> Stopping bot service on Pi..."
