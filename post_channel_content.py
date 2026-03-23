@@ -1,5 +1,6 @@
 """
 One-time script that posts structured content to:
+  - #👋┃welcome       (server welcome + bot intro)
   - #📰┃updates
   - #❓┃faq
   - #🆘┃help
@@ -8,6 +9,7 @@ One-time script that posts structured content to:
 
 Run once after bot is started:
   python post_channel_content.py
+  python post_channel_content.py welcome   # welcome channel only
 """
 
 import asyncio
@@ -21,6 +23,9 @@ from dotenv import load_dotenv
 load_dotenv()
 TOKEN = os.getenv('BOT_TOKEN')
 GUILD_ID = 1390512546858926163
+
+# Optional: pass "welcome" as CLI arg to only post the welcome message
+TARGET = sys.argv[1].lower() if len(sys.argv) > 1 else 'all'
 
 
 class PostClient(discord.Client):
@@ -45,6 +50,7 @@ class PostClient(discord.Client):
                     return channel
             return None
 
+        welcome_ch      = find('welcome')
         updates_ch      = find('updates')
         faq_ch          = find('faq')
         help_ch         = find('help')
@@ -53,8 +59,87 @@ class PostClient(discord.Client):
 
         posted = []
 
+        # ── #welcome ──────────────────────────────────────────────────────────
+        if welcome_ch and TARGET in ('all', 'welcome'):
+            await _clear_bot_messages(welcome_ch, self.user)
+
+            # Header embed
+            header = discord.Embed(
+                title='Welcome to PopFusion — powered by Tainment+',
+                description=(
+                    'PopFusion is the community hub for music, entertainment, and competition.\n'
+                    'Tainment+ is the Discord bot that runs it all.\n\n'
+                    'Everything here is driven by the community — earn coins, climb leaderboards, '
+                    'discover music, and compete with players from all over.\n\n'
+                    '**Start here** — type `t!daily` to claim your first reward.'
+                ),
+                color=0xEB459E,
+            )
+            header.set_footer(text='PopFusion | Tainment+ Bot  •  prefix: t!')
+            await welcome_ch.send(embed=header)
+            await asyncio.sleep(0.5)
+
+            # What can you do embed
+            features = discord.Embed(title='What can you do here?', color=0x5865F2)
+            features.add_field(
+                name='🪙 Economy',
+                value='`t!daily` `t!work` `t!gamble` `t!shop`\nEarn coins, gems & tokens. Buy upgrades from the shop.',
+                inline=False,
+            )
+            features.add_field(
+                name='🎣 Fishing',
+                value='`t!fish` `t!fishbag` `t!sell all` `t!fishtop`\n2,300+ fish across 10 rarity tiers — can you catch a Void Fish?',
+                inline=False,
+            )
+            features.add_field(
+                name='🎮 Games',
+                value='`t!trivia` `t!typerace` `t!wordle` `t!blackjack` `t!duel`\nPlay solo or challenge other members for rewards.',
+                inline=False,
+            )
+            features.add_field(
+                name='🎵 Music Discovery',
+                value='`t!genresearch` `t!sharetrack` `t!musicprofile`\nExplore 16 genre lanes, share your tracks, and build your music profile.',
+                inline=False,
+            )
+            features.add_field(
+                name='📈 Levels & Roles',
+                value='Chat to earn XP. Hit milestones to unlock exclusive roles:\n'
+                      '⭐ Novice → 🌟 Regular → 💫 Veteran → 🔥 Elite → 👑 Legend',
+                inline=False,
+            )
+            await welcome_ch.send(embed=features)
+            await asyncio.sleep(0.5)
+
+            # Server channels guide
+            channels = discord.Embed(title='Find your way around', color=0x57F287)
+            channels.add_field(
+                name='Key Channels',
+                value=(
+                    f'📰 {updates_ch.mention if updates_ch else "#📰┃updates"} — Bot updates and patch notes\n'
+                    f'❓ {faq_ch.mention if faq_ch else "#❓┃faq"} — Answers to common questions\n'
+                    f'🆘 {help_ch.mention if help_ch else "#🆘┃help"} — Command guide\n'
+                    f'🐛 {bug_ch.mention if bug_ch else "#🐛┃bug-reports"} — Report bugs\n'
+                    f'💳 {billing_ch.mention if billing_ch else "#💳┃billing-support"} — Subscription help'
+                ),
+                inline=False,
+            )
+            channels.add_field(
+                name='Subscription Tiers',
+                value=(
+                    '**Free** — Economy, fishing, basic games\n'
+                    '**Vibe** ($1.99/mo) — Virtual pet, custom bio, music trivia\n'
+                    '**Premium** ($4.99/mo) — All games, 1.5× XP, 350 daily coins\n'
+                    '**Pro** ($9.99/mo) — Blackjack, 3× XP, 500 daily coins, exclusive content\n\n'
+                    'Use `t!subscription` to view and manage your plan.'
+                ),
+                inline=False,
+            )
+            channels.set_footer(text='See tainment.trijbsworlds.nl for the full command list')
+            await welcome_ch.send(embed=channels)
+            posted.append('#👋┃welcome')
+
         # ── #updates ──────────────────────────────────────────────────────────
-        if updates_ch:
+        if updates_ch and TARGET in ('all', 'updates'):
             await _clear_bot_messages(updates_ch, self.user)
             embed = discord.Embed(
                 title='\U0001f4e2 Tainment+ Update Log',
@@ -88,7 +173,7 @@ class PostClient(discord.Client):
             posted.append('#📰┃updates')
 
         # ── #faq ──────────────────────────────────────────────────────────────
-        if faq_ch:
+        if faq_ch and TARGET in ('all', 'faq'):
             await _clear_bot_messages(faq_ch, self.user)
 
             faq_items = [
@@ -127,7 +212,7 @@ class PostClient(discord.Client):
             posted.append('#❓┃faq')
 
         # ── #help ─────────────────────────────────────────────────────────────
-        if help_ch:
+        if help_ch and TARGET in ('all', 'help'):
             await _clear_bot_messages(help_ch, self.user)
             embed = discord.Embed(
                 title='\U0001f198 Tainment+ Help',
@@ -161,7 +246,7 @@ class PostClient(discord.Client):
             posted.append('#🆘┃help')
 
         # ── #bug-reports — post the form panel ────────────────────────────────
-        if bug_ch:
+        if bug_ch and TARGET in ('all', 'bug'):
             await _clear_bot_messages(bug_ch, self.user)
             from support_forms import BugReportView
             embed = discord.Embed(
@@ -182,7 +267,7 @@ class PostClient(discord.Client):
             posted.append('#🐛┃bug-reports')
 
         # ── #billing-support — post the billing form panel ────────────────────
-        if billing_ch:
+        if billing_ch and TARGET in ('all', 'billing'):
             await _clear_bot_messages(billing_ch, self.user)
             from support_forms import BillingView
             embed = discord.Embed(
