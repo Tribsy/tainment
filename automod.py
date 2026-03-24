@@ -395,7 +395,12 @@ class AutoMod(commands.Cog, name="AutoMod"):
 
     @automod.command(name='allowlink', description='Whitelist a domain from the link filter')
     async def automod_allowlink(self, ctx: commands.Context, domain: str):
-        domain = domain.lower().strip().lstrip('https://').lstrip('http://').split('/')[0]
+        domain = domain.lower().strip()
+        for _pfx in ('https://', 'http://'):
+            if domain.startswith(_pfx):
+                domain = domain[len(_pfx):]
+                break
+        domain = domain.split('/')[0]
         async with aiosqlite.connect(config.DB_PATH) as conn:
             await conn.execute(
                 "INSERT OR IGNORE INTO automod_allowlist (guild_id, domain) VALUES (?, ?)",

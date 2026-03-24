@@ -325,6 +325,7 @@ HELP_CATEGORIES = {
             ('profile [@user]', 'View your full profile card'),
             ('bio [text]', 'Set a custom bio on your profile  (Vibe+)'),
             ('mystats', 'Detailed personal stats  (Premium+)'),
+            ('leaderboard', 'Auto-updating top richest, XP, and fishers'),
             ('serverinfo', 'Server statistics'),
             ('userinfo [@user]', 'User information'),
             ('avatar [@user]', "View a user's avatar"),
@@ -421,18 +422,6 @@ HELP_CATEGORIES = {
             ('setmodlog #channel', 'Set the mod log channel (admin)'),
             ('nick @user <name>', 'Change a member\'s nickname'),
             ('addrole / removerole @user <role>', 'Manage member roles'),
-        ],
-    },
-    'profile': {
-        'title': 'Profile',
-        'commands': [
-            ('profile [@user]', 'Full profile card — tier, level, gems, active items'),
-            ('level [@user]', 'Check XP, level, and progress bar'),
-            ('rank', 'Server XP leaderboard'),
-            ('leaderboard', 'Auto-updating top richest, XP, and fishers'),
-            ('serverinfo', 'Server statistics'),
-            ('userinfo [@user]', 'User information'),
-            ('avatar [@user]', "View a user's avatar"),
         ],
     },
     'info': {
