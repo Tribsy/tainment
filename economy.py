@@ -4,6 +4,7 @@ import random
 from datetime import datetime, timezone
 import config
 import database as db
+from reply_utils import send_reply
 
 
 def eco_embed(title: str, description: str, color=None) -> discord.Embed:
@@ -270,10 +271,10 @@ class Economy(commands.Cog, name="Economy"):
     async def setbalance(self, ctx: commands.Context, target: discord.Member, amount: int, currency: str = 'coins'):
         currency = currency.lower()
         if currency not in ('coins', 'gems', 'tokens'):
-            await ctx.send(embed=eco_embed("Invalid currency", "Use `coins`, `gems`, or `tokens`.", config.COLORS['error']), ephemeral=True)
+            await send_reply(ctx, embed=eco_embed("Invalid currency", "Use `coins`, `gems`, or `tokens`.", config.COLORS['error']), ephemeral=True)
             return
         if amount < 0:
-            await ctx.send(embed=eco_embed("Invalid", "Amount cannot be negative.", config.COLORS['error']), ephemeral=True)
+            await send_reply(ctx, embed=eco_embed("Invalid", "Amount cannot be negative.", config.COLORS['error']), ephemeral=True)
             return
 
         await db.ensure_user(target.id, target.name)
@@ -297,10 +298,10 @@ class Economy(commands.Cog, name="Economy"):
     async def addbalance(self, ctx: commands.Context, target: discord.Member, amount: int, currency: str = 'coins'):
         currency = currency.lower()
         if currency not in ('coins', 'gems', 'tokens'):
-            await ctx.send(embed=eco_embed("Invalid currency", "Use `coins`, `gems`, or `tokens`.", config.COLORS['error']), ephemeral=True)
+            await send_reply(ctx, embed=eco_embed("Invalid currency", "Use `coins`, `gems`, or `tokens`.", config.COLORS['error']), ephemeral=True)
             return
         if amount == 0:
-            await ctx.send(embed=eco_embed("Invalid", "Amount cannot be 0.", config.COLORS['error']), ephemeral=True)
+            await send_reply(ctx, embed=eco_embed("Invalid", "Amount cannot be 0.", config.COLORS['error']), ephemeral=True)
             return
 
         await db.ensure_user(target.id, target.name)
@@ -322,10 +323,10 @@ class Economy(commands.Cog, name="Economy"):
     async def removebalance(self, ctx: commands.Context, target: discord.Member, amount: int, currency: str = 'coins'):
         currency = currency.lower()
         if currency not in ('coins', 'gems', 'tokens'):
-            await ctx.send(embed=eco_embed("Invalid currency", "Use `coins`, `gems`, or `tokens`.", config.COLORS['error']), ephemeral=True)
+            await send_reply(ctx, embed=eco_embed("Invalid currency", "Use `coins`, `gems`, or `tokens`.", config.COLORS['error']), ephemeral=True)
             return
         if amount <= 0:
-            await ctx.send(embed=eco_embed("Invalid", "Amount must be positive.", config.COLORS['error']), ephemeral=True)
+            await send_reply(ctx, embed=eco_embed("Invalid", "Amount must be positive.", config.COLORS['error']), ephemeral=True)
             return
 
         await db.ensure_user(target.id, target.name)

@@ -32,6 +32,7 @@ from datetime import datetime, timezone, timedelta
 import asyncio
 import config
 import database as db
+from reply_utils import send_reply
 
 logger = logging.getLogger('tainment.lemonsqueezy')
 
@@ -297,7 +298,7 @@ class LemonSqueezyPayment(commands.Cog, name='LemonSqueezyPayment'):
             if status not in (200, 201):
                 err = data.get('errors', [{}])[0].get('detail', 'Unknown error')
                 logger.error(f'LemonSqueezy checkout creation failed {status}: {err}')
-                await ctx.send(embed=discord.Embed(
+                await send_reply(ctx, embed=discord.Embed(
                     description=f'Payment system error. Please try again later.\n`{err}`',
                     color=config.COLORS['error'],
                 ), ephemeral=True)
@@ -332,18 +333,18 @@ class LemonSqueezyPayment(commands.Cog, name='LemonSqueezyPayment'):
 
             try:
                 await ctx.author.send(embed=embed, view=view)
-                await ctx.send(embed=discord.Embed(
+                await send_reply(ctx, embed=discord.Embed(
                     description='Checkout link sent to your DMs!',
                     color=config.COLORS['success'],
                 ), ephemeral=True)
             except discord.Forbidden:
-                await ctx.send(embed=embed, view=view, ephemeral=True)
+                await send_reply(ctx, embed=embed, view=view, ephemeral=True)
 
             return True
 
         except Exception as e:
             logger.error(f'LemonSqueezy checkout error: {e}', exc_info=True)
-            await ctx.send(embed=discord.Embed(
+            await send_reply(ctx, embed=discord.Embed(
                 description='Payment system error. Please try again later.',
                 color=config.COLORS['error'],
             ), ephemeral=True)
@@ -359,7 +360,7 @@ class LemonSqueezyPayment(commands.Cog, name='LemonSqueezyPayment'):
     async def verifypayment(self, ctx: commands.Context):
         """Force-check if your pending LemonSqueezy payment completed."""
         if not self.is_configured():
-            await ctx.send(embed=discord.Embed(
+            await send_reply(ctx, embed=discord.Embed(
                 description='Payment system not configured.',
                 color=config.COLORS['error'],
             ), ephemeral=True)
@@ -374,13 +375,13 @@ class LemonSqueezyPayment(commands.Cog, name='LemonSqueezyPayment'):
                 row = await cur.fetchone()
 
         if not row:
-            await ctx.send(embed=discord.Embed(
+            await send_reply(ctx, embed=discord.Embed(
                 description='No pending payment found.',
                 color=config.COLORS['warning'],
             ), ephemeral=True)
             return
 
-        await ctx.send(embed=discord.Embed(
+        await send_reply(ctx, embed=discord.Embed(
             description='Checking your payment...', color=config.COLORS['info'],
         ), ephemeral=True)
 
@@ -407,20 +408,20 @@ class LemonSqueezyPayment(commands.Cog, name='LemonSqueezyPayment'):
                         break
 
             if found:
-                await ctx.send(embed=discord.Embed(
+                await send_reply(ctx, embed=discord.Embed(
                     title='Payment verified!',
                     description=f'Your **{row["tier"]}** subscription is now active.',
                     color=config.COLORS['success'],
                 ), ephemeral=True)
             else:
-                await ctx.send(embed=discord.Embed(
+                await send_reply(ctx, embed=discord.Embed(
                     description='Payment not completed yet. Finish the checkout and try again in a moment.',
                     color=config.COLORS['warning'],
                 ), ephemeral=True)
 
         except Exception as e:
             logger.error(f'verifypayment error: {e}', exc_info=True)
-            await ctx.send(embed=discord.Embed(
+            await send_reply(ctx, embed=discord.Embed(
                 description='Could not verify payment. Try again later.',
                 color=config.COLORS['error'],
             ), ephemeral=True)

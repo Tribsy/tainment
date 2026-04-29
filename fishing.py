@@ -525,7 +525,7 @@ class Fishing(commands.Cog, name="Fishing"):
             embed.add_field(
                 name=f"Tier {tier} — {rod_info['name']} {status}",
                 value=(
-                    f"*{rod_info['description']}*\n"
+                    f"*{rod_info['desc']}*\n"
                     f"Cooldown: `{rod_info['cooldown']}s` | Price: `{price_str}`\n"
                     f"Unlocks: `{unlock_str}` | Key: `{rod_key}`"
                 ),

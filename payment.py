@@ -6,6 +6,7 @@ from datetime import datetime, timezone, timedelta
 import logging
 import config
 import database as db
+from reply_utils import send_reply
 
 logger = logging.getLogger('tainment.payment')
 
@@ -155,7 +156,7 @@ class Payment(commands.Cog, name="Payment"):
         embed.set_footer(text="SIMULATED — Add LEMONSQUEEZY_API_KEY to .env for real payments")
 
         view = SimulatedCheckoutView(ctx, tier, months, txn_id, total, is_renewal)
-        await ctx.send(embed=embed, view=view, ephemeral=True)
+        await send_reply(ctx, embed=embed, view=view, ephemeral=True)
 
 
 async def setup(bot: commands.Bot):

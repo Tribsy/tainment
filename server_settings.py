@@ -12,8 +12,108 @@ import re
 import logging
 from datetime import datetime, timezone
 import config
+from reply_utils import send_reply
 
 logger = logging.getLogger('tainment.server_settings')
+
+SETUP_ROLE_DEFS = [
+    ('\U0001f451 Owner', 0xf1c40f, False),
+    ('\u26a1 Admin', 0x00e5ff, False),
+    ('\U0001f6e1\ufe0f Moderator', 0x7c4dff, False),
+    ('\U0001f3a7 Support', 0x2ecc71, False),
+    ('\U0001f4e2 Announcements Ping', 0xe040fb, True),
+    ('\U0001f389 Events Ping', 0x00e5ff, True),
+    ('\u2728 VIP', 0xf39c12, True),
+    ('\U0001f525 Fuser', 0xe040fb, True),
+    ('\U0001f3b5 Listener', 0x95a5a6, False),
+    ('\U0001f507 Muted', 0x2c2f33, False),
+]
+
+SETUP_GENRE_ROLE_DEFS = [
+    ('\U0001f3a4 Pop Lane', 0xe040fb),
+    ('\U0001f3b6 Hip-Hop Lane', 0x00e5ff),
+    ('\U0001f3b8 Rock Lane', 0xff5722),
+    ('\U0001f50a Electronic Lane', 0x7c4dff),
+    ('\U0001f3b7 R&B & Soul Lane', 0xf06292),
+    ('\U0001f3b9 Jazz Lane', 0x16a085),
+    ('\U0001f908 Country Lane', 0xd35400),
+    ('\U0001f483 Latin Lane', 0xe74c3c),
+    ('\U0001f333 Indie Lane', 0x27ae60),
+    ('\U0001f305 Lo-Fi Lane', 0x5dade2),
+]
+
+SETUP_CATEGORY_CHANNELS = {
+    'Information': [
+        '\U0001f44b\u2503welcome',
+        '\U0001f4dc\u2503rules',
+        '\U0001f4e2\u2503announcements',
+        '\U0001f4f0\u2503updates',
+        '\u2753\u2503faq',
+    ],
+    'Community': [
+        '\U0001f4ac\u2503general',
+        '\u2728\u2503introductions',
+        '\U0001f4f8\u2503media',
+        '\U0001f602\u2503memes',
+        '\U0001f916\u2503bot-chat',
+        '\U0001f4a1\u2503suggestions',
+        '\U0001f3a4\u2503pick-your-lane',
+    ],
+    'Games': [
+        '\U0001f9e0\u2503trivia-chat',
+        '\U0001f4dd\u2503word-games',
+        '\U0001f4b0\u2503economy-chat',
+        '\U0001f3c6\u2503leaderboards',
+    ],
+    'Support': [
+        '\U0001f198\u2503help',
+        '\U0001f41b\u2503bug-reports',
+        '\U0001f4b3\u2503billing-support',
+        '\u2b50\u2503feature-requests',
+    ],
+    'Staff': [
+        '\U0001f6e1\ufe0f\u2503staff-chat',
+        '\U0001f4cb\u2503mod-logs',
+        '\u2699\ufe0f\u2503admin-panel',
+    ],
+}
+
+READ_ONLY_SETUP_CHANNELS = {
+    '\U0001f44b\u2503welcome',
+    '\U0001f4dc\u2503rules',
+    '\U0001f4e2\u2503announcements',
+    '\U0001f4f0\u2503updates',
+    '\u2753\u2503faq',
+}
+
+STAFF_ONLY_SETUP_CHANNELS = {
+    '\U0001f6e1\ufe0f\u2503staff-chat',
+    '\U0001f4cb\u2503mod-logs',
+    '\u2699\ufe0f\u2503admin-panel',
+}
+
+SETUP_STARTER_MESSAGES = {
+    '\U0001f44b\u2503welcome': (
+        "**Welcome to Tainment+!**\n\n"
+        "Read the rules, say hello, and use `t!help` in bot chat to get started."
+    ),
+    '\U0001f4dc\u2503rules': (
+        "**Server Rules**\n\n"
+        "1. Be respectful.\n"
+        "2. No spam.\n"
+        "3. Keep content in the right channels.\n"
+        "4. No NSFW.\n"
+        "5. Follow Discord ToS."
+    ),
+    '\U0001f4e2\u2503announcements': (
+        "**Announcements**\n\n"
+        "Server news, bot updates, and events will be posted here."
+    ),
+    '\U0001f916\u2503bot-chat': (
+        "**Bot Commands**\n\n"
+        "Try `t!help`, `t!daily`, `t!balance`, `t!shop`, and `t!profile`."
+    ),
+}
 
 # ── DB helpers ────────────────────────────────────────────────────────────────
 
@@ -203,7 +303,6 @@ class ServerSettings(commands.Cog, name="ServerSettings"):
     @commands.Cog.listener()
     async def on_guild_join(self, guild: discord.Guild):
         await ensure_server(guild.id)
-        await _create_level_roles(guild)
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
@@ -257,14 +356,14 @@ class ServerSettings(commands.Cog, name="ServerSettings"):
             return
 
         if not ctx.author.guild_permissions.manage_guild:
-            await ctx.send(embed=discord.Embed(
+            await send_reply(ctx, embed=discord.Embed(
                 description="You need **Manage Server** permission to change the prefix.",
                 color=config.COLORS['error'],
             ), ephemeral=True)
             return
 
         if len(new_prefix) > 5:
-            await ctx.send(embed=discord.Embed(
+            await send_reply(ctx, embed=discord.Embed(
                 description="Prefix must be 5 characters or fewer.",
                 color=config.COLORS['error'],
             ), ephemeral=True)
@@ -293,7 +392,7 @@ class ServerSettings(commands.Cog, name="ServerSettings"):
         target = channel or ctx.channel
         cmd = self.bot.get_command(command_name)
         if not cmd:
-            await ctx.send(embed=discord.Embed(
+            await send_reply(ctx, embed=discord.Embed(
                 description=f"Unknown command: `{command_name}`",
                 color=config.COLORS['error'],
             ), ephemeral=True)
@@ -371,7 +470,7 @@ class ServerSettings(commands.Cog, name="ServerSettings"):
     async def addemote(self, ctx: commands.Context, name: str, url: str = None):
         # Validate name
         if not re.match(r'^[a-zA-Z0-9_]{2,32}$', name):
-            await ctx.send(embed=discord.Embed(
+            await send_reply(ctx, embed=discord.Embed(
                 description="Emoji name must be 2-32 characters, letters/numbers/underscores only.",
                 color=config.COLORS['error'],
             ), ephemeral=True)
@@ -384,7 +483,7 @@ class ServerSettings(commands.Cog, name="ServerSettings"):
         if ctx.message.attachments:
             att = ctx.message.attachments[0]
             if not att.content_type or not att.content_type.startswith('image/'):
-                await ctx.send(embed=discord.Embed(
+                await send_reply(ctx, embed=discord.Embed(
                     description="Please attach an image file.",
                     color=config.COLORS['error'],
                 ), ephemeral=True)
@@ -396,20 +495,20 @@ class ServerSettings(commands.Cog, name="ServerSettings"):
                 async with aiohttp.ClientSession() as session:
                     async with session.get(url, timeout=aiohttp.ClientTimeout(total=10)) as resp:
                         if resp.status != 200:
-                            await ctx.send(embed=discord.Embed(
+                            await send_reply(ctx, embed=discord.Embed(
                                 description="Could not download image from that URL.",
                                 color=config.COLORS['error'],
                             ), ephemeral=True)
                             return
                         image_bytes = await resp.read()
             except Exception:
-                await ctx.send(embed=discord.Embed(
+                await send_reply(ctx, embed=discord.Embed(
                     description="Failed to download image. Make sure the URL is a direct image link.",
                     color=config.COLORS['error'],
                 ), ephemeral=True)
                 return
         else:
-            await ctx.send(embed=discord.Embed(
+            await send_reply(ctx, embed=discord.Embed(
                 description="Please provide an image URL or attach an image.",
                 color=config.COLORS['error'],
             ), ephemeral=True)
@@ -424,7 +523,7 @@ class ServerSettings(commands.Cog, name="ServerSettings"):
             )
             await ctx.send(embed=embed)
         except discord.HTTPException as e:
-            await ctx.send(embed=discord.Embed(
+            await send_reply(ctx, embed=discord.Embed(
                 description=f"Failed to add emoji: {e}",
                 color=config.COLORS['error'],
             ), ephemeral=True)
@@ -627,6 +726,45 @@ class ServerSettings(commands.Cog, name="ServerSettings"):
             color=config.COLORS['success'],
         ))
 
+    @commands.command(
+        name='setupserver',
+        aliases=['createserver', 'serverbootstrap'],
+        description='Create the standard Tainment+ roles, channels, permissions, and genre panel',
+    )
+    @commands.guild_only()
+    @commands.has_permissions(manage_guild=True)
+    @commands.bot_has_permissions(manage_roles=True, manage_channels=True, manage_messages=True)
+    async def setup_server(self, ctx: commands.Context):
+        progress = await ctx.send(embed=discord.Embed(
+            title="Running Server Setup",
+            description="Creating missing roles, channels, permissions, and bot panels.",
+            color=config.COLORS['info'],
+        ))
+        summary = await _run_server_setup(ctx.guild)
+        await update_server_setting(
+            ctx.guild.id,
+            leaderboard_channel=summary['leaderboard_channel_id'],
+        )
+
+        lines = [
+            f"Roles created: `{summary['roles_created']}`",
+            f"Categories created: `{summary['categories_created']}`",
+            f"Channels created: `{summary['channels_created']}`",
+            f"Starter messages posted: `{summary['messages_posted']}`",
+            f"Genre panel refreshed: `{summary['genre_panel_refreshed']}`",
+            f"Leaderboard channel linked: {summary['leaderboard_channel_mention']}",
+        ]
+        if summary['warnings']:
+            lines.append("")
+            lines.append("Warnings:")
+            lines.extend(f"- {warning}" for warning in summary['warnings'][:6])
+
+        await progress.edit(embed=discord.Embed(
+            title="Server Setup Complete",
+            description="\n".join(lines),
+            color=config.COLORS['success'],
+        ))
+
     @commands.command(name='botsetup', description='View bot configuration status for this server')
     @commands.guild_only()
     @commands.has_permissions(manage_guild=True)
@@ -678,6 +816,238 @@ class ServerSettings(commands.Cog, name="ServerSettings"):
 
 
 # ── Level role auto-creation ──────────────────────────────────────────────────
+
+def _slugify(name: str) -> str:
+    ascii_only = ''.join(c for c in name if ord(c) < 128)
+    return re.sub(r'[^a-z0-9]+', '-', ascii_only.lower()).strip('-')
+
+
+def _find_text_channel(guild: discord.Guild, target_name: str) -> discord.TextChannel | None:
+    target_slug = _slugify(target_name)
+    for channel in guild.text_channels:
+        if channel.name == target_name or _slugify(channel.name) == target_slug:
+            return channel
+    return None
+
+
+def _find_category(guild: discord.Guild, target_name: str) -> discord.CategoryChannel | None:
+    target_slug = _slugify(target_name)
+    for category in guild.categories:
+        if category.name == target_name or _slugify(category.name) == target_slug:
+            return category
+    return None
+
+
+async def _clear_recent_bot_messages(channel: discord.TextChannel, bot_member: discord.Member):
+    try:
+        async for message in channel.history(limit=20):
+            if message.author.id == bot_member.id:
+                await message.delete()
+    except discord.HTTPException:
+        pass
+
+
+async def _ensure_genre_panel(guild: discord.Guild, channel: discord.TextChannel, bot_member: discord.Member) -> bool:
+    import database as db
+
+    await _clear_recent_bot_messages(channel, bot_member)
+    embed = discord.Embed(
+        title='\U0001f3b5 Choose Your Genre Lane',
+        description=(
+            'React below to get your genre role. Unreact to remove it. You can pick multiple!\n\n'
+            '\U0001f3a4 **Pop Lane** - Chart-toppers & pop anthems\n'
+            '\U0001f3b6 **Hip-Hop Lane** - Rap, trap & hip-hop culture\n'
+            '\U0001f3b8 **Rock Lane** - Rock, punk & alternative\n'
+            '\U0001f50a **Electronic Lane** - EDM, house, techno & electronic\n'
+            '\U0001f3b7 **R&B & Soul Lane** - Smooth R&B and soul\n'
+            '\U0001f3b9 **Jazz Lane** - Jazz, blues & smooth sounds\n'
+            '\U0001f908 **Country Lane** - Country, folk & Americana\n'
+            '\U0001f483 **Latin Lane** - Reggaeton, salsa & Latin pop\n'
+            '\U0001f333 **Indie Lane** - Indie rock, indie pop & underground gems\n'
+            '\U0001f305 **Lo-Fi Lane** - Lo-fi, chill beats & study music'
+        ),
+        color=0xe040fb,
+    )
+    panel = await channel.send(embed=embed)
+    for emoji in [
+        '\U0001f3a4',
+        '\U0001f3b6',
+        '\U0001f3b8',
+        '\U0001f50a',
+        '\U0001f3b7',
+        '\U0001f3b9',
+        '\U0001f908',
+        '\U0001f483',
+        '\U0001f333',
+        '\U0001f305',
+    ]:
+        await panel.add_reaction(emoji)
+    await db.upsert_bot_message(guild.id, 'genre_roles', channel.id, panel.id)
+    return True
+
+
+async def _run_server_setup(guild: discord.Guild) -> dict:
+    me = guild.me
+    warnings: list[str] = []
+    roles_created = 0
+    categories_created = 0
+    channels_created = 0
+    messages_posted = 0
+    genre_panel_refreshed = False
+
+    for name, color, mentionable in SETUP_ROLE_DEFS:
+        if not discord.utils.get(guild.roles, name=name):
+            try:
+                await guild.create_role(
+                    name=name,
+                    color=discord.Color(color),
+                    mentionable=mentionable,
+                    reason='Tainment+ server setup',
+                )
+                roles_created += 1
+            except discord.HTTPException as e:
+                warnings.append(f"Could not create role '{name}': {e}")
+
+    for name, color in SETUP_GENRE_ROLE_DEFS:
+        if not discord.utils.get(guild.roles, name=name):
+            try:
+                await guild.create_role(
+                    name=name,
+                    color=discord.Color(color),
+                    mentionable=True,
+                    reason='Tainment+ genre lane role',
+                )
+                roles_created += 1
+            except discord.HTTPException as e:
+                warnings.append(f"Could not create genre role '{name}': {e}")
+
+    await _create_level_roles(guild)
+
+    for category_name, channel_names in SETUP_CATEGORY_CHANNELS.items():
+        category = _find_category(guild, category_name)
+        if not category:
+            try:
+                category = await guild.create_category(category_name, reason='Tainment+ server setup')
+                categories_created += 1
+            except discord.HTTPException as e:
+                warnings.append(f"Could not create category '{category_name}': {e}")
+                continue
+
+        for channel_name in channel_names:
+            channel = _find_text_channel(guild, channel_name)
+            if not channel:
+                try:
+                    channel = await guild.create_text_channel(
+                        name=channel_name,
+                        category=category,
+                        reason='Tainment+ server setup',
+                    )
+                    channels_created += 1
+                except discord.HTTPException as e:
+                    warnings.append(f"Could not create channel '{channel_name}': {e}")
+                    continue
+            elif channel.category_id != category.id:
+                try:
+                    await channel.edit(category=category, reason='Tainment+ server setup')
+                except discord.HTTPException as e:
+                    warnings.append(f"Could not move channel '{channel.name}': {e}")
+
+    role_lookup = {role.name: role for role in guild.roles}
+    staff_roles = [
+        role_lookup.get('\U0001f451 Owner'),
+        role_lookup.get('\u26a1 Admin'),
+        role_lookup.get('\U0001f6e1\ufe0f Moderator'),
+        role_lookup.get('\U0001f3a7 Support'),
+    ]
+    staff_roles = [role for role in staff_roles if role is not None]
+
+    for channel_name in READ_ONLY_SETUP_CHANNELS:
+        channel = _find_text_channel(guild, channel_name)
+        if not channel:
+            continue
+        try:
+            await channel.set_permissions(
+                guild.default_role,
+                read_messages=True,
+                send_messages=False,
+                reason='Tainment+ read-only setup',
+            )
+            for role in staff_roles:
+                await channel.set_permissions(
+                    role,
+                    read_messages=True,
+                    send_messages=True,
+                    reason='Tainment+ staff posting access',
+                )
+        except discord.HTTPException as e:
+            warnings.append(f"Could not set read-only permissions for '{channel.name}': {e}")
+
+    for channel_name in STAFF_ONLY_SETUP_CHANNELS:
+        channel = _find_text_channel(guild, channel_name)
+        if not channel:
+            continue
+        try:
+            await channel.set_permissions(
+                guild.default_role,
+                read_messages=False,
+                reason='Tainment+ staff-only setup',
+            )
+            for role in staff_roles:
+                await channel.set_permissions(
+                    role,
+                    read_messages=True,
+                    send_messages=True,
+                    reason='Tainment+ staff-only access',
+                )
+        except discord.HTTPException as e:
+            warnings.append(f"Could not set staff permissions for '{channel.name}': {e}")
+
+    pick_your_lane = _find_text_channel(guild, '\U0001f3a4\u2503pick-your-lane')
+    if pick_your_lane:
+        try:
+            await pick_your_lane.set_permissions(
+                guild.default_role,
+                read_messages=True,
+                send_messages=False,
+                add_reactions=True,
+                reason='Tainment+ genre panel setup',
+            )
+            await pick_your_lane.set_permissions(
+                me,
+                read_messages=True,
+                send_messages=True,
+                manage_messages=True,
+                add_reactions=True,
+                reason='Tainment+ genre panel setup',
+            )
+            genre_panel_refreshed = await _ensure_genre_panel(guild, pick_your_lane, me)
+        except discord.HTTPException as e:
+            warnings.append(f"Could not configure genre panel channel: {e}")
+
+    for channel_name, content in SETUP_STARTER_MESSAGES.items():
+        channel = _find_text_channel(guild, channel_name)
+        if not channel:
+            continue
+        try:
+            await _clear_recent_bot_messages(channel, me)
+            await channel.send(content)
+            messages_posted += 1
+        except discord.HTTPException as e:
+            warnings.append(f"Could not post starter message in '{channel.name}': {e}")
+
+    leaderboard_channel = _find_text_channel(guild, '\U0001f3c6\u2503leaderboards')
+
+    return {
+        'roles_created': roles_created,
+        'categories_created': categories_created,
+        'channels_created': channels_created,
+        'messages_posted': messages_posted,
+        'genre_panel_refreshed': 'yes' if genre_panel_refreshed else 'no',
+        'leaderboard_channel_id': leaderboard_channel.id if leaderboard_channel else None,
+        'leaderboard_channel_mention': leaderboard_channel.mention if leaderboard_channel else '`not found`',
+        'warnings': warnings,
+    }
+
 
 async def _create_level_roles(guild: discord.Guild):
     """Ensure all level milestone roles exist in the guild."""

@@ -10,6 +10,7 @@ import aiosqlite
 import logging
 from datetime import datetime, timezone
 import config
+from reply_utils import send_reply
 
 logger = logging.getLogger('tainment.birthday')
 
@@ -257,7 +258,7 @@ class Birthday(commands.Cog, name="Birthday"):
         try:
             month, day = _parse_date(date)
         except ValueError as e:
-            await ctx.send(embed=discord.Embed(
+            await send_reply(ctx, embed=discord.Embed(
                 description=f"Invalid date: {e}",
                 color=config.COLORS['error'],
             ), ephemeral=True)
@@ -273,7 +274,7 @@ class Birthday(commands.Cog, name="Birthday"):
             color=config.COLORS['success'],
         )
         embed.set_footer(text="Birthday announcements require t!setbirthdaychannel to be configured by an admin.")
-        await ctx.send(embed=embed, ephemeral=True)
+        await send_reply(ctx, embed=embed, ephemeral=True)
 
     @birthday_group.command(name='view', description='View your or another user\'s birthday')
     @commands.guild_only()
@@ -363,13 +364,13 @@ class Birthday(commands.Cog, name="Birthday"):
     async def birthday_del(self, ctx: commands.Context):
         existing = await get_birthday(ctx.author.id, ctx.guild.id)
         if not existing:
-            await ctx.send(embed=discord.Embed(
+            await send_reply(ctx, embed=discord.Embed(
                 description="You don't have a birthday set in this server.",
                 color=config.COLORS['warning'],
             ), ephemeral=True)
             return
         await delete_birthday(ctx.author.id, ctx.guild.id)
-        await ctx.send(embed=discord.Embed(
+        await send_reply(ctx, embed=discord.Embed(
             description="Your birthday has been removed from this server.",
             color=config.COLORS['success'],
         ), ephemeral=True)

@@ -25,6 +25,7 @@ from datetime import datetime, timezone, timedelta
 import asyncio
 import config
 import database as db
+from reply_utils import send_reply
 
 logger = logging.getLogger('tainment.stripe')
 
@@ -250,7 +251,8 @@ class StripePayment(commands.Cog, name="StripePayment"):
 
             try:
                 await ctx.author.send(embed=embed, view=view)
-                await ctx.send(
+                await send_reply(
+                    ctx,
                     embed=discord.Embed(
                         description="Checkout link sent to your DMs!",
                         color=config.COLORS['success'],
@@ -259,13 +261,13 @@ class StripePayment(commands.Cog, name="StripePayment"):
                 )
             except discord.Forbidden:
                 # DMs closed — send ephemerally in channel
-                await ctx.send(embed=embed, view=view, ephemeral=True)
+                await send_reply(ctx, embed=embed, view=view, ephemeral=True)
 
             return True
 
         except stripe.StripeError as e:
             logger.error(f"Stripe checkout creation failed: {e}")
-            await ctx.send(embed=discord.Embed(
+            await send_reply(ctx, embed=discord.Embed(
                 description=f"Payment system error. Please try again later.\n`{e.user_message}`",
                 color=config.COLORS['error'],
             ), ephemeral=True)
@@ -275,7 +277,7 @@ class StripePayment(commands.Cog, name="StripePayment"):
     async def verifypayment(self, ctx: commands.Context):
         """Check if any of your pending Stripe sessions completed."""
         if not self.is_configured():
-            await ctx.send(embed=discord.Embed(description="Stripe not configured.", color=config.COLORS['error']), ephemeral=True)
+            await send_reply(ctx, embed=discord.Embed(description="Stripe not configured.", color=config.COLORS['error']), ephemeral=True)
             return
 
         async with aiosqlite.connect(config.DB_PATH) as db_conn:
@@ -287,10 +289,10 @@ class StripePayment(commands.Cog, name="StripePayment"):
                 session = await cur.fetchone()
 
         if not session:
-            await ctx.send(embed=discord.Embed(description="No pending payment found.", color=config.COLORS['warning']), ephemeral=True)
+            await send_reply(ctx, embed=discord.Embed(description="No pending payment found.", color=config.COLORS['warning']), ephemeral=True)
             return
 
-        await ctx.send(embed=discord.Embed(description="Checking your payment...", color=config.COLORS['info']), ephemeral=True)
+        await send_reply(ctx, embed=discord.Embed(description="Checking your payment...", color=config.COLORS['info']), ephemeral=True)
 
         try:
             cs = stripe.checkout.Session.retrieve(session['session_id'])
@@ -299,18 +301,18 @@ class StripePayment(commands.Cog, name="StripePayment"):
                     ctx.author.id, session['tier'], session['months'], session['amount'], session['session_id']
                 )
                 await complete_stripe_session(session['session_id'])
-                await ctx.send(embed=discord.Embed(
+                await send_reply(ctx, embed=discord.Embed(
                     title="Payment verified!",
                     description=f"Your **{session['tier']}** subscription is now active.",
                     color=config.COLORS['success'],
                 ), ephemeral=True)
             else:
-                await ctx.send(embed=discord.Embed(
+                await send_reply(ctx, embed=discord.Embed(
                     description="Payment not completed yet. Finish the checkout and try again.",
                     color=config.COLORS['warning'],
                 ), ephemeral=True)
         except stripe.StripeError as e:
-            await ctx.send(embed=discord.Embed(description=f"Could not verify: `{e.user_message}`", color=config.COLORS['error']), ephemeral=True)
+            await send_reply(ctx, embed=discord.Embed(description=f"Could not verify: `{e.user_message}`", color=config.COLORS['error']), ephemeral=True)
 
 
 async def setup(bot: commands.Bot):

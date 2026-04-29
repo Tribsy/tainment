@@ -16,10 +16,9 @@ async def _assign_level_role(member: discord.Member, new_level: int) -> str | No
 
     # Find which milestones the member has now unlocked (highest one wins)
     target_name = None
-    target_color = None
     for lvl in sorted(config.LEVEL_ROLES.keys()):
         if new_level >= lvl:
-            target_name, target_color = config.LEVEL_ROLES[lvl]
+            target_name, _ = config.LEVEL_ROLES[lvl]
 
     if not target_name:
         return None
@@ -28,18 +27,11 @@ async def _assign_level_role(member: discord.Member, new_level: int) -> str | No
     milestone_names = {v[0] for v in config.LEVEL_ROLES.values()}
     old_roles = [r for r in member.roles if r.name in milestone_names and r.name != target_name]
 
-    # Find or create the target role
+    # Only assign milestone roles that already exist in the guild.
     role = discord.utils.get(member.guild.roles, name=target_name)
     if not role:
-        try:
-            role = await member.guild.create_role(
-                name=target_name,
-                color=discord.Color(target_color),
-                reason='Tainment+ level milestone role',
-            )
-        except discord.HTTPException as e:
-            logger.warning(f"[Levels] Could not create role '{target_name}' in {member.guild}: {e}")
-            return None
+        logger.info(f"[Levels] Milestone role '{target_name}' is missing in {member.guild}; skipping assignment.")
+        return None
 
     try:
         if old_roles:

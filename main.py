@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 import aiosqlite
 import config
 from database import init_db
+import database as db
 
 
 async def _get_prefix(bot, message):
@@ -101,13 +102,6 @@ class TainmentBot(commands.Bot):
                 name=f"t!help | {len(self.guilds)} servers",
             ),
         )
-        # Ensure level milestone roles exist in every guild
-        from server_settings import _create_level_roles
-        for guild in self.guilds:
-            try:
-                await _create_level_roles(guild)
-            except Exception as e:
-                logger.warning(f"Could not create level roles in {guild}: {e}")
 
     async def on_member_join(self, member: discord.Member):
         role = discord.utils.get(member.guild.roles, name='\U0001f3b5 Listener')
@@ -117,12 +111,18 @@ class TainmentBot(commands.Bot):
                 logger.info(f"Assigned Member role to {member} in {member.guild}")
             except discord.HTTPException as e:
                 logger.warning(f"Could not assign Member role to {member}: {e}")
+        prestige_role = discord.utils.get(member.guild.roles, name='\u2728 Prestige')
+        if prestige_role and prestige_role < member.guild.me.top_role:
+            try:
+                if await db.has_active_item(member.id, 'prestige_badge'):
+                    await member.add_roles(prestige_role, reason='Restored Prestige role on join')
+            except discord.HTTPException as e:
+                logger.warning(f"Could not assign Prestige role to {member}: {e}")
 
     async def on_guild_join(self, guild: discord.Guild):
-        # Ensure server settings row and level roles exist
-        from server_settings import ensure_server, _create_level_roles
+        # Ensure server settings row exists; server structure is managed explicitly.
+        from server_settings import ensure_server
         await ensure_server(guild.id)
-        await _create_level_roles(guild)
 
         for channel in guild.text_channels:
             if channel.permissions_for(guild.me).send_messages:

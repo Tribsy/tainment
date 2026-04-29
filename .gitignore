@@ -1,6 +1,8 @@
 # Environment / secrets
 .env
 .env.example
+CLAUDE.md
+.bot.lock
 
 # Database (contains user data)
 *.db
@@ -9,6 +11,7 @@
 
 # Logs
 *.log
+bot.log
 
 # Python cache
 __pycache__/
@@ -24,6 +27,7 @@ __pycache__/
 mcp/
 mcp-start.log
 start-discord-mcp.bat
+scripts/
 
 # One-time setup/maintenance scripts (not needed for deployment)
 setup_output.txt

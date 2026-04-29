@@ -6,6 +6,7 @@ import logging
 from datetime import datetime, timezone, timedelta
 import config
 import database as db
+from reply_utils import send_reply
 
 logger = logging.getLogger('tainment.giveaway')
 
@@ -219,7 +220,7 @@ class Giveaways(commands.Cog, name="Giveaways"):
             return
 
         await self._conclude_giveaway(gaw['id'])
-        await ctx.send(embed=discord.Embed(description="Giveaway ended early.", color=config.COLORS['success']), ephemeral=True)
+        await send_reply(ctx, embed=discord.Embed(description="Giveaway ended early.", color=config.COLORS['success']), ephemeral=True)
 
     @commands.command(name='greroll', description='Reroll winners for an ended giveaway')
     @commands.has_permissions(manage_guild=True)

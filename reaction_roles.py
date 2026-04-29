@@ -8,6 +8,7 @@ import discord
 from discord.ext import commands
 import database as db
 import config
+from reply_utils import send_reply
 
 # emoji string → role name
 GENRE_MAP = {
@@ -168,7 +169,8 @@ class ReactionRoles(commands.Cog, name='Reaction Roles'):
 
         await db.upsert_bot_message(guild.id, 'genre_roles', channel.id, panel.id)
 
-        await ctx.send(
+        await send_reply(
+            ctx,
             f'\u2705 Genre lane channel ready: {channel.mention}',
             ephemeral=True,
         )

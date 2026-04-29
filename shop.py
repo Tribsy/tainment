@@ -14,6 +14,7 @@ import database as db
 
 
 CURRENCY_EMOJI = {'coins': '\U0001fa99', 'gems': '\U0001f48e', 'tokens': '\U0001f3ab'}
+PRESTIGE_ROLE_NAME = '\u2728 Prestige'
 
 # ── Shop catalogue ─────────────────────────────────────────────────────────────
 
@@ -485,6 +486,35 @@ SHOP: dict[str, dict] = {
     },
 }
 
+
+async def _grant_prestige_role(ctx: commands.Context) -> bool:
+    if not ctx.guild or not ctx.guild.me.guild_permissions.manage_roles:
+        return False
+
+    role = discord.utils.get(ctx.guild.roles, name=PRESTIGE_ROLE_NAME)
+    if role is None:
+        try:
+            role = await ctx.guild.create_role(
+                name=PRESTIGE_ROLE_NAME,
+                color=discord.Color(0xf1c40f),
+                mentionable=False,
+                reason='Tainment+ prestige badge role',
+            )
+        except discord.HTTPException:
+            return False
+
+    if role in ctx.author.roles:
+        return True
+
+    if role >= ctx.guild.me.top_role:
+        return False
+
+    try:
+        await ctx.author.add_roles(role, reason='Purchased Prestige Badge')
+        return True
+    except discord.HTTPException:
+        return False
+
 SECTION_EMOJIS = {'coins': '\U0001fa99', 'gems': '\U0001f48e', 'tokens': '\U0001f3ab'}
 
 
@@ -620,13 +650,17 @@ class Shop(commands.Cog, name="Shop"):
 
         await db.spend_currency(ctx.author.id, currency, price)
         await db.add_inventory_item(ctx.author.id, item_key, expires_at)
+        prestige_role_granted = False
+        if item_key == 'prestige_badge':
+            prestige_role_granted = await _grant_prestige_role(ctx)
 
         emoji = CURRENCY_EMOJI[currency]
+        extra_note = "\nRole granted: **✨ Prestige**" if prestige_role_granted else ""
         embed = discord.Embed(
             title="Purchase successful!",
             description=(
                 f"Bought **{item_data['name']}** for `{price:,}` {emoji}\n"
-                f"{item_data['description']}"
+                f"{item_data['description']}{extra_note}"
             ),
             color=config.COLORS['success'],
         )
