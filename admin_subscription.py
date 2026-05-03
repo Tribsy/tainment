@@ -19,6 +19,8 @@ class AdminSubscription(commands.Cog, name="Admin"):
         self.bot = bot
 
     async def cog_check(self, ctx: commands.Context) -> bool:
+        if await ctx.bot.is_owner(ctx.author):
+            return True
         if not ctx.guild:
             return False
         return ctx.author.guild_permissions.administrator
@@ -225,6 +227,68 @@ class AdminSubscription(commands.Cog, name="Admin"):
             description="\n".join(lines),
             color=config.COLORS['primary'],
         )
+        await ctx.send(embed=embed)
+
+
+    @commands.command(name='givesub', aliases=['gs'])
+    @commands.is_owner()
+    async def givesub(self, ctx: commands.Context, user: discord.User, tier: str, duration: str):
+        """[Dev] Give a user a subscription for a duration. Duration: 7d, 2w, 1m, 1y."""
+        tier = tier.capitalize()
+        if tier not in TIER_ORDER:
+            await ctx.send(embed=discord.Embed(
+                description=f"Invalid tier. Use: {', '.join(f'`{t}`' for t in TIER_ORDER)}",
+                color=config.COLORS['error'],
+            ))
+            return
+
+        # Parse duration string: 7d / 2w / 1m / 1y / plain int (days)
+        duration = duration.strip().lower()
+        try:
+            if duration.endswith('d'):
+                days = int(duration[:-1])
+            elif duration.endswith('w'):
+                days = int(duration[:-1]) * 7
+            elif duration.endswith('m'):
+                days = int(duration[:-1]) * 30
+            elif duration.endswith('y'):
+                days = int(duration[:-1]) * 365
+            else:
+                days = int(duration)
+        except ValueError:
+            await ctx.send(embed=discord.Embed(
+                description="Invalid duration. Examples: `7d`, `2w`, `1m`, `1y`, or a plain number of days.",
+                color=config.COLORS['error'],
+            ))
+            return
+
+        if days <= 0:
+            await ctx.send(embed=discord.Embed(description="Duration must be positive.", color=config.COLORS['error']))
+            return
+
+        await db.ensure_user(user.id, user.name)
+        old_tier = await db.get_tier(user.id)
+        now = datetime.now(timezone.utc)
+        end_date = now + timedelta(days=days)
+        grace_end = end_date + timedelta(days=3)
+
+        await db.update_subscription(user.id, tier, end_date.isoformat(), grace_end.isoformat())
+        await db.log_subscription_change(
+            user.id, old_tier, tier,
+            changed_by=ctx.author.id,
+            reason=f"Dev grant by {ctx.author}",
+        )
+        logger.info(f"Dev {ctx.author.id} granted {user.id} {tier} for {days} days")
+
+        embed = discord.Embed(
+            title="Subscription Granted",
+            color=config.COLORS['success'],
+        )
+        embed.add_field(name="User", value=f"{user.mention} (`{user.id}`)", inline=False)
+        embed.add_field(name="Tier", value=f"**{tier}**", inline=True)
+        embed.add_field(name="Duration", value=f"`{days}` days", inline=True)
+        embed.add_field(name="Expires", value=f"<t:{int(end_date.timestamp())}:D> (<t:{int(end_date.timestamp())}:R>)", inline=False)
+        embed.set_footer(text=f"Granted by {ctx.author}")
         await ctx.send(embed=embed)
 
 
