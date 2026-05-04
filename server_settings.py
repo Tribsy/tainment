@@ -594,11 +594,11 @@ class ServerSettings(commands.Cog, name="ServerSettings"):
                 'Full moderation (warn, kick, ban, timeout, audit log)',
                 'AutoMod configuration',
                 'Welcome messages & custom log channel',
-                '15% off user subscriptions for all members',
+                '5% off user subscriptions for all members',
             ]),
             'Pro': ('$14.99/mo', 0xe040fb, [
                 'All Basic features',
-                '30% off user subscriptions for all members',
+                '10% off user subscriptions for all members',
                 'Server-wide XP multiplier',
                 'Advanced audit log + server analytics',
                 'Custom level roles',
@@ -653,7 +653,7 @@ class ServerSettings(commands.Cog, name="ServerSettings"):
                 "• Full moderation (warn, kick, ban, timeout, up to 100 purge)\n"
                 "• AutoMod configuration\n"
                 "• Custom log channel & welcome messages\n"
-                "• 15% off user subscriptions for all members"
+                "• 5% off user subscriptions for all members"
             ),
             inline=False,
         )
@@ -661,7 +661,7 @@ class ServerSettings(commands.Cog, name="ServerSettings"):
             name="Pro — $14.99/mo",
             value=(
                 "• All Basic features\n"
-                "• 30% off user subscriptions for all members\n"
+                "• 10% off user subscriptions for all members\n"
                 "• Server-wide XP multiplier\n"
                 "• Advanced audit log & server analytics\n"
                 "• Custom level roles\n"

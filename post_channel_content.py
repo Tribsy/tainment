@@ -69,7 +69,7 @@ class PostClient(discord.Client):
                 description=(
                     'PopFusion is the community hub for music, entertainment, and competition.\n'
                     'Tainment+ is the Discord bot that runs it all.\n\n'
-                    'Everything here is driven by the community — earn coins, climb leaderboards, '
+                    'Everything here is driven by the community and earn coins, climb leaderboards, '
                     'discover music, and compete with players from all over.\n\n'
                     '**Start here** — type `t!daily` to claim your first reward.'
                 ),

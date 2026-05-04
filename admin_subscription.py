@@ -4,12 +4,14 @@ import csv
 import io
 from datetime import datetime, timezone, timedelta
 import logging
+import aiosqlite
 import config
 import database as db
 
 logger = logging.getLogger('tainment.admin')
 
 TIER_ORDER = {'Basic': 0, 'Vibe': 1, 'Premium': 2, 'Pro': 3}
+SERVER_TIERS = ('Free', 'Basic', 'Pro')
 
 
 class AdminSubscription(commands.Cog, name="Admin"):
@@ -289,6 +291,113 @@ class AdminSubscription(commands.Cog, name="Admin"):
         embed.add_field(name="Duration", value=f"`{days}` days", inline=True)
         embed.add_field(name="Expires", value=f"<t:{int(end_date.timestamp())}:D> (<t:{int(end_date.timestamp())}:R>)", inline=False)
         embed.set_footer(text=f"Granted by {ctx.author}")
+        await ctx.send(embed=embed)
+
+
+    @commands.command(name='giveserversub', aliases=['gss'])
+    @commands.is_owner()
+    async def giveserversub(self, ctx: commands.Context, guild_id: int, tier: str, duration: str):
+        """[Dev] Set a server's subscription tier. t!giveserversub <guild_id> <Free|Basic|Pro> <duration>"""
+        tier = tier.capitalize()
+        if tier not in SERVER_TIERS:
+            await ctx.send(embed=discord.Embed(
+                description=f"Invalid tier. Use: {', '.join(f'`{t}`' for t in SERVER_TIERS)}",
+                color=config.COLORS['error'],
+            ))
+            return
+
+        duration = duration.strip().lower()
+        if tier == 'Free':
+            days = 0
+        else:
+            try:
+                if duration.endswith('d'):
+                    days = int(duration[:-1])
+                elif duration.endswith('w'):
+                    days = int(duration[:-1]) * 7
+                elif duration.endswith('m'):
+                    days = int(duration[:-1]) * 30
+                elif duration.endswith('y'):
+                    days = int(duration[:-1]) * 365
+                else:
+                    days = int(duration)
+            except ValueError:
+                await ctx.send(embed=discord.Embed(
+                    description="Invalid duration. Examples: `7d`, `2w`, `1m`, `1y`, or plain days.",
+                    color=config.COLORS['error'],
+                ))
+                return
+            if days <= 0:
+                await ctx.send(embed=discord.Embed(description="Duration must be positive.", color=config.COLORS['error']))
+                return
+
+        guild = self.bot.get_guild(guild_id)
+        guild_name = guild.name if guild else f'Unknown ({guild_id})'
+
+        now = datetime.now(timezone.utc)
+        end_date = (now + timedelta(days=days)).isoformat() if days > 0 else None
+
+        async with aiosqlite.connect(config.DB_PATH) as db_conn:
+            await db_conn.execute("""
+                INSERT INTO server_subscriptions (guild_id, tier, start_date, end_date, activated_by)
+                VALUES (?, ?, ?, ?, ?)
+                ON CONFLICT(guild_id) DO UPDATE SET
+                    tier = excluded.tier,
+                    start_date = excluded.start_date,
+                    end_date = excluded.end_date,
+                    activated_by = excluded.activated_by
+            """, (guild_id, tier, now.isoformat(), end_date, ctx.author.id))
+            await db_conn.execute("""
+                INSERT INTO server_settings (guild_id, server_tier)
+                VALUES (?, ?)
+                ON CONFLICT(guild_id) DO UPDATE SET server_tier = excluded.server_tier
+            """, (guild_id, tier))
+            await db_conn.commit()
+
+        logger.info(f"Dev {ctx.author.id} set server {guild_id} to {tier} for {days} days")
+
+        embed = discord.Embed(title="Server Subscription Set", color=config.COLORS['success'])
+        embed.add_field(name="Server", value=f"{guild_name} (`{guild_id}`)", inline=False)
+        embed.add_field(name="Tier", value=f"**{tier}**", inline=True)
+        if end_date:
+            ts = int((now + timedelta(days=days)).timestamp())
+            embed.add_field(name="Duration", value=f"`{days}` days", inline=True)
+            embed.add_field(name="Expires", value=f"<t:{ts}:D> (<t:{ts}:R>)", inline=False)
+        else:
+            embed.add_field(name="Duration", value="Indefinite" if tier != 'Free' else "N/A", inline=True)
+        embed.set_footer(text=f"Set by {ctx.author}")
+        await ctx.send(embed=embed)
+
+    @commands.command(name='viewserversub', aliases=['vss'])
+    @commands.is_owner()
+    async def viewserversub(self, ctx: commands.Context, guild_id: int):
+        """[Dev] View a server's current subscription."""
+        async with aiosqlite.connect(config.DB_PATH) as db_conn:
+            db_conn.row_factory = aiosqlite.Row
+            async with db_conn.execute(
+                "SELECT * FROM server_subscriptions WHERE guild_id = ?", (guild_id,)
+            ) as cur:
+                sub = await cur.fetchone()
+
+        guild = self.bot.get_guild(guild_id)
+        guild_name = guild.name if guild else f'Unknown ({guild_id})'
+        tier = sub['tier'] if sub else 'Free'
+
+        embed = discord.Embed(
+            title=f"Server Subscription: {guild_name}",
+            color=config.COLORS['primary'],
+        )
+        embed.add_field(name="Guild ID", value=f"`{guild_id}`", inline=True)
+        embed.add_field(name="Tier", value=f"**{tier}**", inline=True)
+        if sub:
+            embed.add_field(name="Start", value=sub['start_date'][:10] if sub['start_date'] else "N/A", inline=True)
+            if sub['end_date']:
+                ts = int(datetime.fromisoformat(sub['end_date']).timestamp())
+                embed.add_field(name="Expires", value=f"<t:{ts}:D> (<t:{ts}:R>)", inline=False)
+            else:
+                embed.add_field(name="Expires", value="Indefinite", inline=True)
+        else:
+            embed.add_field(name="Note", value="No record in DB — defaulting to Free", inline=False)
         await ctx.send(embed=embed)
 
 

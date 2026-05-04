@@ -38,7 +38,7 @@ logger = logging.getLogger('tainment.lemonsqueezy')
 
 LS_API_BASE = 'https://api.lemonsqueezy.com/v1'
 DISCOUNTS = {1: 0, 3: 0.10, 6: 0.15, 12: 0.20}
-SERVER_MEMBER_DISCOUNTS = {'Basic': 0.15, 'Pro': 0.30}  # member discount per server tier
+SERVER_MEMBER_DISCOUNTS = {'Basic': 0.05, 'Pro': 0.10}  # member discount per server tier
 
 
 def _get_env(key: str) -> str:

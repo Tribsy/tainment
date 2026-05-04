@@ -207,7 +207,8 @@ TOS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tos.md')
 PRIVACY_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'privacy.md')
 
 # -- Meta --
-BOT_VERSION = '2.4.0'
+from post_changelog import VERSIONS as _VERSIONS
+BOT_VERSION = _VERSIONS[-1][0].lstrip('v').split(' |')[0]
 
 # -- Music System --
 MUSIC_REWARDS = {

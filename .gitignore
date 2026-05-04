@@ -3,6 +3,7 @@
 .env.example
 CLAUDE.md
 .bot.lock
+deply.sh
 
 # Database (contains user data)
 *.db

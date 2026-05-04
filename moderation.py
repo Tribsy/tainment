@@ -128,7 +128,7 @@ class Moderation(commands.Cog, name="Moderation"):
         self.bot = bot
 
     # Commands available on the free server tier
-    FREE_COMMANDS = {'purge', 'clear', 'prune', 'slowmode', 'slow', 'lock', 'unlock', 'nick', 'nickname'}
+    FREE_COMMANDS = {'purge', 'clear', 'prune', 'slowmode', 'slow', 'lock', 'unlock', 'nick', 'nickname', 'modlog', 'cases'}
 
     async def cog_check(self, ctx: commands.Context) -> bool:
         """Basic moderation is free. Advanced commands require Basic or Pro server plan."""
