@@ -259,6 +259,12 @@ async def init_db():
         except Exception:
             pass  # column already exists
 
+        # Migrate: add previous_daily_streak for streak_restore item
+        try:
+            await db.execute("ALTER TABLE economy ADD COLUMN previous_daily_streak INTEGER DEFAULT 0")
+        except Exception:
+            pass  # column already exists
+
         # Spotify linked accounts
         await db.execute("""
             CREATE TABLE IF NOT EXISTS spotify_accounts (
@@ -443,10 +449,10 @@ async def get_inventory(user_id: int):
             return await cur.fetchall()
 
 
-async def add_inventory_item(user_id: int, item_key: str, expires_at=None):
+async def add_inventory_item(user_id: int, item_key: str, expires_at=None, allow_stack=False):
     async with aiosqlite.connect(config.DB_PATH) as db:
-        # Check if non-expiring item already owned
-        if expires_at is None:
+        # Check if non-expiring item already owned (skip for stackable consumables)
+        if not allow_stack and expires_at is None:
             async with db.execute(
                 "SELECT id FROM inventory WHERE user_id = ? AND item_key = ? AND expires_at IS NULL",
                 (user_id, item_key)
@@ -458,6 +464,21 @@ async def add_inventory_item(user_id: int, item_key: str, expires_at=None):
             "INSERT INTO inventory (user_id, item_key, expires_at) VALUES (?, ?, ?)",
             (user_id, item_key, expires_at)
         )
+        await db.commit()
+        return True
+
+
+async def remove_inventory_item(user_id: int, item_key: str) -> bool:
+    """Remove one instance of item_key from the user's inventory. Returns True if removed."""
+    async with aiosqlite.connect(config.DB_PATH) as db:
+        async with db.execute(
+            "SELECT id FROM inventory WHERE user_id = ? AND item_key = ? LIMIT 1",
+            (user_id, item_key)
+        ) as cur:
+            row = await cur.fetchone()
+        if not row:
+            return False
+        await db.execute("DELETE FROM inventory WHERE id = ?", (row[0],))
         await db.commit()
         return True
 

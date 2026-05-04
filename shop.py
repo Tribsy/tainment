@@ -18,6 +18,12 @@ PRESTIGE_ROLE_NAME = '\u2728 Prestige'
 
 # ── Shop catalogue ─────────────────────────────────────────────────────────────
 
+# Items consumed on use — stackable, removed from inventory when triggered
+CONSUMABLE_KEYS = frozenset({
+    'daily_reset', 'work_reset', 'lucky_gamble', 'streak_shield',
+    'fish_vacuum', 'streak_restore', 'bingo_doubler', 'fishing_radar',
+})
+
 SHOP: dict[str, dict] = {
     # ── Coin items ─────────────────────────────────────────────────────────────
     'xp_boost': {
@@ -224,7 +230,7 @@ SHOP: dict[str, dict] = {
     # ── Token items ────────────────────────────────────────────────────────────
     'daily_reset': {
         'name': 'Daily Reset',
-        'description': 'Instantly reset your daily cooldown',
+        'description': 'Instantly reset your daily cooldown (Single Use \u2014 use with `t!use daily_reset`)',
         'currency': 'tokens',
         'price': 20,
         'duration': None,
@@ -232,7 +238,7 @@ SHOP: dict[str, dict] = {
     },
     'work_reset': {
         'name': 'Work Reset',
-        'description': 'Instantly reset your work cooldown',
+        'description': 'Instantly reset your work cooldown (Single Use \u2014 use with `t!use work_reset`)',
         'currency': 'tokens',
         'price': 10,
         'duration': None,
@@ -264,7 +270,7 @@ SHOP: dict[str, dict] = {
     },
     'fish_vacuum': {
         'name': 'Fish Vacuum',
-        'description': 'Auto-sell all junk fish on your next t!fish (no bag clutter)',
+        'description': 'Auto-discard all junk fish on your next t!fish (Single Use — activates automatically)',
         'currency': 'tokens',
         'price': 8,
         'duration': None,
@@ -272,7 +278,7 @@ SHOP: dict[str, dict] = {
     },
     'streak_restore': {
         'name': 'Streak Restore',
-        'description': 'Restore your daily streak to its previous value once',
+        'description': 'Restore your daily streak to its previous value (Single Use — use with `t!use streak_restore`)',
         'currency': 'tokens',
         'price': 25,
         'duration': None,
@@ -340,7 +346,7 @@ SHOP: dict[str, dict] = {
     # ── Special / Utility ──────────────────────────────────────────────────────
     'fishing_radar': {
         'name': 'Fish Radar',
-        'description': 'Shows the tier distribution of your next 5 catches',
+        'description': 'Preview your next 5 catches with exact fish names and values (Single Use — use with `t!radar`)',
         'currency': 'gems',
         'price': 15,
         'duration': None,
@@ -562,9 +568,10 @@ def _shop_embed(currency: str) -> discord.Embed:
         color=config.COLORS['gold'] if currency == 'coins' else config.COLORS['purple'] if currency == 'gems' else config.COLORS['info'],
     )
     for key, item in items.items():
+        dur = "Single Use" if key in CONSUMABLE_KEYS else _dur_str(item['duration'])
         embed.add_field(
             name=f"{item['emoji']} {item['name']}  —  {item['price']:,} {emoji}",
-            value=f"{item['description']}  *({_dur_str(item['duration'])})*\n**Buy:** `t!buy {key}`",
+            value=f"{item['description']}  *({dur})*\n**Buy:** `t!buy {key}`",
             inline=False,
         )
     embed.set_footer(text="Active items are shown in t!inventory and t!profile")
@@ -629,14 +636,9 @@ class Shop(commands.Cog, name="Shop"):
             ))
             return
 
-        # Special handling for consumable one-use items
-        if item_key == 'daily_reset':
-            await _apply_daily_reset(ctx.author.id)
-        elif item_key == 'work_reset':
-            await _apply_work_reset(ctx.author.id)
-
         # Permanent items — check already owned
-        if item_data['duration'] is None and item_key not in ('daily_reset', 'work_reset', 'lucky_gamble'):
+        _consumables = CONSUMABLE_KEYS
+        if item_data['duration'] is None and item_key not in _consumables:
             if await db.has_active_item(ctx.author.id, item_key):
                 await ctx.send(embed=discord.Embed(
                     description="You already own this item.",
@@ -649,7 +651,21 @@ class Shop(commands.Cog, name="Shop"):
             expires_at = (datetime.now(timezone.utc) + timedelta(seconds=item_data['duration'])).isoformat()
 
         await db.spend_currency(ctx.author.id, currency, price)
-        await db.add_inventory_item(ctx.author.id, item_key, expires_at)
+
+        # Mystery box: open immediately, never stored in inventory
+        if item_key == 'mystery_box':
+            prize_label, prize_emoji = await _open_mystery_box(ctx.author.id)
+            await ctx.send(embed=discord.Embed(
+                title="📦 Mystery Box Opened!",
+                description=(
+                    f"You spent **1,200** 🪙 and cracked open a Mystery Box...\n\n"
+                    f"{prize_emoji} You got: **{prize_label}**!"
+                ),
+                color=config.COLORS['gold'],
+            ))
+            return
+
+        await db.add_inventory_item(ctx.author.id, item_key, expires_at, allow_stack=item_key in _consumables)
         prestige_role_granted = False
         if item_key == 'prestige_badge':
             prestige_role_granted = await _grant_prestige_role(ctx)
@@ -665,6 +681,50 @@ class Shop(commands.Cog, name="Shop"):
             color=config.COLORS['success'],
         )
         await ctx.send(embed=embed)
+
+    @commands.command(name='use', description='Use a consumable item from your inventory')
+    async def use_item(self, ctx: commands.Context, item_key: str):
+        await db.ensure_user(ctx.author.id, ctx.author.name)
+        item_key = item_key.lower()
+
+        _use_handlers = {
+            'daily_reset':    _apply_daily_reset,
+            'work_reset':     _apply_work_reset,
+            'streak_restore': _apply_streak_restore,
+        }
+        if item_key not in _use_handlers:
+            await ctx.send(embed=discord.Embed(
+                description=f"`{item_key}` is not a usable consumable.",
+                color=config.COLORS['error'],
+            ))
+            return
+
+        removed = await db.remove_inventory_item(ctx.author.id, item_key)
+        if not removed:
+            item_name = SHOP_ITEMS.get(item_key, {}).get('name', item_key)
+            await ctx.send(embed=discord.Embed(
+                description=f"You don't have a **{item_name}** in your inventory. Buy one with `t!buy {item_key}`.",
+                color=config.COLORS['error'],
+            ))
+            return
+
+        item_name = SHOP_ITEMS[item_key]['name']
+        if item_key == 'streak_restore':
+            prev = await _apply_streak_restore(ctx.author.id)
+            desc = (
+                f"Your daily streak has been restored to **{prev} days**! Item removed from inventory."
+                if prev else
+                "No saved streak to restore (streak hadn't reset recently). Item removed from inventory."
+            )
+        else:
+            await _use_handlers[item_key](ctx.author.id)
+            desc = f"Used **{item_name}** — cooldown reset. Item removed from inventory."
+
+        await ctx.send(embed=discord.Embed(
+            title="Item Used!",
+            description=desc,
+            color=config.COLORS['success'],
+        ))
 
     @commands.hybrid_command(name='balance', aliases=['bal'], description='Check your currency balances')
     async def balance(self, ctx: commands.Context, user: discord.Member = None):
@@ -771,6 +831,65 @@ async def _apply_daily_reset(user_id: int):
 
 async def _apply_work_reset(user_id: int):
     await db.update_economy_field(user_id, last_work=None)
+
+
+async def _apply_streak_restore(user_id: int) -> int:
+    """Restore previous streak. Returns the restored value (0 if nothing to restore)."""
+    eco = await db.get_economy(user_id)
+    if not eco:
+        return 0
+    prev = eco['previous_daily_streak'] if 'previous_daily_streak' in eco.keys() else 0
+    if prev and prev > 0:
+        await db.update_economy_field(user_id, daily_streak=prev, previous_daily_streak=0)
+        return prev
+    return 0
+
+
+# Mystery box prize pool: (type, value_or_key, label, emoji, weight)
+_MYSTERY_PRIZES = [
+    ('coins',  300,           '300 Coins',        '🪙', 20),
+    ('coins',  600,           '600 Coins',        '🪙', 17),
+    ('coins',  1000,          '1,000 Coins',      '🪙', 13),
+    ('coins',  2500,          '2,500 Coins',      '🪙',  7),
+    ('coins',  6000,          '6,000 Coins',      '🪙',  2),
+    ('gems',   10,            '10 Gems',          '💎', 16),
+    ('gems',   25,            '25 Gems',          '💎', 10),
+    ('gems',   60,            '60 Gems',          '💎',  4),
+    ('tokens', 20,            '20 Tokens',        '🎫', 16),
+    ('tokens', 50,            '50 Tokens',        '🎫',  9),
+    ('tokens', 120,           '120 Tokens',       '🎫',  4),
+    ('item',   'premium_bait','Premium Bait',     '🪱',  8),
+    ('item',   'xp_boost',    'XP Boost',         '⚡',  7),
+    ('item',   'luck_charm',  'Luck Charm',       '🍀',  6),
+    ('item',   'rob_shield',  'Rob Shield',       '🛡️',  5),
+    ('item',   'coin_magnet', 'Coin Magnet',      '🧲',  5),
+    ('item',   'lucky_gamble','Lucky Gamble',     '🎰',  5),
+    ('item',   'daily_reset', 'Daily Reset',      '🔄',  4),
+    ('item',   'work_reset',  'Work Reset',       '⏰',  4),
+    ('item',   'streak_shield','Streak Shield',   '🛡️',  3),
+    ('item',   'xp_surge',    'XP Surge',         '🧨',  3),
+    ('item',   'rod_silver',  'Silver Rod',       '🎣',  2),
+    ('item',   'rod_gold',    'Golden Rod',       '🎣',  1),
+]
+
+
+async def _open_mystery_box(user_id: int) -> tuple[str, str]:
+    """Roll a mystery box prize, grant it, return (label, emoji)."""
+    import random
+    weights = [p[4] for p in _MYSTERY_PRIZES]
+    prize = random.choices(_MYSTERY_PRIZES, weights=weights, k=1)[0]
+    kind, value, label, emoji, _ = prize
+
+    if kind == 'coins':
+        await db.earn_currency(user_id, 'coins', value)
+    elif kind == 'gems':
+        await db.earn_currency(user_id, 'gems', value)
+    elif kind == 'tokens':
+        await db.earn_currency(user_id, 'tokens', value)
+    elif kind == 'item':
+        await db.add_inventory_item(user_id, value, allow_stack=True)
+
+    return label, emoji
 
 
 async def setup(bot: commands.Bot):

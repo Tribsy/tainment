@@ -83,7 +83,9 @@ def _pick_fish(rod_tier: int, fishing_level: int, bait_active: bool, sub_tier: s
 
 def _get_rod_tier_from_inventory(inventory_rows, equipped_rod: str | None = None) -> int:
     """Return the equipped rod tier if set and owned, otherwise the highest owned tier."""
-    rod_keys = {row['item_key'] for row in inventory_rows}
+    raw_keys = {row['item_key'] for row in inventory_rows}
+    # Normalize: shop stores rods as rod_<key>, RODS dict uses bare keys
+    rod_keys = {k[4:] if k.startswith('rod_') else k for k in raw_keys}
     # If player has manually equipped a rod and still owns it, use that
     if equipped_rod and equipped_rod in RODS and (equipped_rod in rod_keys or RODS[equipped_rod]['tier'] == 0):
         return RODS[equipped_rod]['tier']
@@ -251,6 +253,20 @@ class Fishing(commands.Cog, name="Fishing"):
             biggest_catch_coins=biggest_coins,
         )
 
+        # Fish Vacuum: auto-discard all trash fish from bag, consume item
+        vacuum_note = ""
+        if await db.has_active_item(ctx.author.id, 'fish_vacuum'):
+            fish_bag = await db.get_fish_inventory(ctx.author.id)
+            vacuumed = 0
+            for row in fish_bag:
+                fname = row['fish_key'].replace('_', ' ').title()
+                if get_tier_for_fish(fname) == 'trash':
+                    vacuumed += row['quantity']
+                    await db.sell_fish_from_bag(ctx.author.id, row['fish_key'], row['quantity'])
+            await db.remove_inventory_item(ctx.author.id, 'fish_vacuum')
+            if vacuumed:
+                vacuum_note = f"\n🧹 **Fish Vacuum:** Auto-discarded {vacuumed} trash fish."
+
         tier_info = TIERS.get(tier_key, {})
         tier_label = tier_info.get('label', tier_key.title())
         emoji = TIER_EMOJIS.get(tier_key, '🐟')
@@ -259,7 +275,7 @@ class Fishing(commands.Cog, name="Fishing"):
 
         if tier_key == 'trash':
             title = f"Reeled in... {emoji} {fish_name}"
-            desc = f"*This is just junk.* Discard with `t!sell all`."
+            desc = vacuum_note.strip() if vacuum_note else f"*This is just junk.* Discard with `t!sell all`."
         else:
             val_str = f"~**{coins:,}** 🪙" if coins > 0 else "No sell value"
             extras = ""
@@ -276,6 +292,8 @@ class Fishing(commands.Cog, name="Fishing"):
                 desc += "  *(Bait active!)*"
             if leveled_up:
                 desc += f"\n\n🎉 **Fishing Level Up! → Level {new_level}!**"
+            if vacuum_note:
+                desc += vacuum_note
             desc += f"\n\nSell: `t!sell {fish_key}` or `t!sell all`"
             title = f"Caught {emoji} {fish_name}!"
 
@@ -490,7 +508,8 @@ class Fishing(commands.Cog, name="Fishing"):
         await db.ensure_fishing_row(ctx.author.id)
         stats = await db.get_fishing_stats(ctx.author.id)
         inv = await db.get_inventory(ctx.author.id)
-        owned_keys = {row['item_key'] for row in inv}
+        raw_owned = {row['item_key'] for row in inv}
+        owned_keys = {k[4:] if k.startswith('rod_') else k for k in raw_owned}
         equipped_rod = stats['equipped_rod'] if stats and 'equipped_rod' in stats.keys() else None
         current_rod_tier = _get_rod_tier_from_inventory(inv, equipped_rod)
 
@@ -534,6 +553,44 @@ class Fishing(commands.Cog, name="Fishing"):
         embed.set_footer(text="t!equip <rod_key> to switch | t!unequip to auto-select best | t!buy <rod_key> to purchase")
         await ctx.send(embed=embed)
 
+    @commands.command(name='radar', description='Use your Fish Radar to preview your next 5 catches')
+    async def radar(self, ctx: commands.Context):
+        await db.ensure_user(ctx.author.id, ctx.author.name)
+        await db.ensure_fishing_row(ctx.author.id)
+
+        removed = await db.remove_inventory_item(ctx.author.id, 'fishing_radar')
+        if not removed:
+            await ctx.send(embed=discord.Embed(
+                description="You don't have a **Fish Radar**. Buy one with `t!buy fishing_radar` (15 💎).",
+                color=config.COLORS['error'],
+            ))
+            return
+
+        stats = await db.get_fishing_stats(ctx.author.id)
+        inv = await db.get_inventory(ctx.author.id)
+        equipped_rod = stats['equipped_rod'] if stats and 'equipped_rod' in stats.keys() else None
+        rod_tier = _get_rod_tier_from_inventory(inv, equipped_rod)
+        fishing_level = _fishing_level_from_xp(stats['fishing_xp'])
+        bait_active = await _check_premium_bait(ctx.author.id)
+        sub_tier = await db.get_tier(ctx.author.id)
+
+        lines = []
+        for i in range(5):
+            tier_key, fish_name, min_c, max_c = _pick_fish(rod_tier, fishing_level, bait_active, sub_tier)
+            emoji = TIER_EMOJIS.get(tier_key, '🐟')
+            tier_label = TIERS.get(tier_key, {}).get('label', tier_key.title())
+            val_str = f"~{random.randint(min_c, max_c):,} 🪙" if max_c > 0 else "No sell value"
+            lines.append(f"`{i + 1}.` {emoji} **{fish_name}** — {tier_label} ({val_str})")
+
+        rod_name = _get_rod_name_from_tier(rod_tier)
+        embed = discord.Embed(
+            title="📡 Fish Radar — Next 5 Catches",
+            description="\n".join(lines),
+            color=config.COLORS['info'],
+        )
+        embed.set_footer(text=f"Rod: {rod_name} (Tier {rod_tier})  |  Fishing Lvl {fishing_level}  |  Radar consumed")
+        await ctx.send(embed=embed)
+
     @commands.command(name='equip', description='Equip a fishing rod you own')
     async def equip(self, ctx: commands.Context, rod_key: str):
         await db.ensure_user(ctx.author.id, ctx.author.name)
@@ -553,7 +610,7 @@ class Fishing(commands.Cog, name="Fishing"):
         if rod_info['tier'] > 0:
             inv = await db.get_inventory(ctx.author.id)
             owned_keys = {row['item_key'] for row in inv}
-            if rod_key not in owned_keys:
+            if rod_key not in owned_keys and f'rod_{rod_key}' not in owned_keys:
                 await ctx.send(embed=discord.Embed(
                     description=f"You don't own **{rod_info['name']}**. Buy it with `t!buy {rod_key}`.",
                     color=config.COLORS['error'],
