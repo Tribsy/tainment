@@ -201,7 +201,7 @@ FORTUNE_COOKIES = [
     "Forge your own path instead of following the crowd.",
     "Abundance is your birthright; claim it.",
     "Good cheer will follow you everywhere you go this week.",
-    "Do it now. Sometimes "later" becomes "never".",
+    "Do it now. Sometimes \"later\" becomes \"never\".",
     "Your perspective defines your reality.",
     "Wealth comes to those who wait, but faster to those who work.",
     "A mistake is just a discovery of what doesn't work.",
