@@ -81,18 +81,25 @@ def _pick_fish(rod_tier: int, fishing_level: int, bait_active: bool, sub_tier: s
     return (chosen[0], chosen[1], chosen[2], chosen[3])
 
 
-def _get_rod_tier_from_inventory(inventory_rows, equipped_rod: str | None = None) -> int:
-    """Return the equipped rod tier if set and owned, otherwise the highest owned tier."""
+def _get_rod_tier_from_inventory(inventory_rows, equipped_rod: str | None = None, fishing_level: int = 0) -> int:
+    """Return the highest usable rod tier the player owns and meets the level requirement for."""
     raw_keys = {row['item_key'] for row in inventory_rows}
     # Normalize: shop stores rods as rod_<key>, RODS dict uses bare keys
     rod_keys = {k[4:] if k.startswith('rod_') else k for k in raw_keys}
-    # If player has manually equipped a rod and still owns it, use that
-    if equipped_rod and equipped_rod in RODS and (equipped_rod in rod_keys or RODS[equipped_rod]['tier'] == 0):
-        return RODS[equipped_rod]['tier']
-    # Otherwise auto-select highest owned
+
+    def _meets_level(rod_key: str) -> bool:
+        return fishing_level >= RODS[rod_key].get('min_level', 1)
+
+    # If player has manually equipped a rod, still owns it, and meets the level req, use it
+    if equipped_rod and equipped_rod in RODS:
+        is_owned = equipped_rod in rod_keys or RODS[equipped_rod]['tier'] == 0
+        if is_owned and _meets_level(equipped_rod):
+            return RODS[equipped_rod]['tier']
+
+    # Auto-select highest owned rod the player has the level for
     best = 0
     for rod_key, rod_info in RODS.items():
-        if rod_key in rod_keys and rod_info['tier'] > best:
+        if rod_key in rod_keys and _meets_level(rod_key) and rod_info['tier'] > best:
             best = rod_info['tier']
     return best
 
@@ -200,8 +207,9 @@ class Fishing(commands.Cog, name="Fishing"):
 
         stats = await db.get_fishing_stats(ctx.author.id)
         inv = await db.get_inventory(ctx.author.id)
+        fishing_level = _fishing_level_from_xp(stats['fishing_xp'])
         equipped_rod = stats['equipped_rod'] if stats and 'equipped_rod' in stats.keys() else None
-        rod_tier = _get_rod_tier_from_inventory(inv, equipped_rod)
+        rod_tier = _get_rod_tier_from_inventory(inv, equipped_rod, fishing_level)
         cooldown = _cooldown_for_rod(rod_tier)
 
         # Check cooldown
@@ -216,8 +224,6 @@ class Fishing(commands.Cog, name="Fishing"):
                     color=config.COLORS['warning'],
                 ))
                 return
-
-        fishing_level = _fishing_level_from_xp(stats['fishing_xp'])
         bait_active = await _check_premium_bait(ctx.author.id)
         sub_tier = await db.get_tier(ctx.author.id)
 
@@ -469,11 +475,10 @@ class Fishing(commands.Cog, name="Fishing"):
 
         stats = await db.get_fishing_stats(target.id)
         inv = await db.get_inventory(target.id)
-        equipped_rod = stats['equipped_rod'] if stats and 'equipped_rod' in stats.keys() else None
-        rod_tier = _get_rod_tier_from_inventory(inv, equipped_rod)
-        rod_name = _get_rod_name_from_tier(rod_tier)
-
         fishing_level = _fishing_level_from_xp(stats['fishing_xp'])
+        equipped_rod = stats['equipped_rod'] if stats and 'equipped_rod' in stats.keys() else None
+        rod_tier = _get_rod_tier_from_inventory(inv, equipped_rod, fishing_level)
+        rod_name = _get_rod_name_from_tier(rod_tier)
         xp_now, xp_need = _xp_in_current_level(stats['fishing_xp'])
         filled = int(min(xp_now / xp_need, 1.0) * 12) if xp_need > 0 else 12
         bar = '█' * filled + '░' * (12 - filled)
@@ -508,21 +513,32 @@ class Fishing(commands.Cog, name="Fishing"):
         await db.ensure_fishing_row(ctx.author.id)
         stats = await db.get_fishing_stats(ctx.author.id)
         inv = await db.get_inventory(ctx.author.id)
+        fishing_level = _fishing_level_from_xp(stats['fishing_xp'])
         raw_owned = {row['item_key'] for row in inv}
         owned_keys = {k[4:] if k.startswith('rod_') else k for k in raw_owned}
         equipped_rod = stats['equipped_rod'] if stats and 'equipped_rod' in stats.keys() else None
-        current_rod_tier = _get_rod_tier_from_inventory(inv, equipped_rod)
+        current_rod_tier = _get_rod_tier_from_inventory(inv, equipped_rod, fishing_level)
 
         embed = discord.Embed(
             title="🎣 Fishing Rods",
-            description="Higher tier rods reduce cooldown and unlock rarer fish tiers.\nUse `t!equip <rod_key>` to switch rods.",
+            description=f"Your Fishing Level: **{fishing_level}**\nHigher tier rods unlock rarer fish and shorter cooldowns.\nUse `t!equip <rod_key>` to switch rods.",
             color=config.COLORS['primary'],
         )
         for rod_key, rod_info in RODS.items():
             tier = rod_info['tier']
+            min_level = rod_info.get('min_level', 1)
             owned = rod_key in owned_keys or tier == 0
-            is_equipped = tier == current_rod_tier and owned
-            status = "🎣 Equipped" if is_equipped else ("✅ Owned" if owned else "🔒 Buy")
+            level_ok = fishing_level >= min_level
+            is_equipped = tier == current_rod_tier and owned and level_ok
+
+            if is_equipped:
+                status = "🎣 Equipped"
+            elif owned and level_ok:
+                status = "✅ Owned"
+            elif owned and not level_ok:
+                status = f"🔒 Owned (need Lvl {min_level})"
+            else:
+                status = "🔒 Buy"
 
             price_str = ""
             if rod_info['price_coins']:
@@ -534,23 +550,23 @@ class Fishing(commands.Cog, name="Fishing"):
             if not price_str:
                 price_str = "Free"
 
-            # Unlocks tier info
             catchable = []
             for tk, ti in TIERS.items():
                 if ti['min_rod'] <= tier:
                     catchable.append(ti['label'])
             unlock_str = ", ".join(catchable[-3:]) if catchable else "Basic only"
 
+            lvl_str = "No req." if min_level <= 1 else f"Level {min_level}"
             embed.add_field(
                 name=f"Tier {tier} — {rod_info['name']} {status}",
                 value=(
                     f"*{rod_info['desc']}*\n"
-                    f"Cooldown: `{rod_info['cooldown']}s` | Price: `{price_str}`\n"
+                    f"Req: `{lvl_str}` | Cooldown: `{rod_info['cooldown']}s` | Price: `{price_str}`\n"
                     f"Unlocks: `{unlock_str}` | Key: `{rod_key}`"
                 ),
                 inline=False,
             )
-        embed.set_footer(text="t!equip <rod_key> to switch | t!unequip to auto-select best | t!buy <rod_key> to purchase")
+        embed.set_footer(text=f"Fishing Lvl {fishing_level} | t!equip <rod_key> | t!unequip to auto-select")
         await ctx.send(embed=embed)
 
     @commands.command(name='radar', description='Use your Fish Radar to preview your next 5 catches')
@@ -568,9 +584,9 @@ class Fishing(commands.Cog, name="Fishing"):
 
         stats = await db.get_fishing_stats(ctx.author.id)
         inv = await db.get_inventory(ctx.author.id)
-        equipped_rod = stats['equipped_rod'] if stats and 'equipped_rod' in stats.keys() else None
-        rod_tier = _get_rod_tier_from_inventory(inv, equipped_rod)
         fishing_level = _fishing_level_from_xp(stats['fishing_xp'])
+        equipped_rod = stats['equipped_rod'] if stats and 'equipped_rod' in stats.keys() else None
+        rod_tier = _get_rod_tier_from_inventory(inv, equipped_rod, fishing_level)
         bait_active = await _check_premium_bait(ctx.author.id)
         sub_tier = await db.get_tier(ctx.author.id)
 
@@ -606,13 +622,29 @@ class Fishing(commands.Cog, name="Fishing"):
             return
 
         rod_info = RODS[rod_key]
-        # Tier 0 rod (starter) is always available
+        min_level = rod_info.get('min_level', 1)
+
+        # Tier 0 rod (starter) is always available; others need ownership + level check
         if rod_info['tier'] > 0:
             inv = await db.get_inventory(ctx.author.id)
             owned_keys = {row['item_key'] for row in inv}
             if rod_key not in owned_keys and f'rod_{rod_key}' not in owned_keys:
                 await ctx.send(embed=discord.Embed(
-                    description=f"You don't own **{rod_info['name']}**. Buy it with `t!buy {rod_key}`.",
+                    description=f"You don't own **{rod_info['name']}**. Buy it with `t!buy rod_{rod_key}`.",
+                    color=config.COLORS['error'],
+                ))
+                return
+
+        # Level requirement check
+        if min_level > 1:
+            stats = await db.get_fishing_stats(ctx.author.id)
+            fishing_level = _fishing_level_from_xp(stats['fishing_xp'])
+            if fishing_level < min_level:
+                await ctx.send(embed=discord.Embed(
+                    description=(
+                        f"**{rod_info['name']}** requires **Fishing Level {min_level}**.\n"
+                        f"You're currently **Level {fishing_level}**. Keep fishing to level up!"
+                    ),
                     color=config.COLORS['error'],
                 ))
                 return

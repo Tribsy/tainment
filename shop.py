@@ -11,6 +11,7 @@ from discord.ext import commands
 from datetime import datetime, timezone, timedelta
 import config
 import database as db
+from fish_data import RODS as _FISH_RODS
 
 
 CURRENCY_EMOJI = {'coins': '\U0001fa99', 'gems': '\U0001f48e', 'tokens': '\U0001f3ab'}
@@ -569,9 +570,16 @@ def _shop_embed(currency: str) -> discord.Embed:
     )
     for key, item in items.items():
         dur = "Single Use" if key in CONSUMABLE_KEYS else _dur_str(item['duration'])
+        # Rod items: append fishing level requirement
+        rod_key = key[4:] if key.startswith('rod_') else None
+        lvl_note = ""
+        if rod_key and rod_key in _FISH_RODS:
+            min_lvl = _FISH_RODS[rod_key].get('min_level', 1)
+            if min_lvl > 1:
+                lvl_note = f" | **Req. Fishing Lvl {min_lvl}**"
         embed.add_field(
             name=f"{item['emoji']} {item['name']}  —  {item['price']:,} {emoji}",
-            value=f"{item['description']}  *({dur})*\n**Buy:** `t!buy {key}`",
+            value=f"{item['description']}{lvl_note}  *({dur})*\n**Buy:** `t!buy {key}`",
             inline=False,
         )
     embed.set_footer(text="Active items are shown in t!inventory and t!profile")

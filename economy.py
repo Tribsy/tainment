@@ -36,7 +36,7 @@ class Economy(commands.Cog, name="Economy"):
             if diff < 86400:
                 # Check for streak shield before rejecting
                 if await db.has_active_item(ctx.author.id, 'streak_shield'):
-                    pass  # allow through
+                    await db.remove_inventory_item(ctx.author.id, 'streak_shield')
                 else:
                     remaining = 86400 - diff
                     h, m = divmod(int(remaining), 3600)
@@ -50,6 +50,8 @@ class Economy(commands.Cog, name="Economy"):
             elif diff < 172800:
                 streak += 1
             else:
+                if streak > 1:
+                    await db.update_economy_field(ctx.author.id, previous_daily_streak=streak)
                 streak = 1
         else:
             streak = 1

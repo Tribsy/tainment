@@ -7,17 +7,17 @@ Rod tiers: 0=none 1=silver 2=gold 3=diamond 4=pearl 5=crystal 6=titanium 7=quant
 
 # ── Rod definitions ─────────────────────────────────────────────────────────
 RODS = {
-    'none':     {'name': 'Basic Rod',     'emoji': '🎣', 'tier': 0,  'price_coins': 0,    'price_gems': 0,   'price_tokens': 0,   'cooldown': 15, 'desc': 'The starter rod. Catches common fish.'},
-    'silver':   {'name': 'Silver Rod',    'emoji': '🪄', 'tier': 1,  'price_coins': 1500, 'price_gems': 0,   'price_tokens': 0,   'cooldown': 12, 'desc': '+30% uncommon, +50% rare catch rate.'},
-    'gold':     {'name': 'Golden Rod',    'emoji': '✨', 'tier': 2,  'price_coins': 5000, 'price_gems': 0,   'price_tokens': 0,   'cooldown': 10, 'desc': '+60% uncommon, +120% rare catch rate.'},
-    'diamond':  {'name': 'Diamond Rod',   'emoji': '💎', 'tier': 3,  'price_coins': 0,    'price_gems': 20,  'price_tokens': 0,   'cooldown': 7,  'desc': '+200% legendary, shorter cooldown.'},
-    'pearl':    {'name': 'Pearl Rod',     'emoji': '🫧', 'tier': 4,  'price_coins': 0,    'price_gems': 45,  'price_tokens': 0,   'cooldown': 6,  'desc': 'Unlocks Mythic fish. +25% catch value.'},
-    'crystal':  {'name': 'Crystal Rod',   'emoji': '🔮', 'tier': 5,  'price_coins': 0,    'price_gems': 100, 'price_tokens': 0,   'cooldown': 5,  'desc': 'Unlocks Ancient fish. +40% catch value.'},
-    'titanium': {'name': 'Titanium Rod',  'emoji': '⚙️', 'tier': 6,  'price_coins': 0,    'price_gems': 0,   'price_tokens': 50,  'cooldown': 5,  'desc': 'Unlocks Celestial fish. Double sell value on crits.'},
-    'quantum':  {'name': 'Quantum Rod',   'emoji': '⚛️', 'tier': 7,  'price_coins': 0,    'price_gems': 0,   'price_tokens': 150, 'cooldown': 4,  'desc': 'Unlocks Void fish. 10% chance to catch 2 fish.'},
-    'obsidian': {'name': 'Obsidian Rod',  'emoji': '🖤', 'tier': 8,  'price_coins': 0,    'price_gems': 0,   'price_tokens': 300, 'cooldown': 4,  'desc': '+500% Void fish rate. Unbreakable lure.'},
-    'cosmic':   {'name': 'Cosmic Rod',    'emoji': '🌌', 'tier': 9,  'price_coins': 0,    'price_gems': 0,   'price_tokens': 500, 'cooldown': 3,  'desc': 'Chance to catch boss fish. +100% all values.'},
-    'void':     {'name': 'Void Rod',      'emoji': '🕳️', 'tier': 10, 'price_coins': 0,    'price_gems': 0,   'price_tokens': 1000,'cooldown': 3,  'desc': 'Catches all fish. Guaranteed rare+ per cast.'},
+    'none':     {'name': 'Basic Rod',     'emoji': '🎣', 'tier': 0,  'min_level': 1,  'price_coins': 0,    'price_gems': 0,   'price_tokens': 0,   'cooldown': 15, 'desc': 'The starter rod. Catches common fish.'},
+    'silver':   {'name': 'Silver Rod',    'emoji': '🪄', 'tier': 1,  'min_level': 5,  'price_coins': 1500, 'price_gems': 0,   'price_tokens': 0,   'cooldown': 12, 'desc': '+30% uncommon, +50% rare catch rate.'},
+    'gold':     {'name': 'Golden Rod',    'emoji': '✨', 'tier': 2,  'min_level': 10, 'price_coins': 5000, 'price_gems': 0,   'price_tokens': 0,   'cooldown': 10, 'desc': '+60% uncommon, +120% rare catch rate.'},
+    'diamond':  {'name': 'Diamond Rod',   'emoji': '💎', 'tier': 3,  'min_level': 15, 'price_coins': 0,    'price_gems': 20,  'price_tokens': 0,   'cooldown': 7,  'desc': '+200% legendary, shorter cooldown.'},
+    'pearl':    {'name': 'Pearl Rod',     'emoji': '🫧', 'tier': 4,  'min_level': 20, 'price_coins': 0,    'price_gems': 45,  'price_tokens': 0,   'cooldown': 6,  'desc': 'Unlocks Mythic fish. +25% catch value.'},
+    'crystal':  {'name': 'Crystal Rod',   'emoji': '🔮', 'tier': 5,  'min_level': 25, 'price_coins': 0,    'price_gems': 100, 'price_tokens': 0,   'cooldown': 5,  'desc': 'Unlocks Ancient fish. +40% catch value.'},
+    'titanium': {'name': 'Titanium Rod',  'emoji': '⚙️', 'tier': 6,  'min_level': 30, 'price_coins': 0,    'price_gems': 0,   'price_tokens': 50,  'cooldown': 5,  'desc': 'Unlocks Celestial fish. Double sell value on crits.'},
+    'quantum':  {'name': 'Quantum Rod',   'emoji': '⚛️', 'tier': 7,  'min_level': 40, 'price_coins': 0,    'price_gems': 0,   'price_tokens': 150, 'cooldown': 4,  'desc': 'Unlocks Void fish. 10% chance to catch 2 fish.'},
+    'obsidian': {'name': 'Obsidian Rod',  'emoji': '🖤', 'tier': 8,  'min_level': 50, 'price_coins': 0,    'price_gems': 0,   'price_tokens': 300, 'cooldown': 4,  'desc': '+500% Void fish rate. Unbreakable lure.'},
+    'cosmic':   {'name': 'Cosmic Rod',    'emoji': '🌌', 'tier': 9,  'min_level': 60, 'price_coins': 0,    'price_gems': 0,   'price_tokens': 500, 'cooldown': 3,  'desc': 'Chance to catch boss fish. +100% all values.'},
+    'void':     {'name': 'Void Rod',      'emoji': '🕳️', 'tier': 10, 'min_level': 75, 'price_coins': 0,    'price_gems': 0,   'price_tokens': 1000,'cooldown': 3,  'desc': 'Catches all fish. Guaranteed rare+ per cast.'},
 }
 
 # ── Tier metadata ────────────────────────────────────────────────────────────

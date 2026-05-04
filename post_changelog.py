@@ -159,6 +159,20 @@ class ChangelogClient(discord.Client):
                 ],
             ),
             (
+                'v2.6.0 \u2014 May 2026',
+                0x00e5ff,
+                [
+                    '\U0001f3a3 **Fishing level requirements** \u2014 Each rod now requires a minimum Fishing Level to equip and use. Silver=5, Gold=10, Diamond=15, Pearl=20, Crystal=25, Titanium=30, Quantum=40, Obsidian=50, Cosmic=60, Void=75. Once you pass a level you can freely use any rod at or below it. `t!rods` shows your level, each rod\u2019s requirement, and whether it\u2019s locked.',
+                    '\U0001f9f9 **Fish Vacuum now works** \u2014 Buying one stores it in inventory. On your next `t!fish` it auto-discards all trash fish from your bag, then gets consumed. Stackable \u2014 buy multiple to protect several trips.',
+                    '\U0001f504 **Streak Restore now works** \u2014 `t!use streak_restore` restores your daily streak to the value it had before your last missed day. Only works if your streak reset recently.',
+                    '\U0001f381 **Mystery Box now works** \u2014 Opens immediately on purchase with a random reward: coins (300\u20136,000), gems, tokens, or a shop item (Premium Bait, XP Boost, rods, shields, and more). 23-item weighted prize pool with rare jackpots.',
+                    '\U0001f4e1 **Fish Radar now works** \u2014 Buy one (`t!buy fishing_radar`) then run `t!radar` to preview your next 5 catches \u2014 exact fish name, tier emoji, and estimated sell value \u2014 based on your current rod, level, and bait. Item is consumed on use.',
+                    '\U0001f527 **Rod equip bug fixed** \u2014 `t!equip cosmic` (and all rods) now correctly detects ownership. Previously the shop stored rods as `rod_cosmic` while equip checked for `cosmic`, causing a permanent \u201cYou don\u2019t own this\u201d error.',
+                    '\U0001f6d2 **Consumable item overhaul** \u2014 `daily_reset` and `work_reset` now sit in your inventory after purchase and are activated with `t!use daily_reset` / `t!use work_reset`. `streak_shield` is now consumed when it saves a cooldown instead of acting as permanent. All single-use items correctly show \u201cSingle Use\u201d in the shop instead of \u201cPermanent\u201d.',
+                    '\U0001f4e6 **Stackable consumables** \u2014 You can now buy multiple copies of any single-use item (daily_reset, work_reset, streak_shield, fish_vacuum, streak_restore, fishing_radar) to stockpile them.',
+                ],
+            ),
+            (
                 'v2.5.0 \u2014 March 2026',
                 0xe040fb,
                 [
