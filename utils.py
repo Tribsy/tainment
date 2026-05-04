@@ -106,6 +106,82 @@ class Utils(commands.Cog, name="Utils"):
             embed = discord.Embed(description="Support server not configured.", color=config.COLORS['warning'])
         await ctx.send(embed=embed)
 
+    @commands.command(name='ownerhelp', description='[OWNER] Create a private owner-only help category')
+    @commands.is_owner()
+    async def ownerhelp(self, ctx: commands.Context):
+        """Create a hidden category that only the bot owner can see and use."""
+        guild = ctx.guild
+        owner = await self.bot.application_info()
+        owner_user = owner.owner
+
+        # Check if category already exists
+        existing = discord.utils.find(lambda c: '🛡️' in c.name and 'owner' in c.name.lower(), guild.categories)
+        if existing:
+            await ctx.send(embed=discord.Embed(
+                description=f"❌ Owner help category already exists: {existing.mention}",
+                color=config.COLORS['warning'],
+            ))
+            return
+
+        try:
+            # Create category with owner-only permissions
+            overwrites = {
+                guild.default_role: discord.PermissionOverwrite(view_channel=False),
+                owner_user: discord.PermissionOverwrite(
+                    view_channel=True,
+                    send_messages=True,
+                    read_message_history=True,
+                    manage_channels=True,
+                ),
+                guild.me: discord.PermissionOverwrite(
+                    view_channel=True,
+                    send_messages=True,
+                    manage_messages=True,
+                    manage_channels=True,
+                ),
+            }
+
+            category = await guild.create_category(
+                name='🛡️ Owner Help',
+                overwrites=overwrites,
+                reason='Private owner-only help category',
+            )
+
+            # Create starter channels
+            channels_to_create = [
+                ('\U0001f4cb', 'announcements', 'Bot status, maintenance alerts, and update notifications'),
+                ('\U0001f527', 'admin-tools', 'Owner-only commands like removeitem, setbalance, etc'),
+                ('\U0001f41b', 'bugs-glitches', 'Track reported bugs and glitches to investigate'),
+                ('\U0001f4dd', 'notes', 'Keep notes, reminders, and server configuration'),
+            ]
+
+            for emoji, name, description in channels_to_create:
+                await category.create_text_channel(
+                    name=f'{emoji} {name}',
+                    topic=description,
+                    reason=f'Part of owner help category',
+                )
+
+            embed = discord.Embed(
+                title="✅ Owner Help Category Created",
+                description=f"Private category `{category.name}` is ready with 4 starter channels:\n"
+                           f"• \U0001f4cb announcements\n"
+                           f"• \U0001f527 admin-tools\n"
+                           f"• \U0001f41b bugs-glitches\n"
+                           f"• \U0001f4dd notes\n\n"
+                           f"Only you can see and access these channels.",
+                color=config.COLORS['success'],
+            )
+            await ctx.send(embed=embed)
+            logger.info(f"Created owner help category in {guild.name}")
+
+        except Exception as e:
+            logger.error(f"Failed to create owner help category: {e}")
+            await ctx.send(embed=discord.Embed(
+                description=f"❌ Failed to create category: {e}",
+                color=config.COLORS['error'],
+            ))
+
 
 async def setup(bot: commands.Bot):
     await bot.add_cog(Utils(bot))

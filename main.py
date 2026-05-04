@@ -413,6 +413,16 @@ HELP_CATEGORIES = {
             ('tos', 'View the Terms of Service'),
         ],
     },
+    'owner': {
+        'title': 'Owner Only',
+        'commands': [
+            ('givesub @user <tier> <duration>', 'Grant a user subscription (tier: Basic/Vibe/Premium/Pro, duration: 7d/2w/1m/1y)'),
+            ('giveserversub <guild_id> <tier> <duration>', 'Grant a server subscription (tier: Free/Basic/Pro, duration: 7d/2w/1m/1y)'),
+            ('ownerhelp', 'Create private owner-only help category with admin channels'),
+            ('removeitem @user <item_key>', 'Remove an item from a user\'s inventory (for glitches)'),
+            ('viewserversub <guild_id>', 'View a server\'s current subscription status and expiry'),
+        ],
+    },
 }
 
 

@@ -764,8 +764,15 @@ class Shop(commands.Cog, name="Shop"):
         items = await db.get_inventory(target.id)
 
         now = datetime.now(timezone.utc)
-        active = []
+        item_groups = {}  # key -> {name, desc, count, time_str (oldest expiry)}
+
         for row in items:
+            key = row['item_key']
+            item_data = SHOP.get(key)
+            if not item_data:
+                continue
+
+            # Check if expired
             if row['expires_at']:
                 exp = datetime.fromisoformat(row['expires_at']).replace(tzinfo=timezone.utc)
                 if exp < now:
@@ -776,12 +783,24 @@ class Shop(commands.Cog, name="Shop"):
                 time_str = f"Expires in {h}h {m}m"
             else:
                 time_str = "Permanent"
-            key = row['item_key']
-            item_data = SHOP.get(key)
-            if item_data:
-                active.append((item_data['name'], item_data['description'], time_str))
 
-        if not active:
+            # Group by key
+            if key not in item_groups:
+                item_groups[key] = {
+                    'name': item_data['name'],
+                    'desc': item_data['description'],
+                    'count': 0,
+                    'time_str': time_str,
+                }
+            item_groups[key]['count'] += 1
+            # Update to earliest expiry time if this one expires sooner
+            if time_str != "Permanent" and item_groups[key]['time_str'] == "Permanent":
+                item_groups[key]['time_str'] = time_str
+            elif time_str != "Permanent" and item_groups[key]['time_str'] != "Permanent":
+                # Keep the one that expires sooner (shows first)
+                pass
+
+        if not item_groups:
             await ctx.send(embed=discord.Embed(
                 description=f"{target.display_name} has no active items. Visit `t!shop`!",
                 color=config.COLORS['warning'],
@@ -789,8 +808,11 @@ class Shop(commands.Cog, name="Shop"):
             return
 
         embed = discord.Embed(title=f"{target.display_name}'s Inventory", color=config.COLORS['primary'])
-        for name, desc, time_str in active:
-            embed.add_field(name=name, value=f"{desc}\n*{time_str}*", inline=True)
+        for key, group in item_groups.items():
+            count_prefix = f"{group['count']}x " if group['count'] > 1 else ""
+            name = f"{count_prefix}{group['name']}"
+            value = f"{group['desc']}\n*{group['time_str']}*"
+            embed.add_field(name=name, value=value, inline=True)
         await ctx.send(embed=embed)
 
     @commands.hybrid_command(name='transfer', aliases=['give', 'pay'], description='Transfer coins to another user')
@@ -831,6 +853,38 @@ class Shop(commands.Cog, name="Shop"):
             color=config.COLORS['success'],
         )
         await ctx.send(embed=embed)
+
+    @commands.command(name='removeitem', description='[OWNER] Remove an item from a user\'s inventory')
+    @commands.is_owner()
+    async def removeitem(self, ctx: commands.Context, user: discord.Member, *, item_key: str):
+        """Remove a single instance of an item from a user's inventory. Owner-only."""
+        item_key = item_key.strip().lower()
+        
+        # Validate item exists in shop
+        if item_key not in SHOP:
+            await ctx.send(embed=discord.Embed(
+                description=f"❌ Item `{item_key}` not found in shop.",
+                color=config.COLORS['error'],
+            ))
+            return
+        
+        await db.ensure_user(user.id, user.name)
+        
+        # Try to remove the item
+        success = await db.remove_inventory_item(user.id, item_key)
+        
+        if success:
+            item_name = SHOP[item_key]['name']
+            await ctx.send(embed=discord.Embed(
+                description=f"✅ Removed **{item_name}** from {user.mention}'s inventory.",
+                color=config.COLORS['success'],
+            ))
+        else:
+            item_name = SHOP[item_key]['name']
+            await ctx.send(embed=discord.Embed(
+                description=f"❌ {user.mention} doesn't have **{item_name}** in their inventory.",
+                color=config.COLORS['error'],
+            ))
 
 
 async def _apply_daily_reset(user_id: int):
