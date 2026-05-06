@@ -28,10 +28,19 @@ __pycache__/
 mcp/
 mcp-start.log
 start-discord-mcp.bat
-scripts/
+scripts/*
+!scripts/hooks/
+!scripts/hooks/**
+discord-mcp-setup.md
 
 # One-time setup/maintenance scripts (not needed for deployment)
 setup_output.txt
+casino_setup_output.txt
+maintenance_output.txt
+CASINO_SETUP.md
+devdreams_setup_1.py
+frontend-redesign-plan.md
+
 
 # Build artifacts
 target/

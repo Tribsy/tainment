@@ -9,6 +9,8 @@ import aiosqlite
 import config
 from database import init_db
 import database as db
+from devdreams_setup_1 import setup_server
+from casino_db import casino_init_db
 
 
 async def _get_prefix(bot, message):
@@ -36,36 +38,40 @@ logging.basicConfig(
 )
 logger = logging.getLogger('tainment')
 
+# Phase 0 — extension paths are dotted ('cogs.<name>'). The cogs/ package
+# contains thin shims that re-export setup() from the root-level files. Phase 1+
+# will move the actual cog code into cogs/<domain>/ packages and delete the shims.
 EXTENSIONS = [
-    'entertainment',
-    'economy',
-    'shop',
-    'levels',
-    'fun',
-    'games',
-    'profile',
-    'giveaway',
-    'polls',
-    'reminders',
-    'leaderboard',
-    'subscription',
-    'payment',
-    'lemonsqueezy_payment',
-    'subscription_tasks',
-    'admin_subscription',
-    'utils',
-    'fishing',
-    'support_forms',
-    'reaction_roles',
-    'fun_games',
-    'moderation',
-    'server_settings',
-    'birthday',
-    'music_discovery',
-    'music_trivia',
-    'music_profiles',
-    'spotify',
-    'automod',
+    'cogs.entertainment',
+    'cogs.economy',
+    'cogs.casino',
+    'cogs.shop',
+    'cogs.levels',
+    'cogs.fun',
+    'cogs.games',
+    'cogs.profile',
+    'cogs.giveaway',
+    'cogs.polls',
+    'cogs.reminders',
+    'cogs.leaderboard',
+    'cogs.subscription',
+    'cogs.payment',
+    'cogs.lemonsqueezy_payment',
+    'cogs.subscription_tasks',
+    'cogs.admin_subscription',
+    'cogs.utils',
+    'cogs.fishing',
+    'cogs.support_forms',
+    'cogs.reaction_roles',
+    'cogs.fun_games',
+    'cogs.moderation',
+    'cogs.server_settings',
+    'cogs.birthday',
+    'cogs.music_discovery',
+    'cogs.music_trivia',
+    'cogs.music_profiles',
+    'cogs.spotify',
+    'cogs.automod',
 ]
 
 
@@ -84,6 +90,7 @@ class TainmentBot(commands.Bot):
 
     async def setup_hook(self):
         await init_db()
+        await casino_init_db()
         for ext in EXTENSIONS:
             try:
                 await self.load_extension(ext)
@@ -129,14 +136,12 @@ class TainmentBot(commands.Bot):
                 embed = discord.Embed(
                     title="Thanks for adding Tainment+!",
                     description=(
-                        "Your all-in-one premium entertainment bot is ready.\n\n"
+                        "Your Ultimate Discord Companion, a bot made by <@885947418292650005>.\n"
+                        "I have features such as moderation, utility and more!\n\n"
                         "**Getting started:**\n"
                         "- `/help` or `t!help` - full command list\n"
                         "- `/daily` - claim free daily coins\n"
-                        "- `/subscribe` - unlock premium features\n\n"
-                        "**What I offer:**\n"
-                        "Games & Trivia | Economy & Levels\n"
-                        "Giveaways & Polls | Stories & Jokes"
+                        "- `/subscribe` - unlock premium features"
                     ),
                     color=config.COLORS['primary'],
                 )
@@ -198,7 +203,6 @@ HELP_CATEGORIES = {
             ('gamble <amount>', 'Gamble coins'),
             ('richest', 'Server wealth leaderboard'),
             ('rob @user', 'Attempt to rob a user'),
-            ('slots <bet>', 'Slot machine — jackpot pays gems!'),
             ('streak', 'View your daily streak and next milestone'),
             ('transfer @user <amount> [currency]', 'Send currency to someone'),
             ('work', 'Work for coins (1h cooldown)'),
@@ -230,20 +234,28 @@ HELP_CATEGORIES = {
     'games': {
         'title': 'Games',
         'commands': [
-            ('blackjack [bet]', 'Blackjack — Pro tier only'),
             ('c4', 'Connect Four vs bot (buttons)'),
-            ('duel @user <bet>', 'Coin flip duel vs another user'),
             ('guess', 'Number guessing game (7 attempts)'),
             ('hangman [diff]', 'Hangman — easy / medium / hard  (Premium+)'),
-            ('highlow [bet]', 'Higher or Lower card game'),
             ('mathquiz [diff]', 'Rapid-fire math quiz — easy / medium / hard'),
-            ('roulette <bet> [red|black]', 'Bet on red or black — 1.9x payout  (Premium+)'),
             ('rps', 'Rock Paper Scissors with buttons'),
             ('scramble', 'Unscramble a word — channel race'),
             ('snap', 'Reaction speed game — type SNAP first!'),
             ('trivia [diff]', 'Live trivia — easy / medium / hard  (Vibe+)'),
             ('ttt', 'Tic-Tac-Toe vs bot (buttons)'),
             ('wordle', 'Wordle-style word game  (Premium+)'),
+        ],
+    },
+    'casino': {
+        'title': 'Casino',
+        'commands': [
+            ('bank', 'View casino bank status'),
+            ('blackjack <bet>', 'Hit / Stand / Double Down vs dealer'),
+            ('duel @user <bet>', 'Coin-flip PvP duel'),
+            ('highlow <bet>', 'Higher or Lower card streak game'),
+            ('roulette <bet>', 'Interactive roulette with bet buttons'),
+            ('slots <bet>', 'Slot machine with sequential reel reveal'),
+            ('wheel <bet>', 'Wheel of Fortune with animated spin'),
         ],
     },
     'fun': {
@@ -364,6 +376,7 @@ HELP_CATEGORIES = {
             ('addbalance @user <amount> [currency]', 'Add/remove balance'),
             ('addemote <name> <url>', 'Add a custom emoji to the server'),
             ('botsetup', 'View bot configuration status for this server'),
+            ('casino bank/ban/unban/setlimit/topwinners/flush', 'Casino admin — Manage Guild required'),
             ('cmdlist', 'Show command toggle overrides for this server'),
             ('prefix [new]', 'View or set the server command prefix'),
             ('removebalance @user <amount> [currency]', 'Remove balance from a user'),
@@ -467,7 +480,8 @@ async def help_command(ctx: commands.Context, category: str = None):
     embed = discord.Embed(
         title="Tainment+ Help",
         description=(
-            "Premium entertainment, economy, and community features.\n"
+            "Your Most Entertaining Discord Companion, a bot made with love by <@885947418292650005>.\n"
+            "I have features such as entertainment, moderation, games, utility and more!\n\n"
             "Use the dropdown to explore commands, or run `t!help <category>`.\n\n"
             + "  ".join(f"`{k}`" for k in HELP_CATEGORIES)
         ),
@@ -509,6 +523,84 @@ async def stats(ctx: commands.Context):
     embed.set_thumbnail(url=ctx.bot.user.display_avatar.url)
     embed.set_footer(text="Tainment+ Premium Bot")
     await ctx.send(embed=embed)
+
+
+@bot.command(name='devsetup', description='Set up the DevDreams server template')
+@commands.has_permissions(administrator=True)
+async def devsetup(ctx: commands.Context, dry_run: str = None):
+    """Initialize the DevDreams server template on this guild.
+    
+    Usage:
+        t!devsetup          - Run the full setup
+        t!devsetup dry      - Simulate without making changes
+    """
+    is_dry_run = dry_run and dry_run.lower() in ('dry', 'dryrun', 'simulate', '--dry')
+    
+    # Confirmation embed
+    embed = discord.Embed(
+        title="🔧 DevDreams Server Setup",
+        description=(
+            "This will create all roles, categories, and channels according to the DevDreams template.\n\n"
+            f"**Mode:** {'📋 Dry Run (Simulated)' if is_dry_run else '⚠️ Live Setup'}\n"
+            "This requires Administrator permission and will take a minute or two.\n\n"
+            "React with ✅ to proceed or ❌ to cancel."
+        ),
+        color=discord.Color.blue() if not is_dry_run else discord.Color.gold(),
+    )
+    
+    msg = await ctx.send(embed=embed)
+    await msg.add_reaction('✅')
+    await msg.add_reaction('❌')
+    
+    def check(reaction, user):
+        return user == ctx.author and reaction.message.id == msg.id and str(reaction.emoji) in ('✅', '❌')
+    
+    try:
+        reaction, _ = await bot.wait_for('reaction_add', timeout=60.0, check=check)
+        if str(reaction.emoji) == '❌':
+            await msg.edit(embed=discord.Embed(description="Setup cancelled.", color=discord.Color.red()))
+            return
+    except Exception:
+        await msg.edit(embed=discord.Embed(description="Setup confirmation timed out.", color=discord.Color.red()))
+        return
+    
+    # Progress embed
+    progress_embed = discord.Embed(
+        title="🔧 DevDreams Server Setup in Progress",
+        description="Setting up roles, categories, and channels...",
+        color=discord.Color.blue(),
+    )
+    progress_msg = await ctx.send(embed=progress_embed)
+    
+    try:
+        # Run the setup
+        result = await setup_server(ctx.guild, dry_run=is_dry_run)
+        
+        # Completion embed
+        complete_embed = discord.Embed(
+            title="✅ Setup Complete!",
+            description=(
+                f"{'[Dry Run Simulation]' if is_dry_run else '[Live Setup Completed]'}\n\n"
+                f"**Roles Created:** {len(result.get('roles', []))}\n"
+                f"**Channels Created:** {len(result.get('channels', []))}\n\n"
+                "The server is now set up according to the DevDreams template."
+            ),
+            color=discord.Color.green(),
+        )
+        complete_embed.set_footer(text="Setup initiated by " + ctx.author.name)
+        
+        await progress_msg.edit(embed=complete_embed)
+        
+        logger.info(f"DevDreams setup completed on {ctx.guild.name} (dry_run={is_dry_run})")
+        
+    except Exception as e:
+        error_embed = discord.Embed(
+            title="❌ Setup Failed",
+            description=f"An error occurred during setup:\n```\n{str(e)[:200]}\n```",
+            color=discord.Color.red(),
+        )
+        await progress_msg.edit(embed=error_embed)
+        logger.error(f"DevDreams setup failed on {ctx.guild.name}: {e}", exc_info=True)
 
 
 _LOCK_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.bot.lock')
