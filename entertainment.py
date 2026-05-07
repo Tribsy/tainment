@@ -5,6 +5,7 @@ import asyncio
 import aiohttp
 import config
 import database as db
+from core.permissions.tier_gate import require_tier
 
 # -- Jokes --
 
@@ -421,16 +422,9 @@ class Entertainment(commands.Cog, name="Entertainment"):
 
     @commands.command(name='hangman', description='Play Hangman (easy/medium/hard)')
     @commands.cooldown(1, config.COOLDOWNS['game'], commands.BucketType.user)
+    @require_tier('Premium')
     async def hangman(self, ctx: commands.Context, difficulty: str = 'medium'):
-        await db.ensure_user(ctx.author.id, ctx.author.name)
-        tier = await db.get_tier(ctx.author.id)
-        if tier in ('Basic', 'Vibe'):
-            await ctx.send(embed=discord.Embed(
-                description="Hangman requires **Premium** or higher. Use `t!subscribe` to upgrade!",
-                color=config.COLORS['warning'],
-            ))
-            return
-
+        # Tier gate handled by @require_tier; user is auto-ensured there.
         difficulty = difficulty.lower()
         if difficulty not in HANGMAN_WORDS:
             difficulty = 'medium'
