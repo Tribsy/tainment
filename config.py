@@ -207,7 +207,9 @@ TOS_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tos.md')
 PRIVACY_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'privacy.md')
 
 # -- Meta --
-from post_changelog import VERSIONS as _VERSIONS
+# Phase 1: post_changelog moved to scripts/maintenance/. The dotted import below
+# requires scripts/__init__.py and scripts/maintenance/__init__.py to exist.
+from scripts.maintenance.post_changelog import VERSIONS as _VERSIONS
 BOT_VERSION = _VERSIONS[-1][0].lstrip('v').split(' |')[0]
 
 # -- Music System --

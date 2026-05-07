@@ -1,0 +1,4 @@
+# Production dependencies for the Pi deployment. Currently identical to base.txt;
+# diverges if/when production needs different pins (e.g., older numpy for ARM,
+# or extras like uvloop). Pinning lives here, not in base.txt.
+-r base.txt

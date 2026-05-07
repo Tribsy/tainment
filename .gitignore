@@ -28,9 +28,9 @@ __pycache__/
 mcp/
 mcp-start.log
 start-discord-mcp.bat
-scripts/*
-!scripts/hooks/
-!scripts/hooks/**
+# scripts/ holds project tooling (hooks, maintenance scripts, deploy helpers).
+# Track everything except machine-specific or one-off helpers listed below.
+scripts/discord-mcp.ps1
 discord-mcp-setup.md
 
 # One-time setup/maintenance scripts (not needed for deployment)
@@ -44,7 +44,9 @@ frontend-redesign-plan.md
 
 # Build artifacts
 target/
-docs/
+# docs/ is project structure (architecture, commands, setup, api). Generated
+# Sphinx output, if ever added, goes into docs/_build/ which is excluded below.
+docs/_build/
 
 # OS
 .DS_Store

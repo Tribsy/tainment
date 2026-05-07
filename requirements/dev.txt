@@ -1,0 +1,13 @@
+# Development-only dependencies. Install with:
+#     pip install -r requirements/dev.txt
+# Includes everything in base.txt plus testing/linting/formatting tools.
+-r base.txt
+
+# Testing
+pytest>=7.4.0
+pytest-asyncio>=0.23.0
+
+# Linting / formatting (uncomment as the project adopts them)
+# black>=24.0.0
+# ruff>=0.3.0
+# mypy>=1.8.0

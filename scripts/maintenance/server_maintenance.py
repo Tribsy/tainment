@@ -6,12 +6,24 @@ One-time server maintenance script:
   - Reposts #faq with updated content
   - Posts form panels in #bug-reports, #billing-support, #feature-requests
 
-Run:  python server_maintenance.py
+Run from the repo root:
+    python -m scripts.maintenance.server_maintenance
+or directly:
+    python scripts/maintenance/server_maintenance.py
 """
 
 import asyncio
 import os
 import sys
+
+# Phase 1: this script lives at scripts/maintenance/, but it imports project
+# modules (e.g. support_forms) that still live at the repo root. Inject the
+# repo root into sys.path so direct execution (`python scripts/maintenance/...`)
+# resolves those imports the same way `python -m ...` would.
+_REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+if _REPO_ROOT not in sys.path:
+    sys.path.insert(0, _REPO_ROOT)
+
 sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 
 import discord
