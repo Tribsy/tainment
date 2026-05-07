@@ -174,97 +174,61 @@ class Economy(commands.Cog, name="Economy"):
             )
         await ctx.send(embed=embed)
 
-    # -- Gamble --
+    # -- Gamble -- [DISABLED: moved to casino.py]
+    # @commands.command(name='gamble', description='Gamble your coins')
+    # @commands.cooldown(1, config.COOLDOWNS['gamble'], commands.BucketType.user)
+    # async def gamble(self, ctx: commands.Context, amount: int):
+    #     await db.ensure_user(ctx.author.id, ctx.author.name)
+    #     bal = await db.get_currency(ctx.author.id, 'coins')
+    #
+    #     if amount <= 0 or amount > bal:
+    #         await ctx.send(embed=eco_embed("Invalid", f"Balance: `{bal:,}` \U0001fa99", config.COLORS['error']))
+    #         return
+    #
+    #     win_chance = config.ECONOMY['gamble_win_chance']
+    #     if await db.has_active_item(ctx.author.id, 'luck_charm'):
+    #         win_chance += 0.20
+    #     if await db.has_active_item(ctx.author.id, 'lucky_gamble'):
+    #         win_chance = max(win_chance, 0.65)
+    #         # Consume the item
+    #         import aiosqlite
+    #         async with aiosqlite.connect(config.DB_PATH) as conn:
+    #             await conn.execute(
+    #                 "DELETE FROM inventory WHERE user_id = ? AND item_key = 'lucky_gamble' LIMIT 1",
+    #                 (ctx.author.id,)
+    #             )
+    #             await conn.commit()
+    #
+    #     if random.random() < win_chance:
+    #         payout = int(amount * config.ECONOMY['gamble_multiplier'])
+    #         profit = payout - amount
+    #         await db.earn_currency(ctx.author.id, 'coins', profit)
+    #         embed = eco_embed(
+    #             "You won!",
+    #             f"Bet: `{amount:,}` \u2192 Payout: **+{payout:,}** \U0001fa99 *(bet returned + {profit:,} profit)*\nNew balance: `{bal + profit:,}`",
+    #             config.COLORS['success'],
+    #         )
+    #     else:
+    #         await db.spend_currency(ctx.author.id, 'coins', amount)
+    #         embed = eco_embed(
+    #             "You lost!",
+    #             f"Bet: `{amount:,}` \u2192 Lost **{amount:,}** \U0001fa99\nNew balance: `{bal - amount:,}`",
+    #             config.COLORS['error'],
+    #         )
+    #     await ctx.send(embed=embed)
 
-    @commands.command(name='gamble', description='Gamble your coins')
-    @commands.cooldown(1, config.COOLDOWNS['gamble'], commands.BucketType.user)
-    async def gamble(self, ctx: commands.Context, amount: int):
-        await db.ensure_user(ctx.author.id, ctx.author.name)
-        bal = await db.get_currency(ctx.author.id, 'coins')
-
-        if amount <= 0 or amount > bal:
-            await ctx.send(embed=eco_embed("Invalid", f"Balance: `{bal:,}` \U0001fa99", config.COLORS['error']))
-            return
-
-        win_chance = config.ECONOMY['gamble_win_chance']
-        if await db.has_active_item(ctx.author.id, 'luck_charm'):
-            win_chance += 0.20
-        if await db.has_active_item(ctx.author.id, 'lucky_gamble'):
-            win_chance = max(win_chance, 0.65)
-            # Consume the item
-            import aiosqlite
-            async with aiosqlite.connect(config.DB_PATH) as conn:
-                await conn.execute(
-                    "DELETE FROM inventory WHERE user_id = ? AND item_key = 'lucky_gamble' LIMIT 1",
-                    (ctx.author.id,)
-                )
-                await conn.commit()
-
-        if random.random() < win_chance:
-            payout = int(amount * config.ECONOMY['gamble_multiplier'])
-            profit = payout - amount
-            await db.earn_currency(ctx.author.id, 'coins', profit)
-            embed = eco_embed(
-                "You won!",
-                f"Bet: `{amount:,}` \u2192 Payout: **+{payout:,}** \U0001fa99 *(bet returned + {profit:,} profit)*\nNew balance: `{bal + profit:,}`",
-                config.COLORS['success'],
-            )
-        else:
-            await db.spend_currency(ctx.author.id, 'coins', amount)
-            embed = eco_embed(
-                "You lost!",
-                f"Bet: `{amount:,}` \u2192 Lost **{amount:,}** \U0001fa99\nNew balance: `{bal - amount:,}`",
-                config.COLORS['error'],
-            )
-        await ctx.send(embed=embed)
-
-    # -- Slots --
-
-    @commands.command(name='slots', description='Play the slot machine')
-    @commands.cooldown(1, config.COOLDOWNS['slots'], commands.BucketType.user)
-    async def slots(self, ctx: commands.Context, bet: int):
-        await db.ensure_user(ctx.author.id, ctx.author.name)
-        bal = await db.get_currency(ctx.author.id, 'coins')
-
-        if bet <= 0 or bet > bal:
-            await ctx.send(embed=eco_embed("Invalid bet", f"Balance: `{bal:,}` \U0001fa99", config.COLORS['error']))
-            return
-
-        symbols = ['7', 'BAR', 'Bell', 'Cherry', 'Lemon', 'Orange']
-        weights = [2, 5, 10, 15, 15, 15]
-        reels = random.choices(symbols, weights=weights, k=3)
-        display = '  |  '.join(reels)
-
-        gem_reward = 0
-        if reels[0] == reels[1] == reels[2]:
-            if reels[0] == '7':
-                mult = config.ECONOMY['slots_jackpot_multiplier']
-                result_text, color = "JACKPOT!", config.COLORS['gold']
-                gem_reward = 15
-            else:
-                mult, result_text, color = 3.0, "Three of a kind!", config.COLORS['success']
-                gem_reward = 3
-        elif reels[0] == reels[1] or reels[1] == reels[2]:
-            mult, result_text, color = 1.5, "Two of a kind!", config.COLORS['info']
-        else:
-            mult, result_text, color = 0, "No match.", config.COLORS['error']
-
-        if mult > 0:
-            net = int(bet * mult) - bet
-            await db.earn_currency(ctx.author.id, 'coins', net)
-            if gem_reward:
-                await db.earn_currency(ctx.author.id, 'gems', gem_reward)
-            reward_str = f"Net: **+{net:,}** \U0001fa99"
-            if gem_reward:
-                reward_str += f"  +**{gem_reward}** \U0001f48e"
-            desc = f"[ {display} ]\n\n**{result_text}** {mult}x\n{reward_str}"
-        else:
-            await db.spend_currency(ctx.author.id, 'coins', bet)
-            desc = f"[ {display} ]\n\n**{result_text}**\nLost: **-{bet:,}** \U0001fa99"
-
-        embed = discord.Embed(title="Slot Machine", description=desc, color=color)
-        embed.set_footer(text="Tainment+ Economy")
-        await ctx.send(embed=embed)
+    # -- Slots -- [DISABLED: moved to casino.py]
+    # @commands.command(name='slots', description='Play the slot machine')
+    # @commands.cooldown(1, config.COOLDOWNS['slots'], commands.BucketType.user)
+    # async def slots(self, ctx: commands.Context, bet: int):
+    #     await db.ensure_user(ctx.author.id, ctx.author.name)
+    #     bal = await db.get_currency(ctx.author.id, 'coins')
+    #
+    #     if bet <= 0 or bet > bal:
+    #         await ctx.send(embed=eco_embed("Invalid bet", f"Balance: `{bal:,}` \U0001fa99", config.COLORS['error']))
+    #         return
+    #
+    #     symbols = ['7', 'BAR', 'Bell', 'Cherry', 'Lemon', 'Orange']\n    #     weights = [2, 5, 10, 15, 15, 15]\n    #     reels = random.choices(symbols, weights=weights, k=3)\n    #     display = '  |  '.join(reels)\n    #\n    #     gem_reward = 0\n    #     if reels[0] == reels[1] == reels[2]:\n    #         if reels[0] == '7':\n    #             mult = config.ECONOMY['slots_jackpot_multiplier']\n    #             result_text, color = \"JACKPOT!\", config.COLORS['gold']\n    #             gem_reward = 15\n    #         else:\n    #             mult, result_text, color = 3.0, \"Three of a kind!\", config.COLORS['success']\n    #             gem_reward = 3\n    #     elif reels[0] == reels[1] or reels[1] == reels[2]:\n    #         mult, result_text, color = 1.5, \"Two of a kind!\", config.COLORS['info']\n    #     else:\n    #         mult, result_text, color = 0, \"No match.\", config.COLORS['error']\n    #\n    #     if mult > 0:\n    #         net = int(bet * mult) - bet\n    #         await db.earn_currency(ctx.author.id, 'coins', net)\n    #         if gem_reward:\n    #             await db.earn_currency(ctx.author.id, 'gems', gem_reward)\n    #         reward_str = f\"Net: **+{net:,}** \U0001fa99\"\n    #         if gem_reward:\n    #             reward_str += f\"  +**{gem_reward}** \U0001f48e\"\n    #         desc = f\"[ {display} ]\\n\\n**{result_text}** {mult}x\\n{reward_str}\"\n    #     else:\n    #         await db.spend_currency(ctx.author.id, 'coins', bet)\n    #         desc = f\"[ {display} ]\\n\\n**{result_text}**\\nLost: **-{bet:,}** \U0001fa99\"\n    #\n    #     embed = discord.Embed(title=\"Slot Machine\", description=desc, color=color)\n    #     embed.set_footer(text=\"Tainment+ Economy\")\n    #     await ctx.send(embed=embed)
 
     # ── Admin Commands ─────────────────────────────────────────────────────────
 

@@ -370,35 +370,76 @@ class AdminSubscription(commands.Cog, name="Admin"):
 
     @commands.command(name='viewserversub', aliases=['vss'])
     @commands.is_owner()
-    async def viewserversub(self, ctx: commands.Context, guild_id: int):
-        """[Dev] View a server's current subscription."""
-        async with aiosqlite.connect(config.DB_PATH) as db_conn:
-            db_conn.row_factory = aiosqlite.Row
-            async with db_conn.execute(
-                "SELECT * FROM server_subscriptions WHERE guild_id = ?", (guild_id,)
-            ) as cur:
-                sub = await cur.fetchone()
+    async def viewserversub(self, ctx: commands.Context, guild_id: int = None):
+        """[Dev] View server subscriptions. If no guild_id, shows all active subscriptions."""
+        if guild_id:
+            # View specific server
+            async with aiosqlite.connect(config.DB_PATH) as db_conn:
+                db_conn.row_factory = aiosqlite.Row
+                async with db_conn.execute(
+                    "SELECT * FROM server_subscriptions WHERE guild_id = ?", (guild_id,)
+                ) as cur:
+                    sub = await cur.fetchone()
 
-        guild = self.bot.get_guild(guild_id)
-        guild_name = guild.name if guild else f'Unknown ({guild_id})'
-        tier = sub['tier'] if sub else 'Free'
+            guild = self.bot.get_guild(guild_id)
+            guild_name = guild.name if guild else f'Unknown ({guild_id})'
+            tier = sub['tier'] if sub else 'Free'
 
-        embed = discord.Embed(
-            title=f"Server Subscription: {guild_name}",
-            color=config.COLORS['primary'],
-        )
-        embed.add_field(name="Guild ID", value=f"`{guild_id}`", inline=True)
-        embed.add_field(name="Tier", value=f"**{tier}**", inline=True)
-        if sub:
-            embed.add_field(name="Start", value=sub['start_date'][:10] if sub['start_date'] else "N/A", inline=True)
-            if sub['end_date']:
-                ts = int(datetime.fromisoformat(sub['end_date']).timestamp())
-                embed.add_field(name="Expires", value=f"<t:{ts}:D> (<t:{ts}:R>)", inline=False)
+            embed = discord.Embed(
+                title=f"Server Subscription: {guild_name}",
+                color=config.COLORS['primary'],
+            )
+            embed.add_field(name="Guild ID", value=f"`{guild_id}`", inline=True)
+            embed.add_field(name="Tier", value=f"**{tier}**", inline=True)
+            if sub:
+                embed.add_field(name="Start", value=sub['start_date'][:10] if sub['start_date'] else "N/A", inline=True)
+                if sub['end_date']:
+                    ts = int(datetime.fromisoformat(sub['end_date']).timestamp())
+                    embed.add_field(name="Expires", value=f"<t:{ts}:D> (<t:{ts}:R>)", inline=False)
+                else:
+                    embed.add_field(name="Expires", value="Indefinite", inline=True)
             else:
-                embed.add_field(name="Expires", value="Indefinite", inline=True)
+                embed.add_field(name="Note", value="No record in DB — defaulting to Free", inline=False)
+            await ctx.send(embed=embed)
         else:
-            embed.add_field(name="Note", value="No record in DB — defaulting to Free", inline=False)
-        await ctx.send(embed=embed)
+            # View all active server subscriptions
+            async with aiosqlite.connect(config.DB_PATH) as db_conn:
+                db_conn.row_factory = aiosqlite.Row
+                async with db_conn.execute(
+                    "SELECT * FROM server_subscriptions WHERE tier != 'Free' ORDER BY end_date DESC"
+                ) as cur:
+                    subs = await cur.fetchall()
+
+            if not subs:
+                await ctx.send(embed=discord.Embed(
+                    description="No active server subscriptions found.",
+                    color=config.COLORS['warning'],
+                ))
+                return
+
+            embed = discord.Embed(
+                title=f"Active Server Subscriptions ({len(subs)})",
+                color=config.COLORS['primary'],
+            )
+
+            for sub in subs:
+                guild = self.bot.get_guild(sub['guild_id'])
+                guild_name = guild.name if guild else f'Unknown ({sub["guild_id"]})'
+                tier = sub['tier']
+                
+                if sub['end_date']:
+                    ts = int(datetime.fromisoformat(sub['end_date']).timestamp())
+                    expires_str = f"<t:{ts}:R>"
+                else:
+                    expires_str = "Indefinite"
+                
+                embed.add_field(
+                    name=f"{tier} • {guild_name}",
+                    value=f"ID: `{sub['guild_id']}` | Expires: {expires_str}",
+                    inline=False
+                )
+
+            await ctx.send(embed=embed)
 
 
 async def setup(bot: commands.Bot):
