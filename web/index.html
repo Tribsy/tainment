@@ -3,200 +3,262 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tainment+ — Discord Bot</title>
-  <meta name="description" content="Tainment+ is a full-featured Discord bot. Economy, games, fishing, music, moderation, and four subscription tiers — all in one." />
-  <meta property="og:title" content="Tainment+ — Discord Bot" />
-  <meta property="og:description" content="Add Tainment+ to your Discord server and unlock economy, games, fishing, full moderation, and premium subscription tiers." />
+  <title>Tainment+ - Entertainment Infrastructure For Discord</title>
+  <meta name="description" content="Moderation, games, social systems, utilities, AI interaction, and chaotic community energy inside one evolving Discord bot." />
+  <meta property="og:title" content="Tainment+ - Entertainment Infrastructure For Discord" />
+  <meta property="og:description" content="Your server deserves more than just commands. Add Tainment+ and transform your Discord community." />
   <link rel="icon" href="https://cdn.discordapp.com/avatars/1374911009009041448/avatar.png" type="image/png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Montserrat:wght@600;700;800;900&family=Roboto+Mono:wght@400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@500;600;700;800;900&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
-    /* ── Design tokens (matches site) ─────────────────── */
+    /* ── Design tokens ─────────────────────────────────────── */
     :root {
-      --magenta:      #E040FB;
-      --magenta-dark: #C030D9;
-      --magenta-dim:  rgba(224, 64, 251, 0.15);
-      --magenta-glow: rgba(224, 64, 251, 0.25);
-      --cyan:         #00E5FF;
-      --bg:           #000;
-      --surface:      #080508;
-      --surface-2:    #0d000f;
-      --border:       rgba(224, 64, 251, 0.12);
-      --border-hover: rgba(224, 64, 251, 0.4);
-      --neutral:      #93A8AC;
-      --white:        #ffffff;
-      --shell:        min(1100px, 94vw);
-      --transition:   180ms ease;
+      --blurple:      #5865F2;
+      --blurple-dark: #4752C4;
+      --purple:       #8B5CF6;
+      --cyan:         #00D4FF;
+      --bg-deep:      #0b0f1a;
+      --bg-base:      #121826;
+      --bg-surface:   #1e293b;
+      --border:       rgba(88, 101, 242, 0.12);
+      --border-hover: rgba(88, 101, 242, 0.35);
+      --neutral:      #94a3b8;
+      --neutral-dim:  #64748b;
+      --white:        #f1f5f9;
+      --white-bright: #ffffff;
+      --shell:        min(1200px, 92vw);
+      --transition:   200ms ease;
+      --glass-bg:     rgba(30, 41, 59, 0.6);
+      --glass-border: rgba(88, 101, 242, 0.15);
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     html { scroll-behavior: smooth; }
-
     body {
       font-family: 'Inter', sans-serif;
-      background: var(--bg);
+      background: var(--bg-deep);
       color: var(--white);
-      line-height: 1.6;
+      line-height: 1.65;
       -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
     }
-
     a { color: inherit; text-decoration: none; }
     img { display: block; max-width: 100%; }
     ul { list-style: none; }
+    :focus-visible { outline: 2px solid var(--blurple); outline-offset: 3px; }
 
-    :focus-visible { outline: 2px solid var(--magenta); outline-offset: 3px; }
-
-    /* ── Scrollbar ─────────────────────────────────────── */
+    /* ── Scrollbar ─────────────────────────────────────────── */
     ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: var(--bg); }
-    ::-webkit-scrollbar-thumb { background: var(--magenta); border-radius: 3px; }
+    ::-webkit-scrollbar-track { background: var(--bg-deep); }
+    ::-webkit-scrollbar-thumb { background: var(--blurple); border-radius: 3px; }
 
-    /* ── Shell / layout ────────────────────────────────── */
-    .shell { max-width: var(--shell); margin: 0 auto; padding: 0 1.5rem; }
+    /* ── Ambient background ────────────────────────────────── */
+    .ambient {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .ambient__orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(120px);
+      opacity: 0.12;
+      animation: orbFloat 20s ease-in-out infinite alternate;
+    }
+    .ambient__orb--1 {
+      width: 600px; height: 600px;
+      background: var(--blurple);
+      top: -200px; left: -100px;
+    }
+    .ambient__orb--2 {
+      width: 500px; height: 500px;
+      background: var(--purple);
+      bottom: -150px; right: -100px;
+      animation-delay: -8s;
+    }
+    .ambient__orb--3 {
+      width: 400px; height: 400px;
+      background: var(--cyan);
+      top: 40%; left: 50%;
+      animation-delay: -14s;
+    }
+    @keyframes orbFloat {
+      0%   { transform: translate(0, 0) scale(1); }
+      50%  { transform: translate(40px, -30px) scale(1.1); }
+      100% { transform: translate(-20px, 20px) scale(0.95); }
+    }
 
-    /* ── Eyebrow label ─────────────────────────────────── */
+    /* ── Shell / layout ────────────────────────────────────── */
+    .shell { max-width: var(--shell); margin: 0 auto; padding: 0 1.5rem; position: relative; z-index: 1; }
+
+    /* ── Typography ────────────────────────────────────────── */
+    .heading-xl {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 900;
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+    }
+    .heading-lg {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 800;
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+    }
+    .heading-md {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: clamp(1.3rem, 2.5vw, 1.6rem);
+      line-height: 1.25;
+    }
     .eyebrow {
       font-family: 'Roboto Mono', monospace;
-      font-size: 0.72rem;
-      letter-spacing: 0.12em;
+      font-size: 0.7rem;
+      letter-spacing: 0.14em;
       text-transform: uppercase;
-      color: var(--magenta);
+      color: var(--blurple);
+      font-weight: 500;
     }
 
-    /* ── Section divider ───────────────────────────────── */
-    .section-divider {
-      border: none;
-      height: 1px;
-      background: linear-gradient(to right, transparent, var(--magenta), transparent);
-      margin: 0;
-    }
-
-    /* ── Buttons ───────────────────────────────────────── */
-    .btn-primary, .btn-ghost, .btn-cyan {
+    /* ── Buttons ───────────────────────────────────────────── */
+    .btn {
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
-      padding: 0.75rem 1.6rem;
-      border-radius: 6px;
-      font-family: 'Montserrat', sans-serif;
-      font-size: 0.88rem;
+      padding: 0.85rem 1.8rem;
+      border-radius: 8px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.9rem;
       font-weight: 700;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.02em;
       cursor: pointer;
       border: none;
       transition: all var(--transition);
       text-decoration: none;
+      white-space: nowrap;
     }
-    .btn-primary {
-      background: var(--magenta);
-      color: var(--white);
+    .btn--primary {
+      background: var(--blurple);
+      color: var(--white-bright);
+      box-shadow: 0 4px 16px rgba(88, 101, 242, 0.3);
     }
-    .btn-primary:hover {
-      background: var(--magenta-dark);
-      box-shadow: 0 8px 24px var(--magenta-glow);
-      transform: translateY(-1px);
+    .btn--primary:hover {
+      background: var(--blurple-dark);
+      box-shadow: 0 8px 32px rgba(88, 101, 242, 0.45);
+      transform: translateY(-2px);
     }
-    .btn-ghost {
+    .btn--ghost {
       background: transparent;
-      color: var(--magenta);
-      border: 1.5px solid var(--magenta);
+      color: var(--blurple);
+      border: 1.5px solid var(--blurple);
     }
-    .btn-ghost:hover {
-      background: var(--magenta-dim);
+    .btn--ghost:hover {
+      background: rgba(88, 101, 242, 0.1);
+      border-color: var(--purple);
     }
-    .btn-cyan {
+    .btn--cyan {
       background: transparent;
       color: var(--cyan);
       border: 1.5px solid var(--cyan);
     }
-    .btn-cyan:hover {
-      background: rgba(0, 229, 255, 0.1);
+    .btn--cyan:hover {
+      background: rgba(0, 212, 255, 0.1);
+      box-shadow: 0 4px 16px rgba(0, 212, 255, 0.2);
+    }
+    .btn--lg {
+      padding: 1rem 2.2rem;
+      font-size: 1rem;
+      border-radius: 10px;
     }
 
-    /* ── Reveal animation ──────────────────────────────── */
+    /* ── Glass card ────────────────────────────────────────── */
+    .glass {
+      background: var(--glass-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+    }
+
+    /* ── Reveal animations ─────────────────────────────────── */
     .reveal {
       opacity: 0;
-      transform: translateY(24px);
-      transition: opacity 0.5s ease, transform 0.5s ease;
+      transform: translateY(30px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
     }
     .reveal.visible {
       opacity: 1;
       transform: none;
     }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+    .reveal-delay-4 { transition-delay: 0.4s; }
 
-    /* ── Header (matches site exactly) ────────────────── */
+    /* ── Header ────────────────────────────────────────────── */
     .site-header {
       position: fixed;
       top: 0; left: 0; right: 0;
       z-index: 100;
-      background: rgba(0, 0, 0, 0.85);
-      backdrop-filter: blur(12px);
+      background: rgba(11, 15, 26, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--border);
     }
     .nav-inner {
       max-width: var(--shell);
       margin: 0 auto;
       padding: 0 1.5rem;
-      height: 64px;
+      height: 60px;
       display: flex;
       align-items: center;
       gap: 2rem;
     }
     .nav-brand {
-      font-family: 'Montserrat', sans-serif;
+      font-family: 'Space Grotesk', sans-serif;
       font-weight: 900;
-      font-size: 1.15rem;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
+      font-size: 1.2rem;
+      letter-spacing: -0.02em;
     }
-    .nav-brand .pf-pop  { color: var(--white); }
-    .nav-brand .pf-fuse { color: var(--magenta); }
+    .nav-brand span { color: var(--blurple); }
     .nav-links {
       display: flex;
-      gap: 1.75rem;
+      gap: 1.5rem;
       margin-left: auto;
     }
     .nav-links a {
       font-family: 'Roboto Mono', monospace;
-      font-size: 0.75rem;
-      letter-spacing: 0.08em;
+      font-size: 0.72rem;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
       color: var(--neutral);
       transition: color var(--transition);
     }
-    .nav-links a:hover,
-    .nav-links a.active { color: var(--magenta); }
-    .nav-tag {
-      font-family: 'Roboto Mono', monospace;
-      font-size: 0.68rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--magenta);
-      white-space: nowrap;
-    }
+    .nav-links a:hover { color: var(--blurple); }
     .nav-toggle {
       display: none;
       background: none;
-      border: 1.5px solid var(--magenta);
+      border: 1.5px solid var(--blurple);
       color: var(--white);
       padding: 0.4rem 0.8rem;
-      border-radius: 4px;
+      border-radius: 6px;
       font-family: 'Roboto Mono', monospace;
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       cursor: pointer;
       margin-left: auto;
     }
-    @media (max-width: 700px) {
+    @media (max-width: 768px) {
       .nav-toggle { display: block; }
-      .nav-tag { display: none; }
       .nav-links {
         display: none;
         position: absolute;
-        top: 64px; left: 0; right: 0;
+        top: 60px; left: 0; right: 0;
         flex-direction: column;
-        background: var(--surface);
+        background: var(--bg-base);
         padding: 1rem 1.5rem 1.5rem;
         border-bottom: 1px solid var(--border);
         gap: 1rem;
@@ -205,275 +267,632 @@
       .nav-links.open { display: flex; }
     }
 
-    /* ── Page offset for fixed header ──────────────────── */
-    main { padding-top: 64px; }
+    /* ── Page offset ───────────────────────────────────────── */
+    main { padding-top: 60px; }
 
-    /* ── Hero ──────────────────────────────────────────── */
-    .bot-hero {
-      padding: clamp(5rem, 10vw, 8rem) 0 clamp(3rem, 6vw, 5rem);
-      text-align: center;
+    /* ══════════════════════════════════════════════════════════
+       1. HERO
+    ══════════════════════════════════════════════════════════ */
+    .hero {
+      padding: clamp(4rem, 10vw, 7rem) 0 clamp(3rem, 6vw, 5rem);
+      position: relative;
+      overflow: hidden;
     }
-    .bot-hero .eyebrow { display: block; margin-bottom: 1.2rem; }
-    .bot-hero__title {
-      font-family: 'Montserrat', sans-serif;
-      font-weight: 900;
-      font-size: clamp(2.8rem, 7vw, 5.5rem);
-      line-height: 1.05;
-      letter-spacing: -0.02em;
+    .hero__grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      align-items: center;
+    }
+    .hero__content { position: relative; z-index: 2; }
+    .hero__eyebrow { display: block; margin-bottom: 1rem; }
+    .hero__title {
       margin-bottom: 1.2rem;
     }
-    .bot-hero__title .accent {
-      color: var(--magenta);
-      text-shadow: 0 0 40px var(--magenta-glow), 0 0 80px var(--magenta-glow);
+    .hero__title .accent {
+      background: linear-gradient(135deg, var(--blurple), var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
-    .bot-hero__sub {
-      font-size: clamp(1rem, 2vw, 1.15rem);
+    .hero__desc {
+      font-size: clamp(1rem, 1.8vw, 1.1rem);
       color: var(--neutral);
-      max-width: 540px;
-      margin: 0 auto 2.5rem;
+      max-width: 520px;
+      margin-bottom: 2rem;
+      line-height: 1.7;
     }
-    .bot-hero__cta {
+    .hero__cta { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 3rem; }
+    .hero__stats {
       display: flex;
-      gap: 1rem;
-      justify-content: center;
+      gap: clamp(1.5rem, 4vw, 3rem);
       flex-wrap: wrap;
     }
-    .bot-hero__stats {
-      display: flex;
-      justify-content: center;
-      gap: clamp(2rem, 5vw, 4rem);
-      margin-top: 3.5rem;
-      flex-wrap: wrap;
-    }
-    .stat {
-      text-align: center;
-    }
-    .stat__value {
-      font-family: 'Montserrat', sans-serif;
+    .hero__stat-value {
+      font-family: 'Space Grotesk', sans-serif;
       font-weight: 900;
-      font-size: 2rem;
-      color: var(--magenta);
+      font-size: 1.8rem;
+      color: var(--blurple);
     }
-    .stat__label {
-      font-size: 0.8rem;
-      color: var(--neutral);
-      margin-top: 0.2rem;
+    .hero__stat-label {
+      font-size: 0.75rem;
+      color: var(--neutral-dim);
       font-family: 'Roboto Mono', monospace;
       text-transform: uppercase;
       letter-spacing: 0.08em;
     }
 
-    /* ── Section header ────────────────────────────────── */
-    .section-header { margin-bottom: 2.5rem; }
-    .section-header .eyebrow { display: block; margin-bottom: 0.6rem; }
-    .section-title {
-      font-family: 'Montserrat', sans-serif;
-      font-weight: 800;
-      font-size: clamp(1.7rem, 3.5vw, 2.4rem);
+    /* Hero Discord mockup */
+    .hero__mockup { position: relative; z-index: 2; }
+    .discord-mockup {
+      background: #1e1f22;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.06);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 40px rgba(88,101,242,0.15);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .discord-mockup:hover {
+      transform: translateY(-4px) scale(1.01);
+      box-shadow: 0 24px 72px rgba(0,0,0,0.6), 0 0 60px rgba(88,101,242,0.25);
+    }
+    .discord-mockup__header {
+      background: #2b2d31;
+      padding: 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .discord-mockup__hash {
+      color: var(--neutral-dim);
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+    .discord-mockup__channel {
       color: var(--white);
-      line-height: 1.15;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    .discord-mockup__body {
+      padding: 1rem;
+      min-height: 280px;
+      max-height: 320px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      overflow: hidden;
     }
 
-    /* ── Section padding ───────────────────────────────── */
-    .section { padding: clamp(3rem, 7vw, 5.5rem) 0; }
-    .section--surface { background: var(--surface); position: relative; }
-    .section--surface::before {
+    /* Discord message styles */
+    .dc-msg {
+      display: flex;
+      gap: 0.75rem;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+    .dc-msg.visible {
+      opacity: 1;
+      transform: none;
+    }
+    .dc-msg__avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+    }
+    .dc-msg__avatar--bot {
+      background: linear-gradient(135deg, var(--blurple), var(--purple));
+    }
+    .dc-msg__avatar--user {
+      background: var(--bg-surface);
+    }
+    .dc-msg__content { flex: 1; min-width: 0; }
+    .dc-msg__header {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+      margin-bottom: 0.2rem;
+    }
+    .dc-msg__name {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 600;
+      font-size: 0.88rem;
+    }
+    .dc-msg__name--bot { color: var(--blurple); }
+    .dc-msg__name--user { color: var(--cyan); }
+    .dc-msg__bot-tag {
+      background: var(--blurple);
+      color: var(--white-bright);
+      font-size: 0.6rem;
+      font-weight: 700;
+      padding: 0.1rem 0.35rem;
+      border-radius: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .dc-msg__time {
+      font-size: 0.68rem;
+      color: var(--neutral-dim);
+    }
+    .dc-msg__text {
+      font-size: 0.88rem;
+      color: #dcddde;
+      line-height: 1.5;
+    }
+
+    /* Discord embed */
+    .dc-embed {
+      background: #2b2d31;
+      border-left: 4px solid var(--blurple);
+      border-radius: 6px;
+      padding: 0.85rem 1rem;
+      margin-top: 0.3rem;
+    }
+    .dc-embed__title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--white);
+      margin-bottom: 0.4rem;
+    }
+    .dc-embed__field-name {
+      font-weight: 600;
+      font-size: 0.82rem;
+      color: var(--white);
+      margin: 0.4rem 0 0.15rem;
+    }
+    .dc-embed__field-value {
+      font-size: 0.82rem;
+      color: #dcddde;
+      line-height: 1.4;
+    }
+    .dc-embed__footer {
+      font-size: 0.7rem;
+      color: var(--neutral-dim);
+      margin-top: 0.5rem;
+      padding-top: 0.4rem;
+      border-top: 1px solid rgba(255,255,255,0.04);
+    }
+
+    /* Typing indicator */
+    .dc-typing {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.3rem 0;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .dc-typing.visible { opacity: 1; }
+    .dc-typing__dots { display: flex; gap: 3px; }
+    .dc-typing__dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--neutral-dim);
+      animation: typingDot 1.4s ease-in-out infinite;
+    }
+    .dc-typing__dot:nth-child(2) { animation-delay: 0.2s; }
+    .dc-typing__dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes typingDot {
+      0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+      30% { opacity: 1; transform: translateY(-3px); }
+    }
+    .dc-typing__text {
+      font-size: 0.72rem;
+      color: var(--neutral-dim);
+    }
+
+    /* Command input */
+    .dc-input {
+      background: #383a40;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      margin-top: auto;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .dc-input__prefix {
+      color: var(--neutral-dim);
+      font-size: 0.9rem;
+    }
+    .dc-input__cmd {
+      color: var(--cyan);
+      font-family: 'Roboto Mono', monospace;
+      font-size: 0.85rem;
+    }
+    .dc-input__cursor {
+      display: inline-block;
+      width: 2px;
+      height: 1em;
+      background: var(--cyan);
+      margin-left: 1px;
+      animation: cursorBlink 1s step-end infinite;
+      vertical-align: text-bottom;
+    }
+    @keyframes cursorBlink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    @media (max-width: 900px) {
+      .hero__grid {
+        grid-template-columns: 1fr;
+        gap: 2.5rem;
+      }
+      .hero__mockup { order: -1; }
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       FEATURE SHOWCASE (PizzaHat style)
+    ══════════════════════════════════════════════════════════ */
+    .feature-section {
+      padding: clamp(4rem, 8vw, 6rem) 0;
+      position: relative;
+    }
+    .feature-section--alt {
+      background: var(--bg-base);
+    }
+    .feature-section--alt::before {
       content: '';
       position: absolute;
       top: 0; left: 0; right: 0;
       height: 1px;
-      background: linear-gradient(to right, transparent, var(--magenta), transparent);
+      background: linear-gradient(to right, transparent, var(--blurple), transparent);
     }
-    .section--surface-2 { background: var(--surface-2); position: relative; }
-    .section--surface-2::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 1px;
-      background: linear-gradient(to right, transparent, var(--magenta), transparent);
+    .feature-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      align-items: center;
+    }
+    .feature-row--reverse .feature-text { order: 2; }
+    .feature-row--reverse .feature-image { order: 1; }
+    .feature-text .eyebrow { display: block; margin-bottom: 0.6rem; }
+    .feature-text .heading-md { margin-bottom: 0.8rem; color: var(--white); }
+    .feature-text p {
+      color: var(--neutral);
+      font-size: 0.95rem;
+      line-height: 1.7;
+    }
+    .feature-image {
+      position: relative;
+    }
+    .feature-image__frame {
+      background: #1e1f22;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.06);
+      box-shadow: 0 16px 48px rgba(0,0,0,0.4), 0 0 24px rgba(88,101,242,0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .feature-image__frame:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 56px rgba(0,0,0,0.5), 0 0 40px rgba(88,101,242,0.2);
+    }
+    .feature-image__header {
+      background: #2b2d31;
+      padding: 0.6rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .feature-image__hash {
+      color: var(--neutral-dim);
+      font-size: 1rem;
+      font-weight: 700;
+    }
+    .feature-image__channel {
+      color: var(--white);
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 600;
+      font-size: 0.82rem;
+    }
+    .feature-image__img {
+      width: 100%;
+      display: block;
     }
 
-    /* ── Features grid ─────────────────────────────────── */
-    .features-grid {
+    @media (max-width: 768px) {
+      .feature-row,
+      .feature-row--reverse .feature-text,
+      .feature-row--reverse .feature-image {
+        grid-template-columns: 1fr;
+        order: unset;
+      }
+      .feature-row--reverse .feature-image { order: 0; }
+      .feature-row--reverse .feature-text { order: 1; }
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       INTERACTIVE CATEGORIES
+    ══════════════════════════════════════════════════════════ */
+    .categories {
+      padding: clamp(4rem, 8vw, 6rem) 0;
+      position: relative;
+      transition: background 0.5s ease;
+    }
+    .categories__header { text-align: center; margin-bottom: 2.5rem; }
+    .categories__header .eyebrow { display: block; margin-bottom: 0.6rem; }
+    .categories__header .heading-lg { margin-bottom: 0.8rem; }
+    .categories__desc {
+      color: var(--neutral);
+      max-width: 500px;
+      margin: 0 auto 2rem;
+    }
+    .categories__grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 1rem;
+    }
+    .category-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 1.5rem 1rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .category-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(circle at center, var(--cat-glow, transparent) 0%, transparent 70%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .category-card:hover::before,
+    .category-card.active::before { opacity: 1; }
+    .category-card:hover,
+    .category-card.active {
+      border-color: var(--cat-color, var(--blurple));
+      transform: translateY(-3px);
+    }
+    .category-card__icon {
+      font-size: 2rem;
+      margin-bottom: 0.6rem;
+      display: block;
+    }
+    .category-card__name {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 600;
+      font-size: 0.88rem;
+      color: var(--white);
+    }
+    .category-card__count {
+      font-size: 0.72rem;
+      color: var(--neutral-dim);
+      margin-top: 0.2rem;
+    }
+
+    /* Category panel (accordion) */
+    .category-panel {
+      max-height: 0;
+      overflow: hidden;
+      opacity: 0;
+      transition: max-height 0.5s ease, opacity 0.35s ease, margin 0.35s ease;
+      margin-top: 0;
+    }
+    .category-panel.open {
+      max-height: 800px;
+      opacity: 1;
+      margin-top: 2rem;
+    }
+    .category-panel__inner {
+      background: var(--glass-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+      padding: 1.5rem 2rem;
+    }
+    .category-panel__title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--white);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .category-panel__close {
+      margin-left: auto;
+      background: none;
+      border: none;
+      color: var(--neutral-dim);
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 0.2rem 0.4rem;
+      border-radius: 4px;
+      transition: all var(--transition);
+    }
+    .category-panel__close:hover {
+      color: var(--white);
+      background: rgba(255,255,255,0.08);
+    }
+    .category-panel__grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 1.25rem;
+      gap: 0.6rem;
     }
-    .feature-card {
-      background: var(--surface-2);
+    .category-panel__cmd {
+      display: flex;
+      align-items: baseline;
+      gap: 0.6rem;
+      padding: 0.55rem 0.75rem;
+      background: rgba(0,0,0,0.2);
+      border-radius: 8px;
+      transition: background var(--transition);
+    }
+    .category-panel__cmd:hover {
+      background: rgba(88,101,242,0.1);
+    }
+    .category-panel__cmd code {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 0.78rem;
+      color: var(--cyan);
+      background: rgba(0,212,255,0.08);
+      padding: 0.1rem 0.35rem;
+      border-radius: 4px;
+      white-space: nowrap;
+    }
+    .category-panel__cmd span {
+      font-size: 0.78rem;
+      color: var(--neutral);
+      line-height: 1.4;
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       WHY TAINMENT
+    ══════════════════════════════════════════════════════════ */
+    .why {
+      padding: clamp(4rem, 8vw, 6rem) 0;
+      background: var(--bg-base);
+      position: relative;
+    }
+    .why::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--purple), transparent);
+    }
+    .why__header { text-align: center; margin-bottom: 3rem; }
+    .why__header .eyebrow { display: block; margin-bottom: 0.6rem; }
+    .why__header .heading-lg { margin-bottom: 0.8rem; }
+    .why__desc {
+      color: var(--neutral);
+      max-width: 560px;
+      margin: 0 auto;
+    }
+    .why__grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+    .why-card {
+      background: var(--bg-deep);
       border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 1.6rem;
-      transition: border-color var(--transition), transform var(--transition);
+      border-radius: 14px;
+      padding: 2rem;
+      transition: all 0.3s ease;
     }
-    .feature-card:hover {
+    .why-card:hover {
       border-color: var(--border-hover);
       transform: translateY(-3px);
     }
-    .feature-card__icon { font-size: 1.8rem; margin-bottom: 0.85rem; display: block; }
-    .feature-card__title {
-      font-family: 'Montserrat', sans-serif;
+    .why-card__icon {
+      font-size: 2.2rem;
+      margin-bottom: 1rem;
+      display: block;
+    }
+    .why-card__outcome {
+      font-family: 'Space Grotesk', sans-serif;
       font-weight: 700;
-      font-size: 1rem;
-      color: var(--white);
-      margin-bottom: 0.5rem;
-    }
-    .feature-card__desc {
-      font-size: 0.88rem;
-      color: var(--neutral);
-      line-height: 1.55;
-    }
-
-    /* ── Tiers ─────────────────────────────────────────── */
-    .tiers-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-      gap: 1.25rem;
-      align-items: start;
-    }
-    .tier-card {
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 1.8rem 1.5rem;
-      position: relative;
-      transition: border-color var(--transition), transform var(--transition);
-    }
-    .tier-card:hover { transform: translateY(-3px); }
-    .tier-card--popular { border-color: var(--magenta); }
-    .tier-card--popular::before {
-      content: "Most Popular";
-      position: absolute;
-      top: -1px; left: 50%;
-      transform: translateX(-50%);
-      background: var(--magenta);
-      color: var(--white);
-      font-size: 0.68rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      padding: 0.2rem 0.85rem;
-      border-radius: 0 0 8px 8px;
-      white-space: nowrap;
-    }
-    .tier-card__emoji { font-size: 1.6rem; display: block; margin-bottom: 0.6rem; }
-    .tier-card__name {
-      font-family: 'Montserrat', sans-serif;
-      font-weight: 800;
       font-size: 1.15rem;
       color: var(--white);
-      margin-bottom: 0.25rem;
+      margin-bottom: 0.5rem;
+      line-height: 1.3;
     }
-    .tier-card__price {
-      font-family: 'Montserrat', sans-serif;
-      font-weight: 900;
-      font-size: 1.9rem;
-      color: var(--magenta);
-      line-height: 1;
-      margin: 0.6rem 0 1.3rem;
-    }
-    .tier-card__price span {
-      font-size: 0.9rem;
-      font-weight: 500;
+    .why-card__detail {
+      font-size: 0.88rem;
       color: var(--neutral);
-    }
-    .tier-card__features {
-      list-style: none;
-      padding: 0;
-      margin: 0 0 1.6rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-    .tier-card__features li {
-      font-size: 0.85rem;
-      color: var(--neutral);
-      padding-left: 1.3rem;
-      position: relative;
-      line-height: 1.45;
-    }
-    .tier-card__features li::before {
-      content: "✓";
-      position: absolute;
-      left: 0;
-      color: var(--cyan);
-      font-weight: 700;
-    }
-    .tier-card .btn-primary,
-    .tier-card .btn-ghost {
-      width: 100%;
-      justify-content: center;
+      line-height: 1.6;
     }
 
-    /* ── Commands ──────────────────────────────────────── */
-    .cmd-tabs {
+    /* ══════════════════════════════════════════════════════════
+       COMMUNITY
+    ══════════════════════════════════════════════════════════ */
+    .community {
+      padding: clamp(4rem, 8vw, 6rem) 0;
+      position: relative;
+    }
+    .community__grid {
+      display: grid;
+      grid-template-columns: 1fr 350px;
+      gap: 3rem;
+      align-items: center;
+    }
+    .community__content .eyebrow { display: block; margin-bottom: 0.6rem; }
+    .community__content .heading-lg { margin-bottom: 0.8rem; }
+    .community__desc {
+      color: var(--neutral);
+      margin-bottom: 2rem;
+      font-size: 1.05rem;
+    }
+    .community__stats {
       display: flex;
-      gap: 0.5rem;
+      gap: 2rem;
       flex-wrap: wrap;
       margin-bottom: 2rem;
     }
-    .cmd-tab {
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      border-radius: 100px;
-      padding: 0.4rem 1rem;
-      font-family: 'Roboto Mono', monospace;
+    .community__stat-value {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 800;
+      font-size: 2rem;
+      color: var(--blurple);
+    }
+    .community__stat-label {
       font-size: 0.75rem;
-      letter-spacing: 0.05em;
-      color: var(--neutral);
-      cursor: pointer;
-      transition: all var(--transition);
-    }
-    .cmd-tab:hover,
-    .cmd-tab.is-active {
-      background: var(--magenta);
-      border-color: var(--magenta);
-      color: var(--white);
-    }
-    .cmd-panel { display: none; }
-    .cmd-panel.is-active {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-      gap: 0.75rem;
-    }
-    .cmd-row {
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 0.9rem 1rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.3rem;
-      transition: border-color var(--transition);
-    }
-    .cmd-row:hover { border-color: var(--border-hover); }
-    .cmd-row code {
+      color: var(--neutral-dim);
       font-family: 'Roboto Mono', monospace;
-      font-size: 0.82rem;
-      color: var(--cyan);
-      background: rgba(0, 229, 255, 0.08);
-      padding: 0.15rem 0.4rem;
-      border-radius: 4px;
-      width: fit-content;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
     }
-    .cmd-row p {
-      font-size: 0.83rem;
-      color: var(--neutral);
-      margin: 0;
-      line-height: 1.45;
+    .community__widget { position: relative; }
+    .widget-frame {
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 0 30px rgba(88,101,242,0.15), 0 12px 40px rgba(0,0,0,0.4);
+    }
+    .widget-frame iframe {
+      display: block;
+      width: 100%;
+      border: none;
+    }
+    @media (max-width: 900px) {
+      .community__grid { grid-template-columns: 1fr; }
+      .community__widget { order: -1; }
     }
 
-    /* ── CTA banner ────────────────────────────────────── */
+    /* ══════════════════════════════════════════════════════════
+       CTA
+    ══════════════════════════════════════════════════════════ */
+    .cta-section {
+      padding: clamp(4rem, 8vw, 6rem) 0;
+      background: var(--bg-base);
+      position: relative;
+    }
+    .cta-section::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--blurple), transparent);
+    }
     .cta-banner {
-      margin: clamp(2rem, 5vw, 4rem) 0;
-      background: linear-gradient(135deg, rgba(224, 64, 251, 0.1) 0%, rgba(0, 229, 255, 0.06) 100%);
+      background: linear-gradient(135deg, rgba(88,101,242,0.12) 0%, rgba(139,92,246,0.08) 100%);
       border: 1px solid var(--border-hover);
-      border-radius: 12px;
+      border-radius: 16px;
       padding: clamp(2.5rem, 5vw, 4rem) 2rem;
       text-align: center;
     }
     .cta-banner__title {
-      font-family: 'Montserrat', sans-serif;
+      font-family: 'Space Grotesk', sans-serif;
       font-weight: 900;
       font-size: clamp(1.6rem, 3.5vw, 2.4rem);
       color: var(--white);
@@ -492,12 +911,54 @@
       flex-wrap: wrap;
     }
 
-    /* ── Footer (matches site exactly) ────────────────── */
+    /* Floating CTA */
+    .floating-cta {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      z-index: 90;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.3s ease;
+      pointer-events: none;
+    }
+    .floating-cta.visible {
+      opacity: 1;
+      transform: none;
+      pointer-events: auto;
+    }
+
+    /* Mobile sticky CTA */
+    .mobile-sticky-cta {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 90;
+      background: rgba(11, 15, 26, 0.95);
+      backdrop-filter: blur(12px);
+      padding: 0.75rem 1rem;
+      border-top: 1px solid var(--border);
+    }
+    .mobile-sticky-cta .btn {
+      width: 100%;
+      justify-content: center;
+    }
+    @media (max-width: 768px) {
+      .mobile-sticky-cta { display: block; }
+      .floating-cta { display: none; }
+    }
+
+    /* ══════════════════════════════════════════════════════════
+       FOOTER
+    ══════════════════════════════════════════════════════════ */
     footer {
-      background: var(--surface);
+      background: var(--bg-deep);
       border-top: 1px solid var(--border);
       padding: 4rem 0 2rem;
-      margin-top: 0;
+      position: relative;
+      z-index: 1;
     }
     .footer-inner {
       max-width: var(--shell);
@@ -508,14 +969,13 @@
       gap: 3rem;
     }
     .footer-brand-name {
-      font-family: 'Montserrat', sans-serif;
+      font-family: 'Space Grotesk', sans-serif;
       font-weight: 900;
       font-size: 1.4rem;
-      letter-spacing: 0.05em;
       color: var(--white);
       margin-bottom: 0.75rem;
     }
-    .footer-brand-name span { color: var(--magenta); }
+    .footer-brand-name span { color: var(--blurple); }
     .footer-tagline {
       font-size: 0.88rem;
       color: var(--neutral);
@@ -523,20 +983,20 @@
     }
     .footer-col h4 {
       font-family: 'Roboto Mono', monospace;
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: var(--magenta);
+      color: var(--blurple);
       margin-bottom: 1rem;
     }
-    .footer-col ul { list-style: none; }
-    .footer-col ul li { margin-bottom: 0.4rem; }
     .footer-col a {
+      display: block;
       font-size: 0.88rem;
       color: var(--neutral);
+      margin-bottom: 0.4rem;
       transition: color var(--transition);
     }
-    .footer-col a:hover { color: var(--magenta); }
+    .footer-col a:hover { color: var(--blurple); }
     .footer-bottom {
       max-width: var(--shell);
       margin: 2rem auto 0;
@@ -550,10 +1010,9 @@
     }
     .footer-bottom span {
       font-family: 'Roboto Mono', monospace;
-      font-size: 0.72rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--neutral);
+      font-size: 0.7rem;
+      letter-spacing: 0.06em;
+      color: var(--neutral-dim);
     }
     @media (max-width: 860px) {
       .footer-inner { grid-template-columns: 1fr 1fr; }
@@ -566,528 +1025,416 @@
 </head>
 <body>
 
-  <!-- ── Header ──────────────────────────────────────────── -->
-  <header class="site-header" id="site-header">
+  <div class="ambient" aria-hidden="true">
+    <div class="ambient__orb ambient__orb--1"></div>
+    <div class="ambient__orb ambient__orb--2"></div>
+    <div class="ambient__orb ambient__orb--3"></div>
+  </div>
+
+  <header class="site-header">
     <div class="nav-inner">
-      <a href="/" class="nav-brand" aria-label="Tainment+ home">
-        <span class="pf-pop">Tainment</span><span class="pf-fuse">+</span>
-      </a>
+      <a href="/" class="nav-brand">Tainment<span>+</span></a>
       <button class="nav-toggle" aria-expanded="false" aria-controls="nav-links" id="nav-toggle">Menu</button>
-      <ul class="nav-links" id="nav-links" role="list">
+      <ul class="nav-links" id="nav-links">
         <li><a href="#features">Features</a></li>
-        <li><a href="#tiers">Pricing</a></li>
-        <li><a href="#commands">Commands</a></li>
+        <li><a href="pricing.html">Pricing</a></li>
+        <li><a href="#categories">Categories</a></li>
+        <li><a href="#community">Community</a></li>
         <li><a href="https://discord.gg/SgkYDqkZmt" target="_blank" rel="noopener">Support</a></li>
       </ul>
-      <span class="nav-tag">Discord Bot</span>
     </div>
   </header>
 
   <main>
 
-    <!-- ── Hero ──────────────────────────────────────────── -->
-    <section class="bot-hero section">
+    <!-- ═══════════════════════════════════════════════════════
+         1. HERO
+    ═══════════════════════════════════════════════════════ -->
+    <section class="hero">
       <div class="shell">
-        <span class="eyebrow">Discord Bot</span>
-        <h1 class="bot-hero__title">Meet <span class="accent">Tainment+</span></h1>
-        <p class="bot-hero__sub">Economy, games, fishing, music discovery, automod, and four subscription tiers — everything your Discord server needs in one bot.</p>
-        <div class="bot-hero__cta">
-          <a class="btn-primary" href="https://discord.com/oauth2/authorize?client_id=1374911009009041448&permissions=8&integration_type=0&scope=bot" target="_blank" rel="noopener">
-            ➕ Add to Discord
-          </a>
-          <a class="btn-ghost" href="https://discord.gg/SgkYDqkZmt" target="_blank" rel="noopener">
-            Support Server
-          </a>
-        </div>
-        <div class="bot-hero__stats">
-          <div class="stat reveal">
-            <div class="stat__value">30+</div>
-            <div class="stat__label">Cogs loaded</div>
+        <div class="hero__grid">
+          <div class="hero__content">
+            <span class="eyebrow hero__eyebrow reveal">Entertainment Infrastructure For Discord</span>
+            <h1 class="heading-xl hero__title reveal reveal-delay-1">Your Server Deserves<br>More Than <span class="accent">Just Commands</span></h1>
+            <p class="hero__desc reveal reveal-delay-2">Moderation, games, social systems, utilities, AI interaction, and chaotic community energy inside one evolving Discord bot.</p>
+            <div class="hero__cta reveal reveal-delay-3">
+              <a class="btn btn--primary btn--lg" href="https://discord.com/oauth2/authorize?client_id=1374911009009041448&permissions=8&integration_type=0&scope=bot" target="_blank" rel="noopener">➕ Add To Discord</a>
+              <a class="btn btn--ghost btn--lg" href="https://discord.gg/SgkYDqkZmt" target="_blank" rel="noopener">Support Server</a>
+            </div>
+            <div class="hero__stats reveal reveal-delay-4">
+              <div>
+                <div class="hero__stat-value">30+</div>
+                <div class="hero__stat-label">Cogs Loaded</div>
+              </div>
+              <div>
+                <div class="hero__stat-value">90+</div>
+                <div class="hero__stat-label">Commands</div>
+              </div>
+              <div>
+                <div class="hero__stat-value">2300+</div>
+                <div class="hero__stat-label">Fish Types</div>
+              </div>
+              <div>
+                <div class="hero__stat-value">4</div>
+                <div class="hero__stat-label">Sub Tiers</div>
+              </div>
+            </div>
           </div>
-          <div class="stat reveal">
-            <div class="stat__value">90+</div>
-            <div class="stat__label">Commands</div>
-          </div>
-          <div class="stat reveal">
-            <div class="stat__value">4</div>
-            <div class="stat__label">Sub tiers</div>
-          </div>
-          <div class="stat reveal">
-            <div class="stat__value">2300+</div>
-            <div class="stat__label">Fish types</div>
+
+          <div class="hero__mockup reveal reveal-delay-2">
+            <div class="discord-mockup">
+              <div class="discord-mockup__header">
+                <span class="discord-mockup__hash">#</span>
+                <span class="discord-mockup__channel" id="hero-channel">general</span>
+              </div>
+              <div class="discord-mockup__body" id="hero-mockup-body">
+                <div class="dc-typing" id="hero-typing">
+                  <div class="dc-typing__dots">
+                    <div class="dc-typing__dot"></div>
+                    <div class="dc-typing__dot"></div>
+                    <div class="dc-typing__dot"></div>
+                  </div>
+                  <span class="dc-typing__text">Tainment+ is typing...</span>
+                </div>
+                <div class="dc-input">
+                  <span class="dc-input__prefix">/</span>
+                  <span class="dc-input__cmd" id="hero-cmd-input"></span>
+                  <span class="dc-input__cursor"></span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
-    <div class="section-divider"></div>
+    <!-- ═══════════════════════════════════════════════════════
+         2. FEATURE SHOWCASE (PizzaHat style)
+    ═══════════════════════════════════════════════════════ -->
 
-    <!-- ── Features ──────────────────────────────────────── -->
-    <section class="section section--surface" id="features">
+    <!-- Feature 1: Economy -->
+    <section class="feature-section" id="features">
       <div class="shell">
-        <div class="section-header reveal">
-          <span class="eyebrow">What it does</span>
-          <h2 class="section-title">Everything your server needs</h2>
-        </div>
-        <div class="features-grid">
-          <div class="feature-card reveal">
-            <span class="feature-card__icon">🪙</span>
-            <h3 class="feature-card__title">Economy</h3>
-            <p class="feature-card__desc">Coins, Gems, and Tokens. Work, gamble, rob, and trade your way up the server leaderboard.</p>
+        <div class="feature-row reveal">
+          <div class="feature-text">
+            <span class="eyebrow">Economy System</span>
+            <h2 class="heading-md">Coins, Gems & Tokens</h2>
+            <p>A full three-currency economy. Work, gamble, trade, and build wealth. Daily streaks reward consistency with escalating gem and token bonuses. The shop offers 60+ items from fishing rods to XP boosts.</p>
           </div>
-          <div class="feature-card reveal">
-            <span class="feature-card__icon">🎮</span>
-            <h3 class="feature-card__title">Games</h3>
-            <p class="feature-card__desc">Trivia, Hangman, Wordle, Blackjack, Tic-Tac-Toe, Connect Four, and more — all earning real rewards.</p>
-          </div>
-          <div class="feature-card reveal">
-            <span class="feature-card__icon">🎣</span>
-            <h3 class="feature-card__title">Fishing</h3>
-            <p class="feature-card__desc">2300+ fish across 10 rarity tiers. 11 rod types unlock higher tiers. Premium Bait boosts rare catches for 1 hour.</p>
-          </div>
-          <div class="feature-card reveal">
-            <span class="feature-card__icon">⌨️</span>
-            <h3 class="feature-card__title">Fun Games</h3>
-            <p class="feature-card__desc">Typerace, riddles, Would You Rather, Emoji Decode, Hot Potato, Word Chain — new ways to earn daily.</p>
-          </div>
-          <div class="feature-card reveal">
-            <span class="feature-card__icon">🛡️</span>
-            <h3 class="feature-card__title">Moderation</h3>
-            <p class="feature-card__desc">Full mod suite: warn, kick, ban, timeout, purge, slowmode, lock/unlock, nick, and a full case log.</p>
-          </div>
-          <div class="feature-card reveal">
-            <span class="feature-card__icon">🏆</span>
-            <h3 class="feature-card__title">Levels & Roles</h3>
-            <p class="feature-card__desc">XP per message, 10 milestone roles from Newcomer (Lvl 5) to Void Walker (Lvl 300). Auto-created on server join.</p>
-          </div>
-          <div class="feature-card reveal">
-            <span class="feature-card__icon">🎂</span>
-            <h3 class="feature-card__title">Birthdays</h3>
-            <p class="feature-card__desc">Per-server birthday tracking. Daily announcements in your chosen channel with a birthday gift of 500 coins + 5 gems.</p>
-          </div>
-          <div class="feature-card reveal">
-            <span class="feature-card__icon">⚙️</span>
-            <h3 class="feature-card__title">Server Settings</h3>
-            <p class="feature-card__desc">Custom prefix per server, AFK system, command toggles per channel, addemote, randomcolor, and server subscription tiers.</p>
-          </div>
-          <div class="feature-card reveal">
-            <span class="feature-card__icon">🎁</span>
-            <h3 class="feature-card__title">Giveaways & Polls</h3>
-            <p class="feature-card__desc">Timed giveaways with multiple winners, community polls, and personal reminders.</p>
-          </div>
-          <div class="feature-card reveal">
-            <span class="feature-card__icon">🛒</span>
-            <h3 class="feature-card__title">Premium Shop</h3>
-            <p class="feature-card__desc">60+ items — rods, profile cosmetics, XP boosts, streak shields, mystery boxes, piggy banks, music boosts, and more.</p>
-          </div>
-          <div class="feature-card reveal">
-            <span class="feature-card__icon">🎵</span>
-            <h3 class="feature-card__title">Music System</h3>
-            <p class="feature-card__desc">Discover songs by genre &amp; mood, share tracks, compete in lyrics guessing, music trivia, and build personal playlists — all with coin rewards.</p>
-          </div>
-          <div class="feature-card reveal">
-            <span class="feature-card__icon">🤖</span>
-            <h3 class="feature-card__title">AutoMod</h3>
-            <p class="feature-card__desc">Per-guild automated moderation: word filter, anti-spam, link control, caps limit, mention flood protection. Actions: warn, timeout, or kick.</p>
+          <div class="feature-image">
+            <div class="feature-image__frame">
+              <div class="feature-image__header">
+                <span class="feature-image__hash">#</span>
+                <span class="feature-image__channel">bot-commands</span>
+              </div>
+              <img class="feature-image__img" src="command showcases/balance-economy.png" alt="Economy balance" loading="lazy">
+            </div>
           </div>
         </div>
       </div>
     </section>
 
-    <div class="section-divider"></div>
-
-    <!-- ── Server Tiers ──────────────────────────────────── -->
-    <section class="section" id="server-tiers">
+    <!-- Feature 2: Fishing -->
+    <section class="feature-section feature-section--alt">
       <div class="shell">
-        <div class="section-header reveal">
-          <span class="eyebrow">Per-server plans</span>
-          <h2 class="section-title">Server Subscription</h2>
-          <p style="color:var(--text-muted);max-width:600px;margin:0 auto;">Separate from user tiers — server admins can upgrade their entire server to unlock moderation tools, member discounts, and more.</p>
-        </div>
-        <div class="tiers-grid">
-
-          <div class="tier-card reveal">
-            <span class="tier-card__emoji">🆓</span>
-            <h3 class="tier-card__name">Free Server</h3>
-            <p class="tier-card__price">No cost <span>/ forever</span></p>
-            <ul class="tier-card__features">
-              <li>Economy, fun &amp; games</li>
-              <li>Music system</li>
-              <li>Fishing &amp; levels</li>
-              <li>Birthdays &amp; polls</li>
-              <li>No moderation tools</li>
-            </ul>
-            <a class="btn-ghost" href="https://discord.com/oauth2/authorize?client_id=1374911009009041448&permissions=8&integration_type=0&scope=bot" target="_blank" rel="noopener">Add bot</a>
+        <div class="feature-row feature-row--reverse reveal">
+          <div class="feature-text">
+            <span class="eyebrow">Fishing</span>
+            <h2 class="heading-md">2,300+ Fish to Catch</h2>
+            <p>10 rarity tiers from Common to Void. 11 rods unlock progressively rarer catches. Premium Bait boosts rare catches for an hour. Level up your fishing skill and compete on the global leaderboard.</p>
           </div>
-
-          <div class="tier-card tier-card--popular reveal">
-            <span class="tier-card__emoji">🛡️</span>
-            <h3 class="tier-card__name">Basic Server</h3>
-            <p class="tier-card__price">$7.99 <span>/ month</span></p>
-            <ul class="tier-card__features">
-              <li>All Free features</li>
-              <li>Full moderation suite</li>
-              <li>AutoMod integration</li>
-              <li>Custom log channel</li>
-              <li>Welcome messages</li>
-              <li>15% off user subscriptions for members</li>
-            </ul>
-            <a class="btn-primary" href="https://discord.gg/SgkYDqkZmt" target="_blank" rel="noopener">Upgrade in Discord</a>
+          <div class="feature-image">
+            <div class="feature-image__frame">
+              <div class="feature-image__header">
+                <span class="feature-image__hash">#</span>
+                <span class="feature-image__channel">fishing</span>
+              </div>
+              <img class="feature-image__img" src="command showcases/fish-inventory.png" alt="Fish inventory" loading="lazy">
+            </div>
           </div>
-
-          <div class="tier-card reveal">
-            <span class="tier-card__emoji">⚡</span>
-            <h3 class="tier-card__name">Pro Server</h3>
-            <p class="tier-card__price">$14.99 <span>/ month</span></p>
-            <ul class="tier-card__features">
-              <li>All Basic features</li>
-              <li>30% off user subs for members</li>
-              <li>Server-wide XP multiplier</li>
-              <li>Advanced audit log</li>
-              <li>Custom level roles</li>
-              <li>Server analytics</li>
-              <li>Priority support</li>
-            </ul>
-            <a class="btn-ghost" href="https://discord.gg/SgkYDqkZmt" target="_blank" rel="noopener">Upgrade in Discord</a>
-          </div>
-
-        </div>
-        <p style="text-align:center;margin-top:1.5rem;color:var(--text-muted);font-size:0.9rem;">Use <code style="color:var(--cyan);font-family:'Roboto Mono',monospace;">t!serversubscribe</code> in your server to see options, or join our <a href="https://discord.gg/SgkYDqkZmt" style="color:var(--magenta)">support server</a> to upgrade.</p>
-      </div>
-    </section>
-
-    <div class="section-divider"></div>
-
-    <!-- ── Tiers ──────────────────────────────────────────── -->
-    <section class="section" id="tiers">
-      <div class="shell">
-        <div class="section-header reveal">
-          <span class="eyebrow">Subscription tiers</span>
-          <h2 class="section-title">Choose your level</h2>
-        </div>
-        <div class="tiers-grid">
-
-          <div class="tier-card reveal">
-            <span class="tier-card__emoji">🎵</span>
-            <h3 class="tier-card__name">Basic</h3>
-            <p class="tier-card__price">Free <span>/ forever</span></p>
-            <ul class="tier-card__features">
-              <li>150 daily coins</li>
-              <li>Daily streak rewards</li>
-              <li>Work, gamble, slots, rob</li>
-              <li>Basic fishing</li>
-              <li>Number guessing & RPS</li>
-              <li>All fun commands</li>
-            </ul>
-            <a class="btn-ghost" href="https://discord.com/oauth2/authorize?client_id=1374911009009041448&permissions=8&integration_type=0&scope=bot" target="_blank" rel="noopener">Get started</a>
-          </div>
-
-          <div class="tier-card reveal">
-            <span class="tier-card__emoji">🔥</span>
-            <h3 class="tier-card__name">Vibe</h3>
-            <p class="tier-card__price">$1.99 <span>/ month</span></p>
-            <ul class="tier-card__features">
-              <li>All Basic features</li>
-              <li>200 daily coins</li>
-              <li>All joke & story categories</li>
-              <li>Trivia, typerace, riddles, emoji decode</li>
-              <li>Would You Rather with token rewards</li>
-              <li>1.2× XP multiplier</li>
-              <li>+10% work coin bonus</li>
-              <li>Genre & mood song search</li>
-              <li>Lyrics guessing & music trivia</li>
-              <li>Playlists (up to 3) & Music Wrapped</li>
-              <li>Vibe badge on profile</li>
-            </ul>
-            <a class="btn-ghost" href="https://discord.gg/SgkYDqkZmt" target="_blank" rel="noopener">Upgrade in Discord</a>
-          </div>
-
-          <div class="tier-card tier-card--popular reveal">
-            <span class="tier-card__emoji">⭐</span>
-            <h3 class="tier-card__name">Premium</h3>
-            <p class="tier-card__price">$4.99 <span>/ month</span></p>
-            <ul class="tier-card__features">
-              <li>All Vibe features</li>
-              <li>350 daily coins</li>
-              <li>Hangman & Wordle</li>
-              <li>Scramble, Math Quiz, Higher/Lower</li>
-              <li>1.5× XP multiplier</li>
-              <li>+20% work coin bonus</li>
-              <li>+15% rare fish chance</li>
-              <li>1 free Lucky Gamble / week</li>
-              <li>Artist info & top tracks</li>
-              <li>Playlists (up to 5)</li>
-              <li>Premium badge on profile</li>
-            </ul>
-            <a class="btn-primary" href="https://discord.gg/SgkYDqkZmt" target="_blank" rel="noopener">Upgrade in Discord</a>
-          </div>
-
-          <div class="tier-card reveal">
-            <span class="tier-card__emoji">⚡</span>
-            <h3 class="tier-card__name">Pro</h3>
-            <p class="tier-card__price">$7.99 <span>/ month</span></p>
-            <ul class="tier-card__features">
-              <li>All Premium features</li>
-              <li>500 daily coins</li>
-              <li>Blackjack (exclusive)</li>
-              <li>3× XP multiplier</li>
-              <li>+35% work coin bonus</li>
-              <li>+30% legendary fish chance</li>
-              <li>Double fishing XP</li>
-              <li>2 free Lucky Gambles / week</li>
-              <li>50% larger streak bonus</li>
-              <li>New releases & unlimited playlists</li>
-              <li>2x music streak + token rewards</li>
-              <li>Pro badge on profile</li>
-            </ul>
-            <a class="btn-ghost" href="https://discord.gg/SgkYDqkZmt" target="_blank" rel="noopener">Upgrade in Discord</a>
-          </div>
-
         </div>
       </div>
     </section>
 
-    <div class="section-divider"></div>
-
-    <!-- ── Commands ───────────────────────────────────────── -->
-    <section class="section section--surface" id="commands">
+    <!-- Feature 3: Games -->
+    <section class="feature-section">
       <div class="shell">
-        <div class="section-header reveal">
-          <span class="eyebrow">Command reference</span>
-          <h2 class="section-title">
-            All commands &nbsp;<code style="font-family:'Roboto Mono',monospace;font-size:1.3rem;color:var(--cyan);background:rgba(0,229,255,0.1);padding:0.15rem 0.6rem;border-radius:5px;">t!</code>
-          </h2>
+        <div class="feature-row reveal">
+          <div class="feature-text">
+            <span class="eyebrow">Games</span>
+            <h2 class="heading-md">Trivia, Blackjack & More</h2>
+            <p>Live trivia with button voting, word games, card games, and channel-wide races. Every game earns real rewards: coins, gems, and tokens. Play solo or challenge other members.</p>
+          </div>
+          <div class="feature-image">
+            <div class="feature-image__frame">
+              <div class="feature-image__header">
+                <span class="feature-image__hash">#</span>
+                <span class="feature-image__channel">games</span>
+              </div>
+              <img class="feature-image__img" src="command showcases/trivia-game.png" alt="Trivia game" loading="lazy">
+            </div>
+          </div>
         </div>
-
-        <div class="cmd-tabs" role="tablist">
-          <button class="cmd-tab is-active" data-tab="economy">Economy</button>
-          <button class="cmd-tab" data-tab="entertainment">Entertainment</button>
-          <button class="cmd-tab" data-tab="games">Games</button>
-          <button class="cmd-tab" data-tab="fungames">Fun Games</button>
-          <button class="cmd-tab" data-tab="fun">Fun</button>
-          <button class="cmd-tab" data-tab="fishing">Fishing</button>
-          <button class="cmd-tab" data-tab="music">Music</button>
-          <button class="cmd-tab" data-tab="moderation">Moderation</button>
-          <button class="cmd-tab" data-tab="automod">AutoMod</button>
-          <button class="cmd-tab" data-tab="levels">Levels</button>
-          <button class="cmd-tab" data-tab="birthday">Birthday</button>
-          <button class="cmd-tab" data-tab="server">Server</button>
-          <button class="cmd-tab" data-tab="subscription">Subscription</button>
-          <button class="cmd-tab" data-tab="utility">Utility</button>
-        </div>
-
-        <div class="cmd-panel is-active" data-panel="economy">
-          <div class="cmd-row"><code>t!balance [@user]</code><p>Check all 3 currency balances</p></div>
-          <div class="cmd-row"><code>t!daily</code><p>Claim daily coins + streak gems/tokens</p></div>
-          <div class="cmd-row"><code>t!work</code><p>Earn coins (1h cooldown)</p></div>
-          <div class="cmd-row"><code>t!gamble &lt;amount&gt;</code><p>Gamble coins (45% win chance)</p></div>
-          <div class="cmd-row"><code>t!slots &lt;bet&gt;</code><p>Slot machine — jackpot pays gems</p></div>
-          <div class="cmd-row"><code>t!rob @user</code><p>Attempt to rob another user</p></div>
-          <div class="cmd-row"><code>t!transfer @user &lt;amount&gt; [currency]</code><p>Send coins, gems, or tokens to someone</p></div>
-          <div class="cmd-row"><code>t!shop [coins|gems|tokens]</code><p>Browse the 3-section premium shop</p></div>
-          <div class="cmd-row"><code>t!buy &lt;item_id&gt;</code><p>Purchase a shop item</p></div>
-          <div class="cmd-row"><code>t!inventory</code><p>View your active items</p></div>
-          <div class="cmd-row"><code>t!coinflip &lt;bet&gt; [heads|tails]</code><p>Flip a coin bet — 50/50 odds, instant payout</p></div>
-          <div class="cmd-row"><code>t!streak</code><p>View your daily streak and next gem milestone</p></div>
-          <div class="cmd-row"><code>t!richest</code><p>Server wealth leaderboard</p></div>
-          <div class="cmd-row"><code>t!setbalance @user &lt;amount&gt; [currency]</code><p>Admin: set a user's balance</p></div>
-          <div class="cmd-row"><code>t!addbalance @user &lt;amount&gt; [currency]</code><p>Admin: add or subtract balance</p></div>
-          <div class="cmd-row"><code>t!reseteconomy @user</code><p>Admin: fully reset a user's economy</p></div>
-        </div>
-
-        <div class="cmd-panel" data-panel="entertainment">
-          <div class="cmd-row"><code>t!joke [category]</code><p>Get a joke — dad / puns / tech / animal / food</p></div>
-          <div class="cmd-row"><code>t!story [genre]</code><p>Get a story — adventure / mystery / fantasy</p></div>
-          <div class="cmd-row"><code>t!trivia [diff]</code><p>Live trivia — easy / medium / hard (Vibe+)</p></div>
-          <div class="cmd-row"><code>t!hangman [diff]</code><p>Hangman word game (Premium+)</p></div>
-          <div class="cmd-row"><code>t!wordle</code><p>Wordle-style word game (Premium+)</p></div>
-          <div class="cmd-row"><code>t!blackjack &lt;bet&gt;</code><p>Blackjack vs dealer (Pro only)</p></div>
-          <div class="cmd-row"><code>t!rps</code><p>Rock Paper Scissors with buttons</p></div>
-          <div class="cmd-row"><code>t!guess</code><p>Number guessing game</p></div>
-        </div>
-
-        <div class="cmd-panel" data-panel="games">
-          <div class="cmd-row"><code>t!ttt</code><p>Tic-Tac-Toe vs bot</p></div>
-          <div class="cmd-row"><code>t!c4</code><p>Connect Four vs bot</p></div>
-          <div class="cmd-row"><code>t!scramble</code><p>Unscramble a word — channel race</p></div>
-          <div class="cmd-row"><code>t!mathquiz [diff]</code><p>Rapid-fire math quiz</p></div>
-          <div class="cmd-row"><code>t!highlow [bet]</code><p>Higher or Lower card game</p></div>
-          <div class="cmd-row"><code>t!duel @user &lt;bet&gt;</code><p>Coin flip duel vs another user</p></div>
-          <div class="cmd-row"><code>t!snap</code><p>Reaction speed game</p></div>
-          <div class="cmd-row"><code>t!roulette &lt;bet&gt; [red|black]</code><p>Bet on red or black — 1.9x payout (Premium+)</p></div>
-        </div>
-
-        <div class="cmd-panel" data-panel="fungames">
-          <div class="cmd-row"><code>t!typerace</code><p>Type a sentence fast — coins based on speed</p></div>
-          <div class="cmd-row"><code>t!riddle</code><p>First correct answer wins 80 coins + 1 gem</p></div>
-          <div class="cmd-row"><code>t!wouldyourather</code><p>Vote with buttons — all voters earn 1 token (Vibe+)</p></div>
-          <div class="cmd-row"><code>t!emojidecode</code><p>Decode an emoji phrase for coins and tokens (Vibe+)</p></div>
-          <div class="cmd-row"><code>t!fastmath</code><p>Channel race math question — speed bonus coins</p></div>
-          <div class="cmd-row"><code>t!hotpotato</code><p>Pass the button — holder when timer explodes loses coins</p></div>
-          <div class="cmd-row"><code>t!wordchain</code><p>Chain words — 20 coins per word, gems for top scorer</p></div>
-        </div>
-
-        <div class="cmd-panel" data-panel="fun">
-          <div class="cmd-row"><code>t!fortune</code><p>Open a fortune cookie — quote + 1 coin (1h cooldown)</p></div>
-          <div class="cmd-row"><code>t!color [hex]</code><p>Show a random color, or preview a specific hex — HEX + RGB breakdown</p></div>
-          <div class="cmd-row"><code>t!8ball &lt;question&gt;</code><p>Ask the magic 8-ball</p></div>
-          <div class="cmd-row"><code>t!roll [NdN]</code><p>Roll dice — e.g. t!roll 2d6</p></div>
-          <div class="cmd-row"><code>t!flip</code><p>Flip a coin</p></div>
-          <div class="cmd-row"><code>t!meme</code><p>Random meme pulled from Reddit</p></div>
-          <div class="cmd-row"><code>t!quote</code><p>Random inspirational quote</p></div>
-          <div class="cmd-row"><code>t!compliment @user</code><p>Send someone a compliment</p></div>
-          <div class="cmd-row"><code>t!roast @user</code><p>Friendly roast another user</p></div>
-          <div class="cmd-row"><code>t!choose &lt;a | b | c&gt;</code><p>Pick randomly from options</p></div>
-          <div class="cmd-row"><code>t!mock &lt;text&gt;</code><p>SpOnGeBoB mOcKiNg tExT</p></div>
-          <div class="cmd-row"><code>t!reverse &lt;text&gt;</code><p>Reverse any text</p></div>
-          <div class="cmd-row"><code>t!joke [category]</code><p>Get a joke — dad / puns / tech / animal / food (Vibe+ unlocks all)</p></div>
-          <div class="cmd-row"><code>t!story [genre]</code><p>Get a story — adventure / mystery / fantasy (Vibe+ unlocks all)</p></div>
-        </div>
-
-        <div class="cmd-panel" data-panel="fishing">
-          <div class="cmd-row"><code>t!fish</code><p>Cast your line — cooldown depends on rod tier</p></div>
-          <div class="cmd-row"><code>t!fishbag [@user]</code><p>View fish inventory sorted by rarity tier</p></div>
-          <div class="cmd-row"><code>t!sell [fish|all]</code><p>Sell fish for coins + gems + tokens</p></div>
-          <div class="cmd-row"><code>t!fishstats [@user]</code><p>Fishing level, XP, best catch, rod info</p></div>
-          <div class="cmd-row"><code>t!fishtop</code><p>Top fishers leaderboard</p></div>
-          <div class="cmd-row"><code>t!rods</code><p>View all 11 rods, tier requirements, prices and rod keys</p></div>
-          <div class="cmd-row"><code>t!equip &lt;rod_key&gt;</code><p>Equip a specific rod you own — e.g. t!equip rod_gold</p></div>
-          <div class="cmd-row"><code>t!unequip</code><p>Unequip manual selection — auto-uses your best owned rod</p></div>
-          <div class="cmd-row"><code>t!buy rod_silver</code><p>Silver Rod (1500 🪙) — unlocks Uncommon &amp; Rare</p></div>
-          <div class="cmd-row"><code>t!buy rod_gold</code><p>Gold Rod (5000 🪙) — unlocks Epic tier</p></div>
-          <div class="cmd-row"><code>t!buy rod_diamond</code><p>Diamond Rod (20 💎) — unlocks Legendary tier</p></div>
-          <div class="cmd-row"><code>t!buy rod_pearl</code><p>Pearl Rod (45 💎) — unlocks Mythic tier</p></div>
-          <div class="cmd-row"><code>t!buy rod_crystal</code><p>Crystal Rod (100 💎) — unlocks Ancient tier</p></div>
-          <div class="cmd-row"><code>t!buy rod_titanium</code><p>Titanium Rod (50 🎫) — unlocks Celestial tier</p></div>
-          <div class="cmd-row"><code>t!buy rod_quantum</code><p>Quantum Rod (150 🎫) — unlocks Void tier</p></div>
-          <div class="cmd-row"><code>t!buy premium_bait</code><p>Premium Bait (800 🪙) — +40% rare fish for 1 hour</p></div>
-        </div>
-
-        <div class="cmd-panel" data-panel="birthday">
-          <div class="cmd-row"><code>t!birthday set MM/DD</code><p>Set your birthday for this server</p></div>
-          <div class="cmd-row"><code>t!birthday view [@user]</code><p>View someone's birthday and countdown</p></div>
-          <div class="cmd-row"><code>t!birthday list</code><p>All birthdays in this server, sorted by next</p></div>
-          <div class="cmd-row"><code>t!birthday del</code><p>Remove your birthday from this server</p></div>
-          <div class="cmd-row"><code>t!setbirthdaychannel #ch</code><p>Admin: set birthday announcement channel</p></div>
-        </div>
-
-        <div class="cmd-panel" data-panel="server">
-          <div class="cmd-row"><code>t!prefix [new]</code><p>View or set the server command prefix per guild</p></div>
-          <div class="cmd-row"><code>t!afk [status]</code><p>Set your AFK status — auto-clears on next message</p></div>
-          <div class="cmd-row"><code>t!addemote &lt;name&gt; &lt;url&gt;</code><p>Admin: add a custom emoji to the server</p></div>
-          <div class="cmd-row"><code>t!randomcolor</code><p>Generate a random color with HEX + RGB preview</p></div>
-          <div class="cmd-row"><code>t!membercount</code><p>Total / humans / bots / online breakdown</p></div>
-          <div class="cmd-row"><code>t!togglecmd &lt;cmd&gt; [#ch]</code><p>Admin: enable or disable a command per channel</p></div>
-          <div class="cmd-row"><code>t!cmdlist</code><p>View all command toggle overrides</p></div>
-          <div class="cmd-row"><code>t!setbirthdaychannel #ch</code><p>Admin: set birthday announcement channel</p></div>
-          <div class="cmd-row"><code>t!setlevelupchannel #ch</code><p>Admin: set level-up announcement channel</p></div>
-          <div class="cmd-row"><code>t!setmodlog #ch</code><p>Admin: set moderation log channel</p></div>
-          <div class="cmd-row"><code>t!setleaderboard #ch</code><p>Admin: set a dedicated leaderboard channel — auto-updated every 5 minutes</p></div>
-          <div class="cmd-row"><code>t!clearleaderboard</code><p>Admin: remove the dedicated leaderboard channel</p></div>
-          <div class="cmd-row"><code>t!setupgenreroles</code><p>Admin: create the pick-your-lane channel with 10 genre reaction roles</p></div>
-        </div>
-
-        <div class="cmd-panel" data-panel="moderation">
-          <div class="cmd-row"><code>t!purge &lt;amount&gt;</code><p>Bulk delete up to 10 messages (free) or 100 (Basic+ server plan)</p></div>
-          <div class="cmd-row"><code>t!slowmode &lt;seconds&gt;</code><p>Set channel slowmode — free on all servers</p></div>
-          <div class="cmd-row"><code>t!lock / t!unlock</code><p>Lock or unlock a channel — free on all servers</p></div>
-          <div class="cmd-row"><code>t!nick @user &lt;name&gt;</code><p>Change a member's nickname — free on all servers</p></div>
-          <div class="cmd-row"><code>t!warn @user &lt;reason&gt;</code><p>Issue a warning — logged to mod log (Basic+ server plan)</p></div>
-          <div class="cmd-row"><code>t!warnings @user</code><p>View a user's warning history (Basic+ server plan)</p></div>
-          <div class="cmd-row"><code>t!clearwarn @user &lt;id&gt;</code><p>Remove a warning (Basic+ server plan)</p></div>
-          <div class="cmd-row"><code>t!kick @user [reason]</code><p>Kick a member (Basic+ server plan)</p></div>
-          <div class="cmd-row"><code>t!ban @user [reason]</code><p>Ban a member (Basic+ server plan)</p></div>
-          <div class="cmd-row"><code>t!unban &lt;user_id&gt;</code><p>Unban a user by ID (Basic+ server plan)</p></div>
-          <div class="cmd-row"><code>t!timeout @user &lt;duration&gt;</code><p>Mute a user temporarily (Basic+ server plan)</p></div>
-          <div class="cmd-row"><code>t!modlog</code><p>View recent moderation cases (Basic+ server plan)</p></div>
-          <div class="cmd-row"><code>t!setmodlog #channel</code><p>Set the mod log channel (Basic+ server plan)</p></div>
-          <div class="cmd-row"><code>t!addrole / t!removerole</code><p>Manage member roles (Basic+ server plan)</p></div>
-        </div>
-
-        <div class="cmd-panel" data-panel="levels">
-          <div class="cmd-row"><code>t!level [@user]</code><p>Check XP, level, and progress bar</p></div>
-          <div class="cmd-row"><code>t!rank</code><p>Server XP leaderboard</p></div>
-          <div class="cmd-row"><code>t!profile [@user]</code><p>Full profile card — tier, level, gems, active items, badges, bio</p></div>
-          <div class="cmd-row"><code>t!bio [text]</code><p>Set a custom bio shown on your profile card (Vibe+)</p></div>
-          <div class="cmd-row"><code>t!mystats</code><p>Detailed personal stats — economy, games, fishing breakdown (Premium+)</p></div>
-          <div class="cmd-row"><code>t!leaderboard</code><p>Auto-updating richest, XP, and top fishers</p></div>
-          <div class="cmd-row"><code>t!userinfo [@user]</code><p>User information — join date, roles, status</p></div>
-          <div class="cmd-row"><code>t!serverinfo</code><p>Server statistics</p></div>
-          <div class="cmd-row"><code>t!avatar [@user]</code><p>View a user's full-size avatar</p></div>
-          <div class="cmd-row"><code>🎖️ Milestone Roles</code><p>Lvl 5 Newcomer → 10 Groover → 20 Fanatic → 30 Headliner → 50 Icon → 75 Superstar → 100 Legend → 150 Cosmic → 200 Immortal → 300 Void Walker</p></div>
-        </div>
-
-        <div class="cmd-panel" data-panel="subscription">
-          <div class="cmd-row"><code>t!subscribe</code><p>View all user subscription tiers and pricing</p></div>
-          <div class="cmd-row"><code>t!tier [@user]</code><p>Check your current subscription tier</p></div>
-          <div class="cmd-row"><code>t!upgrade &lt;tier&gt;</code><p>Upgrade your user subscription (Basic / Vibe / Premium / Pro)</p></div>
-          <div class="cmd-row"><code>t!renew [months]</code><p>Renew your current subscription</p></div>
-          <div class="cmd-row"><code>t!benefits</code><p>Compare all tier benefits side by side</p></div>
-          <div class="cmd-row"><code>t!servertier</code><p>View this server's subscription plan and features</p></div>
-          <div class="cmd-row"><code>t!serversubscribe</code><p>View server plans — Free / Basic ($7.99) / Pro ($14.99) — unlocks full mod tools & member discounts</p></div>
-          <div class="cmd-row"><code>t!verifypayment</code><p>Verify your LemonSqueezy payment manually</p></div>
-        </div>
-
-        <div class="cmd-panel" data-panel="utility">
-          <div class="cmd-row"><code>t!help [category]</code><p>Full command list with category dropdown</p></div>
-          <div class="cmd-row"><code>t!ping</code><p>Check bot latency</p></div>
-          <div class="cmd-row"><code>t!stats</code><p>Bot statistics — servers, users, version</p></div>
-          <div class="cmd-row"><code>t!remind &lt;time&gt; &lt;msg&gt;</code><p>Set a personal reminder (e.g. t!remind 1h30m buy food)</p></div>
-          <div class="cmd-row"><code>t!reminders</code><p>List your active reminders</p></div>
-          <div class="cmd-row"><code>t!delreminder &lt;id&gt;</code><p>Delete a reminder by ID</p></div>
-          <div class="cmd-row"><code>t!poll &lt;question&gt; | &lt;opt1&gt; | ...</code><p>Create a community poll with up to 5 options</p></div>
-          <div class="cmd-row"><code>t!gcreate</code><p>Create a timed giveaway</p></div>
-          <div class="cmd-row"><code>t!gend &lt;msg_id&gt;</code><p>End a giveaway early</p></div>
-          <div class="cmd-row"><code>t!greroll &lt;msg_id&gt;</code><p>Reroll giveaway winners</p></div>
-        </div>
-
-        <div class="cmd-panel" data-panel="music">
-          <div class="cmd-row"><code>t!recommend [genre]</code><p>Get 3 random song recommendations</p></div>
-          <div class="cmd-row"><code>t!hotsongs</code><p>Top 5 most-shared tracks this week</p></div>
-          <div class="cmd-row"><code>t!genresearch &lt;genre&gt;</code><p>5 picks for a genre — Vibe+ (16 genres: pop, hiphop, rock, electronic, rnb, jazz, country, latin, indie, soul, reggae, classical, metal, folk, kpop, lofi)</p></div>
-          <div class="cmd-row"><code>t!moodsearch &lt;mood&gt;</code><p>Songs matched to hype / chill / sad / focus / party / workout — Vibe+</p></div>
-          <div class="cmd-row"><code>t!artistinfo &lt;artist&gt;</code><p>Artist card: genre, fun fact, top songs — Premium+</p></div>
-          <div class="cmd-row"><code>t!toptracks</code><p>Global top 10 shared songs last 30 days — Premium+</p></div>
-          <div class="cmd-row"><code>t!newreleases</code><p>Latest new releases list — Pro only</p></div>
-          <div class="cmd-row"><code>t!musictrivia [genre]</code><p>4-option trivia with button voting — coins &amp; gems for all correct</p></div>
-          <div class="cmd-row"><code>t!lyricsguess</code><p>Guess the song from a lyric snippet — Vibe+</p></div>
-          <div class="cmd-row"><code>t!namethetune</code><p>Channel race: name the song — speed bonus coins — Vibe+</p></div>
-          <div class="cmd-row"><code>t!musicprofile [@user]</code><p>View music stats: genre, streak, earnings, badges</p></div>
-          <div class="cmd-row"><code>t!setgenre &lt;genre&gt;</code><p>Set your favourite genre on your music profile</p></div>
-          <div class="cmd-row"><code>t!setartist &lt;artist&gt;</code><p>Add a favourite artist (cap depends on tier)</p></div>
-          <div class="cmd-row"><code>t!sharetrack &lt;song&gt; - &lt;artist&gt;</code><p>Share a track (6h cooldown) for coins — doubles with Hot Boost</p></div>
-          <div class="cmd-row"><code>t!musicwrapped</code><p>Your monthly music summary — Vibe+</p></div>
-          <div class="cmd-row"><code>t!playlist create/add/view/list/delete</code><p>Manage personal playlists — Vibe+</p></div>
-        </div>
-
-        <div class="cmd-panel" data-panel="automod">
-          <div class="cmd-row"><code>t!automod status</code><p>View all automod settings, word filter, and allowlist</p></div>
-          <div class="cmd-row"><code>t!automod enable / disable</code><p>Turn automod on or off for this server</p></div>
-          <div class="cmd-row"><code>t!automod log #channel</code><p>Set the channel where violations are logged</p></div>
-          <div class="cmd-row"><code>t!automod action &lt;warn|timeout|kick&gt;</code><p>Set the default action taken on violation</p></div>
-          <div class="cmd-row"><code>t!automod spam &lt;count&gt; &lt;seconds&gt;</code><p>Trigger on N messages within a time window (2–20 msgs, 2–30s)</p></div>
-          <div class="cmd-row"><code>t!automod links &lt;on|off&gt;</code><p>Block all links not on the allowlist</p></div>
-          <div class="cmd-row"><code>t!automod allowlink &lt;domain&gt;</code><p>Add a domain to the link allowlist</p></div>
-          <div class="cmd-row"><code>t!automod removelink &lt;domain&gt;</code><p>Remove a domain from the allowlist</p></div>
-          <div class="cmd-row"><code>t!automod caps &lt;0-100&gt;</code><p>Flag messages above a % caps threshold (0 = off)</p></div>
-          <div class="cmd-row"><code>t!automod mentions &lt;0-50&gt;</code><p>Flag messages with too many mentions (0 = off)</p></div>
-          <div class="cmd-row"><code>t!automod word add/remove/list/clear</code><p>Manage the banned word list — clear requires Administrator</p></div>
-        </div>
-
       </div>
     </section>
 
-    <div class="section-divider"></div>
+    <!-- Feature 4: Profile -->
+    <section class="feature-section feature-section--alt">
+      <div class="shell">
+        <div class="feature-row feature-row--reverse reveal">
+          <div class="feature-text">
+            <span class="eyebrow">User Profile</span>
+            <h2 class="heading-md">Your Identity, On Display</h2>
+            <p>Full profile cards with tier badges, level progress, economy stats, active items, and custom bios. Members compete for recognition through levels, milestones, and prestige roles.</p>
+          </div>
+          <div class="feature-image">
+            <div class="feature-image__frame">
+              <div class="feature-image__header">
+                <span class="feature-image__hash">#</span>
+                <span class="feature-image__channel">bot-commands</span>
+              </div>
+              <img class="feature-image__img" src="command showcases/profile-stats.png" alt="User profile" loading="lazy">
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
 
-    <!-- ── CTA ────────────────────────────────────────────── -->
-    <section class="section">
+    <!-- Feature 5: Leaderboard -->
+    <section class="feature-section">
+      <div class="shell">
+        <div class="feature-row reveal">
+          <div class="feature-text">
+            <span class="eyebrow">Leaderboards</span>
+            <h2 class="heading-md">Compete for the Top</h2>
+            <p>Auto-updating richest, XP, and fishing leaderboards. Dedicated leaderboard channels refresh every 5 minutes. Members chase rankings and status so activity becomes self-sustaining.</p>
+          </div>
+          <div class="feature-image">
+            <div class="feature-image__frame">
+              <div class="feature-image__header">
+                <span class="feature-image__hash">#</span>
+                <span class="feature-image__channel">leaderboard</span>
+              </div>
+              <img class="feature-image__img" src="command showcases/leaderboard-rank.png" alt="Leaderboard" loading="lazy">
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Feature 6: Music -->
+    <section class="feature-section feature-section--alt">
+      <div class="shell">
+        <div class="feature-row feature-row--reverse reveal">
+          <div class="feature-text">
+            <span class="eyebrow">Music Discovery</span>
+            <h2 class="heading-md">Genre Lanes & Playlists</h2>
+            <p>Explore 16 genres, search by mood, share tracks, and build personal playlists. Music trivia, lyrics guessing, and artist info make music a social experience. Spotify integration for real profiles.</p>
+          </div>
+          <div class="feature-image">
+            <div class="feature-image__frame">
+              <div class="feature-image__header">
+                <span class="feature-image__hash">#</span>
+                <span class="feature-image__channel">music</span>
+              </div>
+              <img class="feature-image__img" src="command showcases/music-profile.png" alt="Music profile" loading="lazy">
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Feature 7: Moderation -->
+    <section class="feature-section">
+      <div class="shell">
+        <div class="feature-row reveal">
+          <div class="feature-text">
+            <span class="eyebrow">Moderation</span>
+            <h2 class="heading-md">Full Mod Suite + AutoMod</h2>
+            <p>Warn, kick, ban, timeout, purge, slowmode, lock/unlock, all logged with case tracking. AutoMod catches spam, links, caps, and toxicity automatically. Your server runs itself.</p>
+          </div>
+          <div class="feature-image">
+            <div class="feature-image__frame">
+              <div class="feature-image__header">
+                <span class="feature-image__hash">#</span>
+                <span class="feature-image__channel">mod-log</span>
+              </div>
+              <img class="feature-image__img" src="command showcases/moderation-log.png" alt="Mod log" loading="lazy">
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Feature 8: Levels -->
+    <section class="feature-section feature-section--alt">
+      <div class="shell">
+        <div class="feature-row feature-row--reverse reveal">
+          <div class="feature-text">
+            <span class="eyebrow">Levels & Roles</span>
+            <h2 class="heading-md">XP Milestones & Status</h2>
+            <p>Chat to earn XP. Hit milestones to unlock exclusive roles from Novice to Legend. 10 tier roles from Level 5 to Level 300. XP multipliers for premium members. Members compete for status.</p>
+          </div>
+          <div class="feature-image">
+            <div class="feature-image__frame">
+              <div class="feature-image__header">
+                <span class="feature-image__hash">#</span>
+                <span class="feature-image__channel">level-up</span>
+              </div>
+              <img class="feature-image__img" src="command showcases/level-up.png" alt="Level up" loading="lazy">
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════
+         3. INTERACTIVE CATEGORIES
+    ═══════════════════════════════════════════════════════ -->
+    <section class="categories" id="categories">
+      <div class="shell">
+        <div class="categories__header reveal">
+          <span class="eyebrow">Explore by category</span>
+          <h2 class="heading-lg">What Can Tainment+ Do?</h2>
+          <p class="categories__desc">Click a category to see all its commands.</p>
+        </div>
+        <div class="categories__grid reveal reveal-delay-1">
+          <div class="category-card" data-cat="economy" style="--cat-color: #fbbf24; --cat-glow: rgba(251,191,36,0.08);">
+            <span class="category-card__icon">🪙</span>
+            <div class="category-card__name">Economy</div>
+            <div class="category-card__count">16 commands</div>
+          </div>
+          <div class="category-card" data-cat="games" style="--cat-color: #34d399; --cat-glow: rgba(52,211,153,0.08);">
+            <span class="category-card__icon">🎮</span>
+            <div class="category-card__name">Games</div>
+            <div class="category-card__count">12 commands</div>
+          </div>
+          <div class="category-card" data-cat="fishing" style="--cat-color: #60a5fa; --cat-glow: rgba(96,165,250,0.08);">
+            <span class="category-card__icon">🎣</span>
+            <div class="category-card__name">Fishing</div>
+            <div class="category-card__count">8 commands</div>
+          </div>
+          <div class="category-card" data-cat="music" style="--cat-color: #a78bfa; --cat-glow: rgba(167,139,250,0.08);">
+            <span class="category-card__icon">🎵</span>
+            <div class="category-card__name">Music</div>
+            <div class="category-card__count">14 commands</div>
+          </div>
+          <div class="category-card" data-cat="moderation" style="--cat-color: #f87171; --cat-glow: rgba(248,113,113,0.08);">
+            <span class="category-card__icon">🛡️</span>
+            <div class="category-card__name">Moderation</div>
+            <div class="category-card__count">13 commands</div>
+          </div>
+          <div class="category-card" data-cat="levels" style="--cat-color: #fb923c; --cat-glow: rgba(251,146,60,0.08);">
+            <span class="category-card__icon">🏆</span>
+            <div class="category-card__name">Levels</div>
+            <div class="category-card__count">8 commands</div>
+          </div>
+          <div class="category-card" data-cat="fun" style="--cat-color: #f472b6; --cat-glow: rgba(244,114,182,0.08);">
+            <span class="category-card__icon">⌨️</span>
+            <div class="category-card__name">Fun</div>
+            <div class="category-card__count">20 commands</div>
+          </div>
+          <div class="category-card" data-cat="utility" style="--cat-color: #38bdf8; --cat-glow: rgba(56,189,248,0.08);">
+            <span class="category-card__icon">⚙️</span>
+            <div class="category-card__name">Utility</div>
+            <div class="category-card__count">10 commands</div>
+          </div>
+        </div>
+        <div class="category-panel" id="category-panel"></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════
+         4. WHY TAINMENT
+    ═══════════════════════════════════════════════════════ -->
+    <section class="why">
+      <div class="shell">
+        <div class="why__header reveal">
+          <span class="eyebrow">The real reason</span>
+          <h2 class="heading-lg">Why Tainment+</h2>
+          <p class="why__desc">Not because of the features. Because of what happens when your server has them.</p>
+        </div>
+        <div class="why__grid">
+          <div class="why-card reveal">
+            <span class="why-card__icon">🔥</span>
+            <h3 class="why-card__outcome">Servers stop feeling inactive.</h3>
+            <p class="why-card__detail">Members start chatting because there is always something to do: fish, gamble, race, compete. Activity becomes self-sustaining.</p>
+          </div>
+          <div class="why-card reveal reveal-delay-1">
+            <span class="why-card__icon">🏆</span>
+            <h3 class="why-card__outcome">Members suddenly compete for status.</h3>
+            <p class="why-card__detail">XP, levels, milestone roles, fishing leaderboards: people naturally chase recognition. Your server becomes a place people want to be seen in.</p>
+          </div>
+          <div class="why-card reveal reveal-delay-2">
+            <span class="why-card__icon">🛡️</span>
+            <h3 class="why-card__outcome">Moderation runs itself.</h3>
+            <p class="why-card__detail">AutoMod catches spam, links, and toxicity before you even see it. Warnings, timeouts, and bans are logged automatically. You get your time back.</p>
+          </div>
+          <div class="why-card reveal reveal-delay-3">
+            <span class="why-card__icon">🎵</span>
+            <h3 class="why-card__outcome">Music becomes a social experience.</h3>
+            <p class="why-card__detail">Share tracks, discover genres, compete in music trivia, build playlists. Music is not just listening: it is connecting.</p>
+          </div>
+          <div class="why-card reveal reveal-delay-4">
+            <span class="why-card__icon">💰</span>
+            <h3 class="why-card__outcome">Economy creates engagement loops.</h3>
+            <p class="why-card__detail">Daily coins, work rewards, gambling, fishing, trading: members come back because their progress matters. Streaks build habits.</p>
+          </div>
+          <div class="why-card reveal reveal-delay-4">
+            <span class="why-card__icon">🎉</span>
+            <h3 class="why-card__outcome">Community actually happens.</h3>
+            <p class="why-card__detail">Birthdays, giveaways, polls: your server stops being a group of channels and starts feeling like a place. People celebrate together.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════
+         5. COMMUNITY
+    ═══════════════════════════════════════════════════════ -->
+    <section class="community" id="community">
+      <div class="shell">
+        <div class="community__grid">
+          <div class="community__content reveal">
+            <span class="eyebrow">Live community</span>
+            <h2 class="heading-lg">Join The Server</h2>
+            <p class="community__desc">Do not take our word for it. See real members, real activity, and real engagement live from our Discord server.</p>
+            <div class="community__stats" id="community-stats">
+              <div>
+                <div class="community__stat-value" id="stat-online">N/A</div>
+                <div class="community__stat-label">Online Now</div>
+              </div>
+              <div>
+                <div class="community__stat-value" id="stat-members">N/A</div>
+                <div class="community__stat-label">Total Members</div>
+              </div>
+              <div>
+                <div class="community__stat-value" id="stat-channels">N/A</div>
+                <div class="community__stat-label">Active Channels</div>
+              </div>
+            </div>
+            <a class="btn btn--primary btn--lg" href="https://discord.gg/SgkYDqkZmt" target="_blank" rel="noopener">Join Support Server →</a>
+          </div>
+          <div class="community__widget reveal reveal-delay-2">
+            <div class="widget-frame glass">
+              <iframe src="https://discord.com/widget?id=1390512546858926163&theme=dark" width="350" height="500" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts" loading="lazy"></iframe>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════
+         6. CTA
+    ═══════════════════════════════════════════════════════ -->
+    <section class="cta-section">
       <div class="shell">
         <div class="cta-banner reveal">
-          <h2 class="cta-banner__title">Ready to level up your server?</h2>
-          <p class="cta-banner__sub">Add Tainment+ in seconds and start earning with your first <code style="color:var(--cyan);font-family:'Roboto Mono',monospace;">t!daily</code>.</p>
+          <h2 class="cta-banner__title">Activate Your Server</h2>
+          <p class="cta-banner__sub">Add Tainment+ in 30 seconds. Your first <code style="color:var(--cyan);font-family:'Roboto Mono',monospace;background:rgba(0,212,255,0.1);padding:0.15rem 0.4rem;border-radius:4px;">t!daily</code> is waiting.</p>
           <div class="cta-banner__buttons">
-            <a class="btn-primary" href="https://discord.com/oauth2/authorize?client_id=1374911009009041448&permissions=8&integration_type=0&scope=bot" target="_blank" rel="noopener">➕ Add to Discord</a>
-            <a class="btn-cyan" href="https://discord.gg/SgkYDqkZmt" target="_blank" rel="noopener">Join Support Server</a>
+            <a class="btn btn--primary btn--lg" href="https://discord.com/oauth2/authorize?client_id=1374911009009041448&permissions=8&integration_type=0&scope=bot" target="_blank" rel="noopener">➕ Add To Discord</a>
+            <a class="btn btn--cyan btn--lg" href="https://discord.gg/SgkYDqkZmt" target="_blank" rel="noopener">Join Support Server</a>
           </div>
         </div>
       </div>
@@ -1095,45 +1442,48 @@
 
   </main>
 
-  <!-- ── Footer ─────────────────────────────────────────── -->
+  <!-- Floating CTA (desktop) -->
+  <div class="floating-cta" id="floating-cta">
+    <a class="btn btn--primary" href="https://discord.com/oauth2/authorize?client_id=1374911009009041448&permissions=8&integration_type=0&scope=bot" target="_blank" rel="noopener">➕ Add To Discord</a>
+  </div>
+
+  <!-- Mobile sticky CTA -->
+  <div class="mobile-sticky-cta" id="mobile-cta">
+    <a class="btn btn--primary" href="https://discord.com/oauth2/authorize?client_id=1374911009009041448&permissions=8&integration_type=0&scope=bot" target="_blank" rel="noopener">➕ Add Tainment+ To Discord</a>
+  </div>
+
   <footer>
     <div class="footer-inner">
       <div class="footer-brand">
         <p class="footer-brand-name">TAINMENT<span>+</span></p>
-        <p class="footer-tagline">A full-featured Discord bot. Economy, games, fishing, music, moderation, and premium tiers for every server.</p>
+        <p class="footer-tagline">Entertainment infrastructure for Discord. Moderation, games, economy, music, and community all in one evolving bot.</p>
       </div>
       <div class="footer-col">
-        <h4>Bot</h4>
-        <ul>
-          <li><a href="#features">Features</a></li>
-          <li><a href="#tiers">Pricing</a></li>
-          <li><a href="#commands">Commands</a></li>
-          <li><a href="#server-tiers">Server Plans</a></li>
-        </ul>
+        <h4>Product</h4>
+        <a href="#features">Features</a>
+        <a href="pricing.html">Pricing</a>
+        <a href="#categories">Categories</a>
+        <a href="#community">Community</a>
       </div>
       <div class="footer-col">
         <h4>Links</h4>
-        <ul>
-          <li><a href="https://discord.com/oauth2/authorize?client_id=1374911009009041448&permissions=8&integration_type=0&scope=bot" target="_blank" rel="noopener">Add to Discord</a></li>
-          <li><a href="https://discord.gg/SgkYDqkZmt" target="_blank" rel="noopener">Support Server</a></li>
-        </ul>
+        <a href="https://discord.com/oauth2/authorize?client_id=1374911009009041448&permissions=8&integration_type=0&scope=bot" target="_blank" rel="noopener">Add to Discord</a>
+        <a href="https://discord.gg/SgkYDqkZmt" target="_blank" rel="noopener">Support Server</a>
       </div>
       <div class="footer-col">
         <h4>Legal</h4>
-        <ul>
-          <li><a href="/tos">Terms of Service</a></li>
-          <li><a href="/privacy">Privacy Policy</a></li>
-        </ul>
+        <a href="/tos">Terms of Service</a>
+        <a href="/privacy">Privacy Policy</a>
       </div>
     </div>
     <div class="footer-bottom">
-      <span>v2.4.0</span>
+      <span>v2.5.0</span>
       <span>© 2026 Tainment+ · A Trijbs Experience</span>
     </div>
   </footer>
 
   <script>
-    // Mobile nav toggle
+    // ── Mobile nav toggle ─────────────────────────────────
     const toggle = document.getElementById('nav-toggle');
     const navLinks = document.getElementById('nav-links');
     toggle.addEventListener('click', () => {
@@ -1141,21 +1491,421 @@
       toggle.setAttribute('aria-expanded', open);
     });
 
-    // Command tab switching
-    document.querySelectorAll('.cmd-tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        document.querySelectorAll('.cmd-tab').forEach(t => t.classList.remove('is-active'));
-        document.querySelectorAll('.cmd-panel').forEach(p => p.classList.remove('is-active'));
-        tab.classList.add('is-active');
-        document.querySelector(`[data-panel="${tab.dataset.tab}"]`).classList.add('is-active');
+    // ── Scroll reveal ─────────────────────────────────────
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+    // ── Floating CTA visibility ───────────────────────────
+    const floatingCta = document.getElementById('floating-cta');
+    const heroSection = document.querySelector('.hero');
+    const ctaObserver = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        floatingCta.classList.toggle('visible', !e.isIntersecting);
+      });
+    }, { threshold: 0 });
+    ctaObserver.observe(heroSection);
+
+    // ════════════════════════════════════════════════════════
+    // DISCORD SIMULATION - shows ONE command, clears, next
+    // ════════════════════════════════════════════════════════
+
+    const SIM_SCENARIOS = [
+      {
+        channel: 'general',
+        user: { name: 'Alex', avatar: '👤' },
+        command: 'userprofile @Alex',
+        typing: 1000,
+        response: {
+          type: 'embed',
+          title: '👤 Alex - Profile',
+          fields: [
+            { name: 'Tier', value: '⭐ Premium' },
+            { name: 'Level', value: '42 (78%)' },
+            { name: 'Coins', value: '🪙 24,580  💎 142  🎫 28' },
+          ],
+          footer: 'Tainment+ v2.5.0 | Premium Stats'
+        }
+      },
+      {
+        channel: 'fishing',
+        user: { name: 'Maya', avatar: '👩' },
+        command: 'fish',
+        typing: 800,
+        response: {
+          type: 'embed',
+          title: '🎣 Fishing',
+          fields: [
+            { name: 'Cast', value: 'Your line hits the water...' },
+            { name: 'Catch!', value: '🐟 Coral Reef Fish - Uncommon!' },
+            { name: 'Rewards', value: '+120 coins  +1 gem  +15 fishing XP' },
+          ],
+          footer: 'Tainment+ Economy | Rod: Diamond'
+        }
+      },
+      {
+        channel: 'bot-commands',
+        user: { name: 'Jake', avatar: '🧑' },
+        command: 'trivia medium',
+        typing: 1200,
+        response: {
+          type: 'embed',
+          title: '🧠 Trivia - Medium',
+          fields: [
+            { name: 'Question', value: 'What planet is known as the "Red Planet"?' },
+            { name: 'Options', value: '🅰️ Venus  🅱️ Mars  🅲️ Jupiter  🅳️ Saturn' },
+          ],
+          footer: 'Answer in 30 seconds - Tainment+ Games'
+        }
+      },
+      {
+        channel: 'general',
+        user: { name: 'Sam', avatar: '👾' },
+        command: 'leaderboard',
+        typing: 900,
+        response: {
+          type: 'embed',
+          title: '🏆 Server Leaderboard',
+          fields: [
+            { name: '🥇 #1 - Alex', value: '🪙 48,200  |  Lvl 67' },
+            { name: '🥈 #2 - Maya', value: '🪙 35,800  |  Lvl 52' },
+            { name: '🥉 #3 - Sam', value: '🪙 29,100  |  Lvl 44' },
+          ],
+          footer: 'Tainment+ Levels | Top 10 of 234 members'
+        }
+      },
+      {
+        channel: 'bot-commands',
+        user: { name: 'Luna', avatar: '🌙' },
+        command: 'daily',
+        typing: 700,
+        response: {
+          type: 'embed',
+          title: '📅 Daily Reward',
+          fields: [
+            { name: 'Claimed', value: '+250 coins  +2 gems' },
+            { name: 'Streak', value: '🔥 14 days (next milestone: 10 gems)' },
+          ],
+          footer: 'Tainment+ Economy | Keep that streak alive!'
+        }
+      }
+    ];
+
+    function typeText(el, text, speed = 40) {
+      return new Promise(resolve => {
+        let i = 0;
+        el.textContent = '';
+        const interval = setInterval(() => {
+          el.textContent += text[i];
+          i++;
+          if (i >= text.length) {
+            clearInterval(interval);
+            resolve();
+          }
+        }, speed);
+      });
+    }
+
+    function createMsgHTML(scenario) {
+      const now = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+      return `
+        <div class="dc-msg">
+          <div class="dc-msg__avatar dc-msg__avatar--user">${scenario.user.avatar}</div>
+          <div class="dc-msg__content">
+            <div class="dc-msg__header">
+              <span class="dc-msg__name dc-msg__name--user">${scenario.user.name}</span>
+              <span class="dc-msg__time">Today at ${now}</span>
+            </div>
+            <div class="dc-msg__text">/${scenario.command}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function createEmbedHTML(response) {
+      const now = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+      const fields = response.fields.map(f =>
+        `<div class="dc-embed__field-name">${f.name}</div><div class="dc-embed__field-value">${f.value}</div>`
+      ).join('');
+      return `
+        <div class="dc-msg">
+          <div class="dc-msg__avatar dc-msg__avatar--bot">🤖</div>
+          <div class="dc-msg__content">
+            <div class="dc-msg__header">
+              <span class="dc-msg__name dc-msg__name--bot">Tainment+</span>
+              <span class="dc-msg__bot-tag">BOT</span>
+              <span class="dc-msg__time">Today at ${now}</span>
+            </div>
+            <div class="dc-embed">
+              <div class="dc-embed__title">${response.title}</div>
+              ${fields}
+              <div class="dc-embed__footer">${response.footer}</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    async function runScenario(bodyEl, typingEl, inputEl, channelEl, scenario) {
+      // Clear all previous messages
+      const messages = bodyEl.querySelectorAll('.dc-msg');
+      messages.forEach(m => {
+        m.style.opacity = '0';
+        m.style.transform = 'translateY(-8px)';
+        m.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+      });
+
+      await new Promise(r => setTimeout(r, 350));
+      messages.forEach(m => m.remove());
+
+      channelEl.textContent = scenario.channel;
+      inputEl.textContent = '';
+      typingEl.classList.remove('visible');
+
+      // Type command
+      await typeText(inputEl, scenario.command, 50);
+      await new Promise(r => setTimeout(r, 300));
+
+      // Show user message
+      inputEl.textContent = '';
+      typingEl.insertAdjacentHTML('beforebegin', createMsgHTML(scenario));
+      const userMsg = typingEl.previousElementSibling;
+      // Force reflow then animate in
+      void userMsg.offsetWidth;
+      userMsg.classList.add('visible');
+
+      // Show typing
+      typingEl.classList.add('visible');
+      await new Promise(r => setTimeout(r, scenario.typing));
+      typingEl.classList.remove('visible');
+
+      // Show response
+      typingEl.insertAdjacentHTML('beforebegin', createEmbedHTML(scenario.response));
+      const embedMsg = typingEl.previousElementSibling;
+      void embedMsg.offsetWidth;
+      embedMsg.classList.add('visible');
+
+      // Hold, then clear
+      await new Promise(r => setTimeout(r, 5000));
+    }
+
+    async function runSimulation(bodyId, typingId, inputId, channelId) {
+      const body = document.getElementById(bodyId);
+      const typing = document.getElementById(typingId);
+      const input = document.getElementById(inputId);
+      const channel = document.getElementById(channelId);
+
+      while (true) {
+        for (const scenario of SIM_SCENARIOS) {
+          await runScenario(body, typing, input, channel, scenario);
+        }
+      }
+    }
+
+    runSimulation('hero-mockup-body', 'hero-typing', 'hero-cmd-input', 'hero-channel');
+
+    // ── Category accordion ────────────────────────────────
+    const CAT_DATA = {
+      economy: {
+        icon: '🪙', title: 'Economy', color: '#fbbf24',
+        cmds: [
+          ['t!balance [@user]', 'Check all 3 currency balances'],
+          ['t!daily', 'Claim daily coins and streak rewards'],
+          ['t!work', 'Earn coins (1h cooldown)'],
+          ['t!gamble <amount>', 'Gamble coins (45% win chance)'],
+          ['t!slots <bet>', 'Slot machine with gem jackpots'],
+          ['t!rob @user', 'Attempt to steal from another user'],
+          ['t!transfer @user <amt> [cur]', 'Send coins, gems, or tokens'],
+          ['t!shop [coins|gems|tokens]', 'Browse the 3-section premium shop'],
+          ['t!buy <item_id>', 'Purchase a shop item'],
+          ['t!inventory', 'View your active items'],
+          ['t!coinflip <bet> [heads|tails]', '50/50 coin flip bet'],
+          ['t!streak', 'View daily streak and gem milestones'],
+          ['t!richest', 'Server wealth leaderboard'],
+          ['t!setbalance @user <amt> [cur]', 'Admin: set a user balance'],
+          ['t!addbalance @user <amt> [cur]', 'Admin: add or subtract balance'],
+          ['t!reseteconomy @user', 'Admin: fully reset a user economy'],
+        ]
+      },
+      games: {
+        icon: '🎮', title: 'Games', color: '#34d399',
+        cmds: [
+          ['t!ttt', 'Tic-Tac-Toe vs bot'],
+          ['t!c4', 'Connect Four vs bot'],
+          ['t!scramble', 'Unscramble a word - channel race'],
+          ['t!mathquiz [diff]', 'Rapid-fire math quiz'],
+          ['t!highlow [bet]', 'Higher or Lower card game'],
+          ['t!duel @user <bet>', 'Coin flip duel vs another user'],
+          ['t!snap', 'Reaction speed game'],
+          ['t!roulette <bet> [red|black]', 'Bet on red or black, 1.9x payout'],
+          ['t!trivia [diff]', 'Live trivia with buttons'],
+          ['t!hangman [diff]', 'Hangman word game'],
+          ['t!wordle', 'Wordle-style word game'],
+          ['t!blackjack <bet>', 'Blackjack vs dealer'],
+        ]
+      },
+      fishing: {
+        icon: '🎣', title: 'Fishing', color: '#60a5fa',
+        cmds: [
+          ['t!fish', 'Cast your line for a random catch'],
+          ['t!fishbag [@user]', 'View fish inventory by rarity'],
+          ['t!sell [fish|all]', 'Sell fish for coins and gems'],
+          ['t!fishstats [@user]', 'Fishing level, XP, best catch'],
+          ['t!fishtop', 'Top fishers leaderboard'],
+          ['t!rods', 'View all 11 rods and requirements'],
+          ['t!equip <rod_key>', 'Equip a specific rod you own'],
+          ['t!unequip', 'Auto-use your best owned rod'],
+        ]
+      },
+      music: {
+        icon: '🎵', title: 'Music', color: '#a78bfa',
+        cmds: [
+          ['t!recommend [genre]', 'Get 3 random song picks'],
+          ['t!hotsongs', 'Top 5 most-shared tracks this week'],
+          ['t!genresearch <genre>', '5 picks for a genre (16 genres)'],
+          ['t!moodsearch <mood>', 'Songs by mood: hype, chill, sad'],
+          ['t!artistinfo <artist>', 'Artist card with genre and facts'],
+          ['t!toptracks', 'Global top 10 shared songs'],
+          ['t!newreleases', 'Latest new releases list'],
+          ['t!musictrivia [genre]', '4-option music trivia'],
+          ['t!lyricsguess', 'Guess the song from lyrics'],
+          ['t!namethetune', 'Channel race: name the song'],
+          ['t!musicprofile [@user]', 'View music stats and badges'],
+          ['t!setgenre <genre>', 'Set your favourite genre'],
+          ['t!setartist <artist>', 'Add a favourite artist'],
+          ['t!sharetrack <song> - <artist>', 'Share a track for coins'],
+        ]
+      },
+      moderation: {
+        icon: '🛡️', title: 'Moderation', color: '#f87171',
+        cmds: [
+          ['t!purge <amount>', 'Bulk delete up to 100 messages'],
+          ['t!slowmode <seconds>', 'Set channel slowmode'],
+          ['t!lock / t!unlock', 'Lock or unlock a channel'],
+          ['t!nick @user <name>', 'Change a member nickname'],
+          ['t!warn @user <reason>', 'Issue a logged warning'],
+          ['t!warnings @user', 'View warning history'],
+          ['t!clearwarn @user <id>', 'Remove a warning'],
+          ['t!kick @user [reason]', 'Kick a member'],
+          ['t!ban @user [reason]', 'Ban a member'],
+          ['t!unban <user_id>', 'Unban a user by ID'],
+          ['t!timeout @user <dur>', 'Temporarily mute a user'],
+          ['t!modlog', 'View recent moderation cases'],
+          ['t!addrole / t!removerole', 'Manage member roles'],
+        ]
+      },
+      levels: {
+        icon: '🏆', title: 'Levels', color: '#fb923c',
+        cmds: [
+          ['t!level [@user]', 'Check XP, level, and progress bar'],
+          ['t!rank', 'Server XP leaderboard'],
+          ['t!profile [@user]', 'Full profile card with badges'],
+          ['t!bio [text]', 'Set a custom profile bio'],
+          ['t!mystats', 'Detailed personal stats breakdown'],
+          ['t!leaderboard', 'Auto-updating richest and XP ranks'],
+          ['t!userinfo [@user]', 'User info: join date, roles'],
+          ['t!serverinfo', 'Server statistics'],
+        ]
+      },
+      fun: {
+        icon: '⌨️', title: 'Fun', color: '#f472b6',
+        cmds: [
+          ['t!fortune', 'Fortune cookie quote + 1 coin'],
+          ['t!color [hex]', 'Show a random or specific color'],
+          ['t!8ball <question>', 'Ask the magic 8-ball'],
+          ['t!roll [NdN]', 'Roll dice (e.g. t!roll 2d6)'],
+          ['t!flip', 'Flip a coin'],
+          ['t!meme', 'Random meme from Reddit'],
+          ['t!quote', 'Random inspirational quote'],
+          ['t!compliment @user', 'Send a compliment'],
+          ['t!roast @user', 'Friendly roast another user'],
+          ['t!choose <a | b | c>', 'Pick randomly from options'],
+          ['t!mock <text>', 'SpOnGeBoB mOcKiNg tExT'],
+          ['t!reverse <text>', 'Reverse any text'],
+          ['t!typerace', 'Type a sentence fast for coins'],
+          ['t!riddle', 'Solve a riddle for rewards'],
+          ['t!wouldyourather', 'Vote with buttons, earn tokens'],
+          ['t!emojidecode', 'Decode emoji phrases for coins'],
+          ['t!fastmath', 'Channel race math question'],
+          ['t!hotpotato', 'Pass the button before timer explodes'],
+          ['t!wordchain', 'Chain words for coins per link'],
+          ['t!rps', 'Rock Paper Scissors with buttons'],
+        ]
+      },
+      utility: {
+        icon: '⚙️', title: 'Utility', color: '#38bdf8',
+        cmds: [
+          ['t!help [category]', 'Full command list with dropdown'],
+          ['t!ping', 'Check bot latency'],
+          ['t!stats', 'Bot statistics and version'],
+          ['t!remind <time> <msg>', 'Set a personal reminder'],
+          ['t!reminders', 'List your active reminders'],
+          ['t!delreminder <id>', 'Delete a reminder by ID'],
+          ['t!poll <q> | <o1> | <o2>', 'Create a community poll'],
+          ['t!gcreate', 'Create a timed giveaway'],
+          ['t!gend <msg_id>', 'End a giveaway early'],
+          ['t!greroll <msg_id>', 'Reroll giveaway winners'],
+        ]
+      }
+    };
+
+    let activeCat = null;
+    const panelEl = document.getElementById('category-panel');
+
+    document.querySelectorAll('.category-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const cat = card.dataset.cat;
+        // Close current panel
+        document.querySelectorAll('.category-card').forEach(c => c.classList.remove('active'));
+        panelEl.classList.remove('open');
+
+        // If same category clicked again, just close
+        if (activeCat === cat) {
+          activeCat = null;
+          return;
+        }
+
+        // Open new category
+        activeCat = cat;
+        card.classList.add('active');
+        const data = CAT_DATA[cat];
+        const cmdsHTML = data.cmds.map(([cmd, desc]) =>
+          `<div class="category-panel__cmd"><code>${cmd}</code><span>${desc}</span></div>`
+        ).join('');
+
+        panelEl.innerHTML = `
+          <div class="category-panel__inner">
+            <div class="category-panel__title">
+              <span>${data.icon}</span> ${data.title} Commands
+              <button class="category-panel__close" onclick="document.getElementById('category-panel').classList.remove('open');document.querySelectorAll('.category-card').forEach(c=>c.classList.remove('active'));activeCat=null;">✕</button>
+            </div>
+            <div class="category-panel__grid">${cmdsHTML}</div>
+          </div>
+        `;
+        panelEl.style.borderColor = data.color + '40';
+        panelEl.classList.add('open');
+        panelEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       });
     });
 
-    // Scroll reveal
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
-    }, { threshold: 0.1 });
-    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    // ── Discord Widget API ────────────────────────────────
+    async function fetchGuildWidget() {
+      try {
+        const res = await fetch('https://discord.com/api/guilds/1390512546858926163/widget.json');
+        if (!res.ok) throw new Error('Widget not enabled');
+        const data = await res.json();
+        document.getElementById('stat-online').textContent = data.presence_count ?? 'N/A';
+        document.getElementById('stat-members').textContent = data.members?.length ?? 'N/A';
+        document.getElementById('stat-channels').textContent = data.channels?.length ?? 'N/A';
+      } catch (e) {
+        document.getElementById('stat-online').textContent = 'N/A';
+        document.getElementById('stat-members').textContent = 'N/A';
+        document.getElementById('stat-channels').textContent = 'N/A';
+      }
+    }
+    fetchGuildWidget();
+    setInterval(fetchGuildWidget, 60000);
   </script>
 </body>
 </html>
