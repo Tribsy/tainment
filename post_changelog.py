@@ -129,7 +129,7 @@ VERSIONS = [
         ],
     ),
     (
-        'v2.6.0 | May 2026',
+        'v2.6.0 | March 2026',
         0x00e5ff,
         [
             '\U0001f3a3 **Fishing level requirements**: Each rod now requires a minimum Fishing Level to equip and use. Silver=5, Gold=10, Diamond=15, Pearl=20, Crystal=25, Titanium=30, Quantum=40, Obsidian=50, Cosmic=60, Void=75. Once you pass a level you can freely use any rod at or below it. `t!rods` shows your level, each rod’s requirement, and whether it’s locked.',
@@ -140,6 +140,18 @@ VERSIONS = [
             '\U0001f527 **Rod equip bug fixed**: `t!equip cosmic` (and all rods) now correctly detects ownership. Previously the shop stored rods as `rod_cosmic` while equip checked for `cosmic`, causing a permanent “You don’t own this” error.',
             '\U0001f6d2 **Consumable item overhaul**: `daily_reset` and `work_reset` now sit in your inventory after purchase and are activated with `t!use daily_reset` / `t!use work_reset`. `streak_shield` is now consumed when it saves a cooldown instead of acting as permanent. All single-use items correctly show “Single Use” in the shop instead of “Permanent”.',
             '\U0001f4e6 **Stackable consumables**: You can now buy multiple copies of any single-use item (daily_reset, work_reset, streak_shield, fish_vacuum, streak_restore, fishing_radar) to stockpile them.',
+        ],
+    ),
+    (
+        'v2.7.0 | May 2026',
+         0x7c4dff,
+        [
+            '\U0001f6e1\ufe0f **Owner-only command suite**: `t!ownerhelp` creates a private 🛡️ Owner Help category with admin-tools / bugs-glitches / notes channels for in-server moderation. `t!removeitem @user <item>` recovers from inventory glitches. `t!givesub`, `t!giveserversub`, and `t!viewserversub` let the bot owner grant or inspect subscriptions directly.',
+            '\U0001f3e2 **Server subscription management**: `t!serversubscribe` shows the new server tiers ($7.99 Basic / $14.99 Pro), and `t!servertier` shows your current server\'s plan and expiry. Member discount lifted to 30% on Pro / 15% on Basic.',
+            '\U0001f4ac **Unified ephemeral replies**: New `send_reply` utility makes ephemeral / public responses behave consistently across slash, hybrid, and prefix invocations. Fixes a class of subtle bugs where private command replies leaked into public channels.',
+            '\U0001f36a **Fortune cookies expanded**: Added a fresh batch of `t!fortune` messages for a more varied daily roll.',
+            '\U0001f510 **Security policy published**: New `SECURITY.md` documents the vulnerability disclosure process and security best practices.',
+            '\U0001f9f0 **Behind the scenes — architecture migration begins**: Cog loading now uses dotted-paths (`cogs.<name>`) and the database layer is being split into per-domain modules. No user-facing changes from this work in 2.7.0 — it\'s groundwork that lets 2.8+ ship features faster and with fewer regressions.',
         ],
     ),
 ]
@@ -209,7 +221,7 @@ class ChangelogClient(discord.Client):
                 description='A full history of updates to the PopFusion bot.',
                 color=0xe040fb,
             )
-            header.set_footer(text='PopFusion | discover music. build a community.')
+            header.set_footer(text='PopFusion | Discover Music. Build A Community.')
             await changelog_ch.send(embed=header)
             await asyncio.sleep(0.4)
 
@@ -249,7 +261,7 @@ class ChangelogClient(discord.Client):
                     color=0xe040fb,
                 )
                 embed.set_thumbnail(url=self.user.display_avatar.url)
-                embed.set_footer(text='PopFusion | discover music. build community.')
+                embed.set_footer(text='PopFusion | Discover Music. Build A Community.')
                 await ann_ch.send(embed=embed)
                 print(f'[OK] Updated #{ann_ch.name}')
 
