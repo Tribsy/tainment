@@ -24,7 +24,6 @@ PHASE_0_ROOT = {
     "admin_subscription.py",
     "automod.py",
     "birthday.py",
-    "casino.py",
     "casino_config_addition.py",
     "casino_db.py",
     "database.py",

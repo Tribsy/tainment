@@ -33,10 +33,10 @@ import logging
 logger = logging.getLogger("tainment.casino")
 
 # ─── Asset paths ─────────────────────────────────────────────────────────────
-# Phase 1: assets live under <repo_root>/assets/. casino.py is currently still at
-# the repo root, so __file__'s directory IS the repo root. When this cog moves
-# into cogs/casino/ (Phase 3), update _PROJECT_ROOT to walk up one extra level.
-_PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+# Phase 3a.1: this cog now lives at cogs/casino/__init__.py, so __file__'s
+# directory is two levels deep from the repo root. Walk up: cogs/casino/.. →
+# cogs/.. → repo root.
+_PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
 _ASSETS = os.path.join(_PROJECT_ROOT, "assets")
 ROULETTE_TABLE_PATH = os.path.join(_ASSETS, "images", "roulette_table.png")
 WHEEL_SPIN_PATH = os.path.join(_ASSETS, "gifs", "wheel_spin.gif")
