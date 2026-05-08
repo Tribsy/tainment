@@ -12,7 +12,9 @@ init behavior: when this module is imported by __init__.py, the names it
 references must already be defined above the `from .views import ...` line in
 __init__.py. That ordering invariant is documented in __init__.py.
 """
+import asyncio
 import logging
+import random
 
 import discord
 from discord.ui import Button, Modal, TextInput, View

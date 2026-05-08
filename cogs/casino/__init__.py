@@ -943,10 +943,13 @@ class Casino(commands.Cog, name="Casino"):
 # ─────────────────────────────────────────────────────────────────────────────
 
 async def setup(bot: commands.Bot):
+    """Register the Casino cog.
+
+    discord.py 2.x auto-registers any `app_commands.Group` declared as a class
+    attribute when `add_cog` runs, so the `/casino` admin group is wired up
+    automatically. The earlier `bot.tree.add_command(cog.casino_group)` call
+    was redundant and caused duplicate entries in Discord's `/` autocomplete.
+    """
     cog = Casino(bot)
     await bot.add_cog(cog)
-    try:
-        bot.tree.add_command(cog.casino_group)
-        logger.info("Registered /casino admin group")
-    except Exception as e:
-        logger.debug(f"/casino admin group already registered: {e}")
+    logger.info("Casino cog loaded")
