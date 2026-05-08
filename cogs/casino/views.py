@@ -1,16 +1,10 @@
 """
 cogs/casino/views.py — Discord UI Views for casino games.
 
-Phase 3a.2 step 1: extracted verbatim from cogs/casino/__init__.py. View
-classes are moved as-is; their dependencies on game-logic helpers
-(_settle, _calc_roulette, _hand_value, etc.) and config aliases (C, CE) are
-imported from the package namespace below. When service.py is extracted in
-step 2, those imports redirect to the new module.
-
-The `from cogs.casino import ...` line below relies on Python's partial-package-
-init behavior: when this module is imported by __init__.py, the names it
-references must already be defined above the `from .views import ...` line in
-__init__.py. That ordering invariant is documented in __init__.py.
+Phase 3a.2: extracted verbatim from cogs/casino/__init__.py. View classes are
+moved as-is. Step 2 cleaned up the import path: views now depend on the leaf
+modules (.constants and .service) instead of pulling from the package root,
+which removes the partial-init circular-import dance.
 """
 import asyncio
 import logging
@@ -23,18 +17,8 @@ import config
 import database as db
 import casino_db as cdb
 
-logger = logging.getLogger("tainment.casino.views")
-
-# Cross-package imports — module-level config aliases AND game-logic helpers.
-# All of these are defined in __init__.py above the `from .views import ...` line,
-# so this import resolves at module-load time despite the apparent circularity.
-from cogs.casino import (
-    # Config aliases
-    C,                      # = config.CASINO (game tuning, payouts, limits)
-    CE,                     # = config.CURRENCY_EMOJI
-    # Asset paths
-    ROULETTE_TABLE_PATH,
-    # Game-logic helpers
+from .constants import C, CE, ROULETTE_TABLE_PATH
+from .service import (
     _embed,
     _err,
     _settle,
@@ -44,6 +28,8 @@ from cogs.casino import (
     _build_roulette_embed,
     _calc_roulette,
 )
+
+logger = logging.getLogger("tainment.casino.views")
 
 
 
