@@ -1,0 +1,520 @@
+"""
+cogs/shop/constants.py — shop registry, item categories, mystery box prize pool.
+
+Phase 3b.2: extracted verbatim from cogs/shop/__init__.py. This is a leaf
+module — no internal imports. SHOP is re-exported from cogs/shop/__init__.py
+so external `from cogs.shop import SHOP` keeps working.
+"""
+import config
+from fish_data import RODS
+
+
+CURRENCY_EMOJI = {'coins': '\U0001fa99', 'gems': '\U0001f48e', 'tokens': '\U0001f3ab'}
+
+
+PRESTIGE_ROLE_NAME = '\u2728 Prestige'
+
+
+CONSUMABLE_KEYS = frozenset({
+    'daily_reset', 'work_reset', 'lucky_gamble', 'streak_shield',
+    'fish_vacuum', 'streak_restore', 'bingo_doubler', 'fishing_radar',
+})
+
+
+SHOP: dict[str, dict] = {
+    # ── Coin items ─────────────────────────────────────────────────────────────
+    'xp_boost': {
+        'name': 'XP Boost',
+        'description': '2x XP gain for 1 hour',
+        'currency': 'coins',
+        'price': 500,
+        'duration': 3600,
+        'emoji': '\u26a1',
+    },
+    'daily_boost': {
+        'name': 'Daily Boost',
+        'description': '2x daily coins for 1 day',
+        'currency': 'coins',
+        'price': 1000,
+        'duration': 86400,
+        'emoji': '\U0001f4ab',
+    },
+    'luck_charm': {
+        'name': 'Luck Charm',
+        'description': '+20% gambling win chance for 30 min',
+        'currency': 'coins',
+        'price': 750,
+        'duration': 1800,
+        'emoji': '\U0001f340',
+    },
+    'rob_shield': {
+        'name': 'Rob Shield',
+        'description': 'Immune to rob attempts for 2 hours',
+        'currency': 'coins',
+        'price': 400,
+        'duration': 7200,
+        'emoji': '\U0001f6e1\ufe0f',
+    },
+
+    # ── Gem items ──────────────────────────────────────────────────────────────
+    'vip_badge': {
+        'name': 'VIP Badge',
+        'description': 'Permanent VIP badge shown on your profile',
+        'currency': 'gems',
+        'price': 50,
+        'duration': None,
+        'emoji': '\U0001f451',
+    },
+    'streak_shield': {
+        'name': 'Streak Shield',
+        'description': 'Saves your daily streak once if you miss a day',
+        'currency': 'gems',
+        'price': 30,
+        'duration': None,
+        'emoji': '\U0001f6e1\ufe0f',
+    },
+    'double_tokens': {
+        'name': 'Token Doubler',
+        'description': '2x token earnings for 1 hour',
+        'currency': 'gems',
+        'price': 75,
+        'duration': 3600,
+        'emoji': '\u00d72',
+    },
+    'lucky_gamble': {
+        'name': 'Lucky Gamble',
+        'description': 'Your next gamble has a 65% win chance (1-time use)',
+        'currency': 'gems',
+        'price': 25,
+        'duration': None,
+        'emoji': '\U0001f3b0',
+    },
+
+    # ── Fishing Rods ───────────────────────────────────────────────────────────
+    'rod_silver': {
+        'name': 'Silver Rod',
+        'description': 'Unlocks Uncommon/Rare fish. Cooldown 18s.',
+        'currency': 'coins',
+        'price': 1500,
+        'duration': None,
+        'emoji': '\U0001f3a3',
+    },
+    'rod_gold': {
+        'name': 'Golden Rod',
+        'description': 'Unlocks Epic fish tier. Cooldown 15s.',
+        'currency': 'coins',
+        'price': 5000,
+        'duration': None,
+        'emoji': '\U0001f3a3',
+    },
+    'rod_diamond': {
+        'name': 'Diamond Rod',
+        'description': 'Unlocks Legendary fish tier. Cooldown 12s.',
+        'currency': 'gems',
+        'price': 20,
+        'duration': None,
+        'emoji': '\U0001f48e',
+    },
+    'rod_pearl': {
+        'name': 'Pearl Rod',
+        'description': 'Unlocks Mythic fish tier. Cooldown 10s.',
+        'currency': 'gems',
+        'price': 45,
+        'duration': None,
+        'emoji': '\U0001f3a3',
+    },
+    'rod_crystal': {
+        'name': 'Crystal Rod',
+        'description': 'Unlocks Ancient fish tier. Cooldown 8s.',
+        'currency': 'gems',
+        'price': 100,
+        'duration': None,
+        'emoji': '\U0001f52e',
+    },
+    'rod_titanium': {
+        'name': 'Titanium Rod',
+        'description': 'Unlocks Celestial fish tier. Cooldown 6s.',
+        'currency': 'tokens',
+        'price': 50,
+        'duration': None,
+        'emoji': '\U0001f3a3',
+    },
+    'rod_quantum': {
+        'name': 'Quantum Rod',
+        'description': 'Unlocks Void fish tier. Cooldown 5s.',
+        'currency': 'tokens',
+        'price': 150,
+        'duration': None,
+        'emoji': '\u26a1',
+    },
+    'rod_obsidian': {
+        'name': 'Obsidian Rod',
+        'description': 'Enhanced Void catch rates. Cooldown 4s.',
+        'currency': 'tokens',
+        'price': 300,
+        'duration': None,
+        'emoji': '\u2b1b',
+    },
+    'rod_cosmic': {
+        'name': 'Cosmic Rod',
+        'description': 'Max Void tier rates. Cooldown 3s.',
+        'currency': 'tokens',
+        'price': 500,
+        'duration': None,
+        'emoji': '\U0001f30c',
+    },
+    'rod_void': {
+        'name': 'Void Rod',
+        'description': 'The ultimate rod. Highest Void catch rate. Cooldown 2s.',
+        'currency': 'tokens',
+        'price': 1000,
+        'duration': None,
+        'emoji': '\u25aa\ufe0f',
+    },
+
+    # ── More Coin items ────────────────────────────────────────────────────────
+    'coin_magnet': {
+        'name': 'Coin Magnet',
+        'description': '+25% coins from work for 2 hours',
+        'currency': 'coins',
+        'price': 600,
+        'duration': 7200,
+        'emoji': '\U0001f9f2',
+    },
+    'premium_bait': {
+        'name': 'Premium Bait',
+        'description': '+40% rare fish chance for 1 hour',
+        'currency': 'coins',
+        'price': 800,
+        'duration': 3600,
+        'emoji': '\U0001fab1',
+    },
+    'gamble_shield': {
+        'name': 'Gamble Shield',
+        'description': 'Lose only half your bet on failed gambles for 24 hours',
+        'currency': 'coins',
+        'price': 350,
+        'duration': 86400,
+        'emoji': '\U0001f6e1\ufe0f',
+    },
+
+    # ── More Gem items ─────────────────────────────────────────────────────────
+    'xp_surge': {
+        'name': 'XP Surge',
+        'description': '3x XP gain for 30 minutes (stacks with tier multiplier)',
+        'currency': 'gems',
+        'price': 40,
+        'duration': 1800,
+        'emoji': '\U0001f9e8',
+    },
+    'prestige_badge': {
+        'name': 'Prestige Badge',
+        'description': 'Permanent ✨ Prestige badge shown on your profile',
+        'currency': 'gems',
+        'price': 100,
+        'duration': None,
+        'emoji': '\u2728',
+    },
+    'gem_booster': {
+        'name': 'Gem Booster',
+        'description': '2x gems from games and fishing for 1 hour',
+        'currency': 'gems',
+        'price': 60,
+        'duration': 3600,
+        'emoji': '\U0001f48e',
+    },
+
+    # ── Token items ────────────────────────────────────────────────────────────
+    'daily_reset': {
+        'name': 'Daily Reset',
+        'description': 'Instantly reset your daily cooldown (Single Use \u2014 use with `t!use daily_reset`)',
+        'currency': 'tokens',
+        'price': 20,
+        'duration': None,
+        'emoji': '\U0001f504',
+    },
+    'work_reset': {
+        'name': 'Work Reset',
+        'description': 'Instantly reset your work cooldown (Single Use \u2014 use with `t!use work_reset`)',
+        'currency': 'tokens',
+        'price': 10,
+        'duration': None,
+        'emoji': '\u23f0',
+    },
+    'game_lives': {
+        'name': 'Extra Lives',
+        'description': '+2 lives in Hangman and Wordle',
+        'currency': 'tokens',
+        'price': 15,
+        'duration': 3600,
+        'emoji': '\u2764\ufe0f',
+    },
+    'bonus_round': {
+        'name': 'Bonus Round',
+        'description': '+5 extra questions in Math Quiz (earns more gems)',
+        'currency': 'tokens',
+        'price': 12,
+        'duration': 3600,
+        'emoji': '\u2795',
+    },
+    'typerace_boost': {
+        'name': 'Typerace Booster',
+        'description': '+50% coins from typerace wins for 1 hour',
+        'currency': 'tokens',
+        'price': 18,
+        'duration': 3600,
+        'emoji': '\u2328\ufe0f',
+    },
+    'fish_vacuum': {
+        'name': 'Fish Vacuum',
+        'description': 'Auto-discard all junk fish on your next t!fish (Single Use — activates automatically)',
+        'currency': 'tokens',
+        'price': 8,
+        'duration': None,
+        'emoji': '\U0001f9f9',
+    },
+    'streak_restore': {
+        'name': 'Streak Restore',
+        'description': 'Restore your daily streak to its previous value (Single Use — use with `t!use streak_restore`)',
+        'currency': 'tokens',
+        'price': 25,
+        'duration': None,
+        'emoji': '\U0001f504',
+    },
+
+    # ── Profile Customization ──────────────────────────────────────────────────
+    'profile_banner_blue': {
+        'name': 'Blue Profile Banner',
+        'description': 'Sets your profile banner to ocean blue',
+        'currency': 'coins',
+        'price': 2000,
+        'duration': None,
+        'emoji': '\U0001f7e6',
+    },
+    'profile_banner_red': {
+        'name': 'Red Profile Banner',
+        'description': 'Sets your profile banner to fiery red',
+        'currency': 'coins',
+        'price': 2000,
+        'duration': None,
+        'emoji': '\U0001f7e5',
+    },
+    'profile_banner_gold': {
+        'name': 'Gold Profile Banner',
+        'description': 'Sets your profile banner to golden yellow',
+        'currency': 'gems',
+        'price': 30,
+        'duration': None,
+        'emoji': '\U0001f7e8',
+    },
+    'profile_banner_purple': {
+        'name': 'Purple Profile Banner',
+        'description': 'Sets your profile banner to royal purple',
+        'currency': 'gems',
+        'price': 30,
+        'duration': None,
+        'emoji': '\U0001f7ea',
+    },
+    'profile_banner_void': {
+        'name': 'Void Profile Banner',
+        'description': 'Sets your profile banner to deep void black',
+        'currency': 'tokens',
+        'price': 40,
+        'duration': None,
+        'emoji': '\u25aa\ufe0f',
+    },
+    'profile_frame_gold': {
+        'name': 'Gold Avatar Frame',
+        'description': 'Adds a golden frame around your avatar on the profile card',
+        'currency': 'gems',
+        'price': 50,
+        'duration': None,
+        'emoji': '\u2b50',
+    },
+    'profile_frame_cosmic': {
+        'name': 'Cosmic Avatar Frame',
+        'description': 'Adds an animated cosmic frame to your profile',
+        'currency': 'tokens',
+        'price': 80,
+        'duration': None,
+        'emoji': '\U0001f30c',
+    },
+
+    # ── Special / Utility ──────────────────────────────────────────────────────
+    'fishing_radar': {
+        'name': 'Fish Radar',
+        'description': 'Preview your next 5 catches with exact fish names and values (Single Use — use with `t!radar`)',
+        'currency': 'gems',
+        'price': 15,
+        'duration': None,
+        'emoji': '\U0001f4e1',
+    },
+    'coin_surge': {
+        'name': 'Coin Surge',
+        'description': '3x coins from work and gambling for 30 minutes',
+        'currency': 'gems',
+        'price': 45,
+        'duration': 1800,
+        'emoji': '\U0001fa99',
+    },
+    'rob_boost': {
+        'name': 'Rob Boost',
+        'description': '+20% rob success rate for 1 hour',
+        'currency': 'coins',
+        'price': 500,
+        'duration': 3600,
+        'emoji': '\U0001f977',
+    },
+    'piggy_bank': {
+        'name': 'Piggy Bank',
+        'description': 'Protects up to 1000 coins from rob attempts (permanent)',
+        'currency': 'coins',
+        'price': 3000,
+        'duration': None,
+        'emoji': '\U0001f437',
+    },
+    'mystery_box': {
+        'name': 'Mystery Box',
+        'description': 'Contains a random item (could be anything!)',
+        'currency': 'coins',
+        'price': 1200,
+        'duration': None,
+        'emoji': '\U0001f381',
+    },
+    'fishing_magnet': {
+        'name': 'Fishing Magnet',
+        'description': 'Auto-sell all Trash tier fish on catch for 2 hours',
+        'currency': 'tokens',
+        'price': 20,
+        'duration': 7200,
+        'emoji': '\U0001f9f2',
+    },
+
+    # ── Music Items ────────────────────────────────────────────────────────────
+    'music_hint': {
+        'name': 'Lyrics Hint',
+        'description': 'Reveals artist initial in lyricsguess/namethetune',
+        'currency': 'coins',
+        'price': 150,
+        'duration': None,
+        'emoji': '\U0001f4a1',
+    },
+    'trivia_skip': {
+        'name': 'Trivia Skip',
+        'description': 'Skip a music trivia question without penalty (1-time use)',
+        'currency': 'coins',
+        'price': 200,
+        'duration': None,
+        'emoji': '\u23ed\ufe0f',
+    },
+    'hot_boost': {
+        'name': 'Hot Boost',
+        'description': 'Your sharetrack contributions count double for 1 hour',
+        'currency': 'coins',
+        'price': 500,
+        'duration': 3600,
+        'emoji': '\U0001f525',
+    },
+    'bingo_doubler': {
+        'name': 'Bingo Doubler',
+        'description': '2 free pre-marked squares in Music Bingo (1-time use)',
+        'currency': 'coins',
+        'price': 800,
+        'duration': None,
+        'emoji': '\U0001f3b0',
+    },
+    'music_badge': {
+        'name': 'Music Fanatic Badge',
+        'description': 'Permanent \U0001f3b5 Music Fanatic badge on your profile',
+        'currency': 'gems',
+        'price': 40,
+        'duration': None,
+        'emoji': '\U0001f3b5',
+    },
+    'streak_amp': {
+        'name': 'Streak Amplifier',
+        'description': 'Music activity streak counts double for 24 hours',
+        'currency': 'gems',
+        'price': 55,
+        'duration': 86400,
+        'emoji': '\U0001f525',
+    },
+    'genre_unlock': {
+        'name': 'Genre Pass',
+        'description': 'Unlocks genresearch & moodsearch permanently for Basic users',
+        'currency': 'gems',
+        'price': 30,
+        'duration': None,
+        'emoji': '\U0001f3b6',
+    },
+    'wrapped_token': {
+        'name': 'Wrapped Token',
+        'description': 'Generate an early Music Wrapped mid-month',
+        'currency': 'gems',
+        'price': 20,
+        'duration': None,
+        'emoji': '\U0001f381',
+    },
+    'dj_crown': {
+        'name': 'DJ Crown',
+        'description': 'Permanent \U0001f451 DJ Crown badge + 10% music coin bonus',
+        'currency': 'tokens',
+        'price': 60,
+        'duration': None,
+        'emoji': '\U0001f451',
+    },
+    'playlist_slot': {
+        'name': 'Playlist Slot',
+        'description': '+1 permanent extra playlist slot',
+        'currency': 'tokens',
+        'price': 25,
+        'duration': None,
+        'emoji': '\U0001f4dc',
+    },
+    'queue_priority': {
+        'name': 'Queue Priority',
+        'description': 'Your song requests go to position 2 for 2 hours',
+        'currency': 'tokens',
+        'price': 35,
+        'duration': 7200,
+        'emoji': '\u23e9',
+    },
+    'trivia_surge': {
+        'name': 'Trivia Surge',
+        'description': '2x coin + gem rewards from all music trivia for 30 min',
+        'currency': 'tokens',
+        'price': 30,
+        'duration': 1800,
+        'emoji': '\u26a1',
+    },
+}
+
+
+SECTION_EMOJIS = {'coins': '\U0001fa99', 'gems': '\U0001f48e', 'tokens': '\U0001f3ab'}
+
+
+_MYSTERY_PRIZES = [
+    ('coins',  300,           '300 Coins',        '🪙', 20),
+    ('coins',  600,           '600 Coins',        '🪙', 17),
+    ('coins',  1000,          '1,000 Coins',      '🪙', 13),
+    ('coins',  2500,          '2,500 Coins',      '🪙',  7),
+    ('coins',  6000,          '6,000 Coins',      '🪙',  2),
+    ('gems',   10,            '10 Gems',          '💎', 16),
+    ('gems',   25,            '25 Gems',          '💎', 10),
+    ('gems',   60,            '60 Gems',          '💎',  4),
+    ('tokens', 20,            '20 Tokens',        '🎫', 16),
+    ('tokens', 50,            '50 Tokens',        '🎫',  9),
+    ('tokens', 120,           '120 Tokens',       '🎫',  4),
+    ('item',   'premium_bait','Premium Bait',     '🪱',  8),
+    ('item',   'xp_boost',    'XP Boost',         '⚡',  7),
+    ('item',   'luck_charm',  'Luck Charm',       '🍀',  6),
+    ('item',   'rob_shield',  'Rob Shield',       '🛡️',  5),
+    ('item',   'coin_magnet', 'Coin Magnet',      '🧲',  5),
+    ('item',   'lucky_gamble','Lucky Gamble',     '🎰',  5),
+    ('item',   'daily_reset', 'Daily Reset',      '🔄',  4),
+    ('item',   'work_reset',  'Work Reset',       '⏰',  4),
+    ('item',   'streak_shield','Streak Shield',   '🛡️',  3),
+    ('item',   'xp_surge',    'XP Surge',         '🧨',  3),
+    ('item',   'rod_silver',  'Silver Rod',       '🎣',  2),
+    ('item',   'rod_gold',    'Golden Rod',       '🎣',  1),
+]

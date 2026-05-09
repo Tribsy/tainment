@@ -53,7 +53,6 @@ PHASE_0_ROOT = {
     "reminders.py",
     "reply_utils.py",
     "server_settings.py",
-    "shop.py",
     "spotify.py",
     "subscription.py",
     "subscription_tasks.py",

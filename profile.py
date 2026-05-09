@@ -168,7 +168,7 @@ class Profile(commands.Cog, name="Profile"):
             )
 
         if active_items:
-            from shop import SHOP
+            from cogs.shop import SHOP
             item_names = []
             for key in active_items:
                 item_data = SHOP.get(key) or config.SHOP_ITEMS.get(key)
