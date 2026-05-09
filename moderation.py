@@ -11,7 +11,7 @@ from datetime import datetime, timezone, timedelta
 import aiosqlite
 import re
 import config
-from server_settings import get_server_tier
+from cogs.server_settings import get_server_tier
 
 
 MOD_COLORS = {

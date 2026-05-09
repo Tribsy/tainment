@@ -250,7 +250,7 @@ class LemonSqueezyPayment(commands.Cog, name='LemonSqueezyPayment'):
         # Apply server member discount if the command was run in a subscribed server
         server_discount = 0
         if ctx.guild:
-            from server_settings import get_server_tier
+            from cogs.server_settings import get_server_tier
             server_tier = await get_server_tier(ctx.guild.id)
             server_discount = SERVER_MEMBER_DISCOUNTS.get(server_tier, 0)
             if server_discount:

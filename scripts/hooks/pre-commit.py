@@ -52,7 +52,6 @@ PHASE_0_ROOT = {
     "reaction_roles.py",
     "reminders.py",
     "reply_utils.py",
-    "server_settings.py",
     "spotify.py",
     "subscription.py",
     "subscription_tasks.py",

@@ -3,7 +3,7 @@ from discord.ext import commands, tasks
 from datetime import datetime, timezone
 import config
 import database as db
-from server_settings import get_server_settings
+from cogs.server_settings import get_server_settings
 
 GAME_LABELS = {
     'guess': 'Number Guessing',

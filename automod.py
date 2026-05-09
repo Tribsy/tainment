@@ -24,7 +24,7 @@ import re
 from datetime import datetime, timezone, timedelta
 from collections import defaultdict
 import config
-from server_settings import get_server_tier
+from cogs.server_settings import get_server_tier
 
 
 # Per-guild spam tracking: {guild_id: {user_id: [timestamps]}}

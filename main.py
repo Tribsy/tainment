@@ -128,7 +128,7 @@ class TainmentBot(commands.Bot):
 
     async def on_guild_join(self, guild: discord.Guild):
         # Ensure server settings row exists; server structure is managed explicitly.
-        from server_settings import ensure_server
+        from cogs.server_settings import ensure_server
         await ensure_server(guild.id)
 
         for channel in guild.text_channels:
