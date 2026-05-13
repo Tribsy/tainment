@@ -15,7 +15,7 @@ import random
 
 import config
 import database as db
-from fish_data import RODS as _FISH_RODS
+from cogs.fishing import RODS as _FISH_RODS
 
 from .constants import (
     CURRENCY_EMOJI,

@@ -14,7 +14,7 @@ import logging
 import config
 from config import SHOP_ITEMS
 import database as db
-from fish_data import RODS
+from cogs.fishing import RODS
 
 from .constants import (
     CURRENCY_EMOJI,

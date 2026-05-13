@@ -6,7 +6,7 @@ module — no internal imports. SHOP is re-exported from cogs/shop/__init__.py
 so external `from cogs.shop import SHOP` keeps working.
 """
 import config
-from fish_data import RODS
+from cogs.fishing import RODS
 
 
 CURRENCY_EMOJI = {'coins': '\U0001fa99', 'gems': '\U0001f48e', 'tokens': '\U0001f3ab'}
