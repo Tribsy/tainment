@@ -18,7 +18,7 @@ from discord.ext import commands
 
 import config
 import database as db
-import music_api as sp
+import services.spotify as sp
 
 logger = logging.getLogger('tainment.spotify')
 

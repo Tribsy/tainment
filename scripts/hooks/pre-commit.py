@@ -35,7 +35,6 @@ PHASE_0_ROOT = {
     "leaderboard.py",
     "lemonsqueezy_payment.py",
     "levels.py",
-    "music_api.py",
     "music_data.py",
     "music_discovery.py",
     "music_trivia.py",
